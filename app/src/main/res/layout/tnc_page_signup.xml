@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <!-- Email -->
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="By using this app, you agree to the following:&#xA;&#xA;Educational Use Only – This app is made for learning and improving reading comprehension.&#xA;&#xA;Supervised Use – Children under 13 should use the app with a parent, guardian, or teacher.&#xA;&#xA;No Misuse – Please don’t copy, modify, or share the app in ways not allowed by the developers.&#xA;&#xA;Data and Privacy – The app may collect basic learning progress (like quiz scores) for research and improvement. Personal information will not be shared.&#xA;&#xA;No Guarantee – Since this is part of an academic project, we cannot promise the app will always be perfect or error-free.&#xA;&#xA;Research Participation – By using the app, you agree that your anonymized results may be used for study purposes.&#xA;&#xA;If you continue, it means you accept these terms." />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Student ID"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"/>
+
+    <!-- Sign Up Button -->
+
+    <CheckBox
+        android:id="@+id/checkBox2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Accept Terms and Conditions" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="35dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSignUp"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#FFC007"
+        android:fontFamily="@font/pixel"
+        android:text="Sign Up"
+        android:textColor="#000" />
+</LinearLayout>

@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "1083215421526",
+    "firebase_url": "https://maindb-d0f25-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "maindb-d0f25",
+    "storage_bucket": "maindb-d0f25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1083215421526:android:6f7335766837a721bd5bf7",
+        "android_client_info": {
+          "package_name": "com.example.assessment_checker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzGVaLoN6O7VojygzOsWsldHKED5yUrhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1083215421526:android:96f6cc85ec0aa767bd5bf7",
+        "android_client_info": {
+          "package_name": "com.example.thesis_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzGVaLoN6O7VojygzOsWsldHKED5yUrhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
