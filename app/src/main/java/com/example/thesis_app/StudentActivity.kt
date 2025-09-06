@@ -23,8 +23,8 @@ class StudentActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-//        val navigationView = findViewById<NavigationView>(R.id.navigation_view)
-//        navigationView.setNavigationItemSelectedListener(this)
+        val navigationView = findViewById<NavigationView>(R.id.navigation_view)
+        navigationView.setNavigationItemSelectedListener(this)
 
         val toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawerLayout.addDrawerListener(toggle)
