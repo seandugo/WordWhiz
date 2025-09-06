@@ -36,13 +36,13 @@ class LoadingActivity : ComponentActivity() {
 
                 "signup" -> {
                     startActivity(Intent(this, SignupActivity::class.java))
+                    finish()
                 }
 
                 "createAccount" -> {
                     startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
                 }
-                // Prevent going back to loading screen
-                else -> finish()
             }
         }, 3000)
     }

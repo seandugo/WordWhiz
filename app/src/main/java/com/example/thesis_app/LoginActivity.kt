@@ -107,20 +107,17 @@ class LoginActivity : ComponentActivity() {
                 if (snapshot.exists()) {
                     val role = snapshot.child("role").getValue(String::class.java)
                     when (role) {
-                        "teacher" -> {
+                        "teacher", "student" -> {
                             val intent = Intent(this, LoadingActivity::class.java)
                             intent.putExtra("mode", "login")
-                            startActivity(intent)
-                        }
-                        "student" -> {
-                            val intent = Intent(this, LoadingActivity::class.java)
-                            intent.putExtra("mode", "login")
+                            intent.putExtra("role", role) // ✅ pass role forward
                             startActivity(intent)
                         }
                         else -> {
                             Toast.makeText(this, "Role not found", Toast.LENGTH_SHORT).show()
                         }
                     }
+
                 } else {
                     Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
                 }
