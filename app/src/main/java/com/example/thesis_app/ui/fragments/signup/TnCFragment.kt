@@ -78,6 +78,7 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
                                             .child(userId!!)
                                             .setValue(userData)
                                             .addOnSuccessListener {
+                                                auth.signOut()
                                                 val intent = Intent(requireContext(), LoadingActivity::class.java)
                                                 intent.putExtra("mode", "createAccount")
                                                 startActivity(intent)

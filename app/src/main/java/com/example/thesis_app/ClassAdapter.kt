@@ -10,7 +10,8 @@ import java.util.Collections
 import com.example.thesis_app.models.ClassItem
 class ClassAdapter(
     private val classList: MutableList<ClassItem>,
-    private val startDrag: (RecyclerView.ViewHolder) -> Unit
+    private val startDrag: (RecyclerView.ViewHolder) -> Unit,
+    private val onItemClick: (ClassItem) -> Unit
 ) : RecyclerView.Adapter<ClassAdapter.ClassViewHolder>() {
 
     inner class ClassViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -30,11 +31,17 @@ class ClassAdapter(
         holder.title.text = item.className
         holder.subtitle.text = item.roomNo
 
+        // drag functionality
         holder.dragHandle.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 startDrag(holder)
             }
             false
+        }
+
+        // ✅ click anywhere on the card, not just the title
+        holder.itemView.setOnClickListener {
+            onItemClick(item)
         }
     }
 
@@ -45,7 +52,6 @@ class ClassAdapter(
         notifyItemMoved(fromPosition, toPosition)
     }
 
-    // Insert new item at the top
     fun addItemAtTop(item: ClassItem) {
         classList.add(0, item)
         notifyItemInserted(0)

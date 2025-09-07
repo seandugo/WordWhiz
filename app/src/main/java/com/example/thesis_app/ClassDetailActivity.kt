@@ -16,10 +16,13 @@ class ClassDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_class_detail)
+        window.navigationBarColor = getColor(R.color.my_nav_color)
+        window.statusBarColor = getColor(R.color.my_nav_color)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         toolbar.setNavigationOnClickListener { finish() }
 
         val className = intent.getStringExtra("CLASS_NAME") ?: "Unknown Class"

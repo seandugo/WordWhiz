@@ -1,5 +1,6 @@
 package com.example.thesis_app.ui.fragments.teacher
 
+import android.content.Intent
 import com.example.thesis_app.SignupActivity
 import android.os.Bundle
 import android.os.Handler
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.ClassAdapter
+import com.example.thesis_app.ClassDetailActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -44,13 +46,18 @@ class TeacherFragment : Fragment(R.layout.teachers) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        teacherButton = view.findViewById(R.id.teacher)
-        studentButton = view.findViewById(R.id.student)
-
         // ✅ Use `view.findViewById`, not just `findViewById`
         recyclerView = view.findViewById(R.id.classRecyclerView)
-        adapter = ClassAdapter(classList) { viewHolder ->
-            itemTouchHelper.startDrag(viewHolder)
+        adapter = ClassAdapter(
+            classList,
+            { viewHolder -> itemTouchHelper.startDrag(viewHolder) }
+        ) { classItem ->
+            val intent = Intent(requireContext(), ClassDetailActivity::class.java).apply {
+                putExtra("CLASS_NAME", classItem.className)
+                putExtra("ROOM_NO", classItem.roomNo)
+                putExtra("CLASS_CODE", classItem.classCode)
+            }
+            startActivity(intent)
         }
 
         recyclerView.adapter = adapter
@@ -223,11 +230,12 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                                     generateUniqueCode { classCode ->
                                         val newClass = ClassItem(className, roomNo, classList.size)
                                         teacherRef.child(classCode).setValue(newClass)
+                                        adapter.addItemAtTop(newClass)
+                                        recyclerView.scrollToPosition(0)
                                         dialog.dismiss()
                                     }
                                 }
                             }
-
                             override fun onCancelled(error: DatabaseError) {}
                         })
                 }
