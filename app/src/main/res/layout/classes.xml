@@ -7,7 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".TeacherActivity"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
 
     <LinearLayout
         android:orientation="vertical"
@@ -20,8 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
-            app:navigationIcon="@drawable/menu"
-            app:title="">
+            app:navigationIcon="@drawable/menu">
 
             <TextView
                 android:id="@+id/welcome_text"
@@ -35,10 +35,12 @@
                 android:shadowColor="#000000"
                 android:shadowDx="2"
                 android:shadowDy="2"
-                android:shadowRadius="3" />
+                android:shadowRadius="3"
+                android:layout_marginStart="16dp"
+                android:layout_centerVertical="true"/>
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Add Class Card -->
+        <!-- Add Class Card (clickable) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/addClassCard"
             android:layout_width="match_parent"
@@ -54,6 +56,7 @@
                 android:layout_height="wrap_content"
                 android:padding="20dp">
 
+                <!-- Placeholder text -->
                 <TextView
                     android:id="@+id/placeholderText"
                     android:layout_width="wrap_content"
@@ -64,6 +67,7 @@
                     android:textColor="#FFC107"
                     android:layout_centerInParent="true"/>
 
+                <!-- Optional left "+" icon -->
                 <Button
                     android:id="@+id/addButton"
                     android:layout_width="50dp"
@@ -80,20 +84,18 @@
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- RecyclerView for draggable class cards -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/classRecyclerView"
+        <!-- Scrollable container for class cards -->
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:padding="8dp"/>
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/cardContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+        </ScrollView>
 
     </LinearLayout>
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigation_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/drawer_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
