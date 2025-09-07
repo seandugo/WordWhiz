@@ -15,6 +15,8 @@
         android:orientation="vertical">
 
         <!-- Toolbar -->
+
+        <!-- Add Student Card -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -23,22 +25,30 @@
             app:navigationIcon="@drawable/back"
             app:title="">
 
-                <TextView
-                    android:id="@+id/classNameText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/pixel"
-                    android:text="classname"
-                    android:textColor="#FFC107"
-                    android:textSize="30sp"
-                    android:textStyle="bold"
-                    android:shadowColor="#000000"
-                    android:shadowDx="2"
-                    android:shadowDy="2"
-                    android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/classNameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pixel"
+                android:shadowColor="#000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="3"
+                android:text="classname"
+                android:textColor="#FFC107"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/backIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_arrow_back_ios_new"
+                android:contentDescription="Back"
+                android:paddingEnd="8dp"/>
+
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Add Student Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/addStudentCard"
             android:layout_width="match_parent"

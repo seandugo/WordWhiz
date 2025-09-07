@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.StudentItem
 
-class StudentActivity : AppCompatActivity() {
+class StudentListActivity : AppCompatActivity() {
 
     private lateinit var adapter: StudentAdapter
     private lateinit var recyclerView: RecyclerView
