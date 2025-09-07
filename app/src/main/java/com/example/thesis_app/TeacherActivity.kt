@@ -19,13 +19,28 @@ import androidx.activity.OnBackPressedCallback
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 
+
+fun generateCode(length: Int = 6): String {
+    val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    return (1..length)
+        .map { chars.random() }
+        .joinToString("")
+}
 class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var teacherRef: DatabaseReference
     private lateinit var adapter: ClassAdapter
     private val classList = mutableListOf<ClassItem>()
     private lateinit var itemTouchHelper: ItemTouchHelper
+    private val auth = FirebaseAuth.getInstance()
+    private val database = FirebaseDatabase.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +60,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
 
         setupDragAndDrop()
         setupAddClassCard()
+        setupTeacherRef()
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -85,6 +101,49 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         return true
     }
 
+    private fun setupTeacherRef() {
+        val uid = auth.currentUser!!.uid
+        // Always point to UID-based classes
+        teacherRef = database.getReference("users").child(uid).child("classes")
+        loadClassesFromFirebase()
+    }
+
+    // ✅ Ensures no duplicate codes
+    private fun generateUniqueCode(onCodeGenerated: (String) -> Unit) {
+        val newCode = generateCode()
+        teacherRef.child(newCode).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    // If already exists, try again
+                    generateUniqueCode(onCodeGenerated)
+                } else {
+                    onCodeGenerated(newCode)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun loadClassesFromFirebase() {
+        teacherRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                classList.clear()
+                for (classSnap in snapshot.children) {
+                    val classItem = classSnap.getValue(ClassItem::class.java)
+                    if (classItem != null) {
+                        classList.add(classItem)
+                    }
+                }
+                adapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
+            }
+        })
+    }
+
     private fun setupDragAndDrop() {
         val callback = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
@@ -121,7 +180,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             val roomInput = EditText(this).apply {
                 hint = "Room number (e.g., 101)"
                 inputType = InputType.TYPE_CLASS_NUMBER
-                filters = arrayOf(InputFilter.LengthFilter(5)) // optional max length
+                filters = arrayOf(InputFilter.LengthFilter(5))
             }
 
             dialogLayout.addView(classInput)
@@ -140,30 +199,43 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                     val className = classInput.text.toString().ifEmpty { "New Class" }
                     val roomText = roomInput.text.toString().trim()
 
-                    // Strict numeric validation
                     if (roomText.isEmpty() || !roomText.matches(Regex("\\d+"))) {
                         roomInput.error = "Enter numbers only"
                         roomInput.requestFocus()
                         return@setOnClickListener
                     }
 
-                    // Prevent duplicate rooms (optional)
-                    if (classList.any { it.roomNo == "Rm $roomText" }) {
-                        roomInput.error = "Room already exists"
-                        roomInput.requestFocus()
-                        return@setOnClickListener
-                    }
-
                     val roomNo = "Rm $roomText"
-                    adapter.addItemAtTop(ClassItem(className, roomNo))
-                    recyclerView.scrollToPosition(0)
-                    dialog.dismiss()
+
+                    // Check for duplicates in Firebase
+                    teacherRef.orderByChild("roomNo").equalTo(roomNo)
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                if (snapshot.exists()) {
+                                    roomInput.error = "Room already exists"
+                                    roomInput.requestFocus()
+                                } else {
+                                    generateUniqueCode { classCode ->
+                                        val newClass = ClassItem(className, roomNo)
+
+                                        // Store under users/uid/classes/classCode
+                                        teacherRef.child(classCode).setValue(newClass)
+                                        dialog.dismiss()
+                                    }
+
+                                    dialog.dismiss()
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {}
+                        })
                 }
             }
 
             dialog.show()
         }
     }
+
 
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)

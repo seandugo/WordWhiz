@@ -2,6 +2,9 @@ package com.example.thesis_app.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.widget.CheckBox
+import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -16,11 +19,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class TnCFragment : Fragment(R.layout.tnc_page_signup) {
     private lateinit var btnSignup: MaterialButton
+    private lateinit var checkBox: CheckBox
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         btnSignup = view.findViewById(R.id.btnSignUp)
+        checkBox = view.findViewById(R.id.checkBox2)
 
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -32,6 +37,7 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
             })
 
         btnSignup.setOnClickListener {
+            btnSignup.isEnabled = false
             val role = arguments?.getString("role")
             val email = arguments?.getString("email")
             val password = arguments?.getString("password")
@@ -39,12 +45,23 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
 
             if (role.isNullOrEmpty() || email.isNullOrEmpty() || password.isNullOrEmpty()) {
                 Toast.makeText(requireContext(), "Missing signup information", Toast.LENGTH_SHORT).show()
+                btnSignup.isEnabled = true
+                return@setOnClickListener
+            }
+
+            if (!checkBox.isChecked) {
+                Toast.makeText(requireContext(), "You must agree to the Terms & Conditions", Toast.LENGTH_SHORT).show()
+                btnSignup.isEnabled = true
                 return@setOnClickListener
             }
 
             auth.fetchSignInMethodsForEmail(email)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            btnSignup.isEnabled = true
+                        }, 1000)
+
                         val signInMethods = task.result.signInMethods
                         if (signInMethods.isNullOrEmpty()) {
                             // ✅ Email not registered yet → create account
