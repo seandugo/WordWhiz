@@ -7,6 +7,7 @@ import android.text.InputFilter
 import android.text.InputType
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -27,6 +28,8 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 import java.util.Collections
 
 data class ClassItem(
@@ -132,7 +135,9 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@TeacherActivity, "Error generating class code", Toast.LENGTH_SHORT).show()
+            }
         })
     }
 
@@ -151,7 +156,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
+                Toast.makeText(this@TeacherActivity, "Error loading classes: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -197,22 +202,35 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     }
 
     private fun updateOrderInFirebase() {
-        classList.forEachIndexed { index, classItem ->
-            teacherRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (classSnap in snapshot.children) {
-                        val item = classSnap.getValue(ClassItem::class.java)
-                        if (item?.className == classItem.className && item?.roomNo == classItem.roomNo) {
-                            teacherRef.child(classSnap.key!!).child("order").setValue(index)
-                        }
+        teacherRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                // Get current classes from Firebase
+                val firebaseClasses = mutableListOf<Pair<String, ClassItem>>()
+                for (child in currentData.children) {
+                    val classItem = child.getValue(ClassItem::class.java)
+                    if (classItem != null) {
+                        firebaseClasses.add(child.key!! to classItem)
                     }
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle error (e.g., show a Toast to the user)
+                // Update order based on local classList
+                classList.forEachIndexed { index, localClass ->
+                    firebaseClasses.find { it.second.className == localClass.className && it.second.roomNo == localClass.roomNo }
+                        ?.let { pair ->
+                            val updatedClass = pair.second.copy(order = index)
+                            currentData.child(pair.first).setValue(updatedClass)
+                        }
                 }
-            })
-        }
+
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                if (error != null || !committed) {
+                    Toast.makeText(this@TeacherActivity, "Failed to save order: ${error?.message ?: "Transaction failed"}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
     }
 
     private fun setupAddClassCard() {
@@ -264,12 +282,17 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                                     generateUniqueCode { classCode ->
                                         val newClass = ClassItem(className, roomNo, classList.size)
                                         teacherRef.child(classCode).setValue(newClass)
+                                            .addOnFailureListener {
+                                                Toast.makeText(this@TeacherActivity, "Failed to add class", Toast.LENGTH_SHORT).show()
+                                            }
                                         dialog.dismiss()
                                     }
                                 }
                             }
 
-                            override fun onCancelled(error: DatabaseError) {}
+                            override fun onCancelled(error: DatabaseError) {
+                                Toast.makeText(this@TeacherActivity, "Error checking room: ${error.message}", Toast.LENGTH_SHORT).show()
+                            }
                         })
                 }
             }
