@@ -1,6 +1,5 @@
-package com.example.thesis_app
-
 data class ClassItem(
-    var className: String = "",
-    var roomNo: String = ""
+    val className: String = "",
+    val roomNo: String = "",
+    var order: Int = 0 // Tracks the position in the list
 )

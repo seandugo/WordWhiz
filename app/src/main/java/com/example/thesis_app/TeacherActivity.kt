@@ -1,6 +1,8 @@
 package com.example.thesis_app
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.InputFilter
 import android.text.InputType
 import android.widget.EditText
@@ -8,6 +10,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,7 +27,13 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import java.util.Collections
 
+data class ClassItem(
+    val className: String = "",
+    val roomNo: String = "",
+    var order: Int = 0
+)
 
 fun generateCode(length: Int = 6): String {
     val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -32,6 +41,7 @@ fun generateCode(length: Int = 6): String {
         .map { chars.random() }
         .joinToString("")
 }
+
 class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var recyclerView: RecyclerView
@@ -41,6 +51,9 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     private lateinit var itemTouchHelper: ItemTouchHelper
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
+    private val handler = Handler(Looper.getMainLooper())
+    private var pendingUpdateRunnable: Runnable? = null
+    private var isOrderChanged = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +70,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.itemAnimator = DefaultItemAnimator() // Enable smooth animations
 
         setupDragAndDrop()
         setupAddClassCard()
@@ -103,18 +117,15 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
 
     private fun setupTeacherRef() {
         val uid = auth.currentUser!!.uid
-        // Always point to UID-based classes
         teacherRef = database.getReference("users").child(uid).child("classes")
         loadClassesFromFirebase()
     }
 
-    // ✅ Ensures no duplicate codes
     private fun generateUniqueCode(onCodeGenerated: (String) -> Unit) {
         val newCode = generateCode()
         teacherRef.child(newCode).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    // If already exists, try again
                     generateUniqueCode(onCodeGenerated)
                 } else {
                     onCodeGenerated(newCode)
@@ -135,6 +146,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                         classList.add(classItem)
                     }
                 }
+                classList.sortBy { it.order }
                 adapter.notifyDataSetChanged()
             }
 
@@ -156,6 +168,8 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 val fromPos = viewHolder.adapterPosition
                 val toPos = target.adapterPosition
                 adapter.swapItems(fromPos, toPos)
+                isOrderChanged = true
+                scheduleFirebaseUpdate()
                 return true
             }
 
@@ -166,6 +180,39 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
 
         itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(recyclerView)
+    }
+
+    private fun scheduleFirebaseUpdate() {
+        // Cancel any pending updates
+        pendingUpdateRunnable?.let { handler.removeCallbacks(it) }
+
+        // Schedule new update with 500ms debounce
+        pendingUpdateRunnable = Runnable {
+            if (isOrderChanged) {
+                updateOrderInFirebase()
+                isOrderChanged = false
+            }
+        }
+        handler.postDelayed(pendingUpdateRunnable!!, 500)
+    }
+
+    private fun updateOrderInFirebase() {
+        classList.forEachIndexed { index, classItem ->
+            teacherRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (classSnap in snapshot.children) {
+                        val item = classSnap.getValue(ClassItem::class.java)
+                        if (item?.className == classItem.className && item?.roomNo == classItem.roomNo) {
+                            teacherRef.child(classSnap.key!!).child("order").setValue(index)
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle error (e.g., show a Toast to the user)
+                }
+            })
+        }
     }
 
     private fun setupAddClassCard() {
@@ -207,7 +254,6 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
 
                     val roomNo = "Rm $roomText"
 
-                    // Check for duplicates in Firebase
                     teacherRef.orderByChild("roomNo").equalTo(roomNo)
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
@@ -216,14 +262,10 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                                     roomInput.requestFocus()
                                 } else {
                                     generateUniqueCode { classCode ->
-                                        val newClass = ClassItem(className, roomNo)
-
-                                        // Store under users/uid/classes/classCode
+                                        val newClass = ClassItem(className, roomNo, classList.size)
                                         teacherRef.child(classCode).setValue(newClass)
                                         dialog.dismiss()
                                     }
-
-                                    dialog.dismiss()
                                 }
                             }
 
@@ -236,7 +278,6 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         }
     }
 
-
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Logout")
@@ -247,5 +288,11 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             }
             .setNegativeButton("No", null)
             .show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clean up pending updates
+        pendingUpdateRunnable?.let { handler.removeCallbacks(it) }
     }
 }
