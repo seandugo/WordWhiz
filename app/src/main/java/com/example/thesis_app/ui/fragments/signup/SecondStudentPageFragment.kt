@@ -1,4 +1,4 @@
-package com.example.thesis_app.ui.fragments
+package com.example.thesis_app.ui.fragments.signup
 
 import android.os.Bundle
 import android.view.View
@@ -6,25 +6,23 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import com.example.thesis_app.R
+import com.example.thesis_app.SignupActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import com.example.thesis_app.SignupActivity
 
-class SecondPageFragment : Fragment(R.layout.signup) {
+class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
 
+    private lateinit var btnSignUp: MaterialButton
     private lateinit var editEmail: TextInputEditText
     private lateinit var editPassword: TextInputEditText
     private lateinit var editConfirmPassword: TextInputEditText
-    private lateinit var btnSignUp: MaterialButton
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Initialize views from fragment's layout
+        btnSignUp = view.findViewById(R.id.btnSignUp)
         editEmail = view.findViewById(R.id.editEmail)
         editPassword = view.findViewById(R.id.editPassword)
         editConfirmPassword = view.findViewById(R.id.editConfirmPassword)
-        btnSignUp = view.findViewById(R.id.btnSignUp)
 
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -40,29 +38,22 @@ class SecondPageFragment : Fragment(R.layout.signup) {
             val password = editPassword.text.toString()
             val confirmPassword = editConfirmPassword.text.toString()
 
-            if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            if (email.isNotEmpty() && password == confirmPassword) {
+                val bundle = Bundle()
+                bundle.putString("role", arguments?.getString("role"))
+                bundle.putString("email", email)
+                bundle.putString("password", password)
+
+                val fragment = TnCFragment()
+                fragment.arguments = bundle
+                (activity as? SignupActivity)?.nextStep()
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainerView, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            } else {
+                Toast.makeText(requireContext(), "Invalid inputs", Toast.LENGTH_SHORT).show()
             }
-
-            if (password != confirmPassword) {
-                Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val bundle = Bundle()
-            bundle.putString("role", arguments?.getString("role"))
-            bundle.putString("email", email)
-            bundle.putString("password", password)
-
-            val fragment = TnCFragment()
-            fragment.arguments = bundle
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainerView, fragment)
-                .addToBackStack(null)
-                .commit()
-
-            (activity as? SignupActivity)?.nextStep()
         }
     }
 }

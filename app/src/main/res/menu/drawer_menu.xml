@@ -3,8 +3,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_home"
-        android:title="Home" />
+        android:id="@+id/nav_classes"
+        android:title="Classes" />
 
     <item
         android:id="@+id/nav_profile"

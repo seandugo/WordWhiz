@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.util.Collections
-
+import com.example.thesis_app.models.ClassItem
 class ClassAdapter(
     private val classList: MutableList<ClassItem>,
     private val startDrag: (RecyclerView.ViewHolder) -> Unit

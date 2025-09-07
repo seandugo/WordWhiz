@@ -43,7 +43,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainerView"
-        android:name="com.example.thesis_app.ui.fragments.FirstPageFragment"
+        android:name="com.example.thesis_app.ui.fragments.signup.FirstPageFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

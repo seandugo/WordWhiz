@@ -1,4 +1,4 @@
-package com.example.thesis_app.ui.fragments
+package com.example.thesis_app.ui.fragments.signup
 
 import com.example.thesis_app.SignupActivity
 import android.os.Bundle

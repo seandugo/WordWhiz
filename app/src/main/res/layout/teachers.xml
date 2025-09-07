@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,40 +7,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".TeacherActivity"
-    android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
-            app:navigationIcon="@drawable/menu">
-
-            <TextView
-                android:id="@+id/welcome_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/pixel"
-                android:text="WORDWHIZ"
-                android:textColor="#FFC007"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                android:shadowColor="#000000"
-                android:shadowDx="2"
-                android:shadowDy="2"
-                android:shadowRadius="3"
-                android:layout_marginStart="16dp"
-                android:layout_centerVertical="true"/>
-        </androidx.appcompat.widget.Toolbar>
-
-        <!-- Add Class Card (clickable) -->
+        <!-- Add Class Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/addClassCard"
             android:layout_width="match_parent"
@@ -56,7 +30,6 @@
                 android:layout_height="wrap_content"
                 android:padding="20dp">
 
-                <!-- Placeholder text -->
                 <TextView
                     android:id="@+id/placeholderText"
                     android:layout_width="wrap_content"
@@ -67,7 +40,6 @@
                     android:textColor="#FFC107"
                     android:layout_centerInParent="true"/>
 
-                <!-- Optional left "+" icon -->
                 <Button
                     android:id="@+id/addButton"
                     android:layout_width="50dp"
@@ -84,18 +56,14 @@
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Scrollable container for class cards -->
-        <ScrollView
+        <!-- RecyclerView for draggable class cards -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/classRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:id="@+id/cardContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"/>
-        </ScrollView>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp"/>
 
     </LinearLayout>
 
-</androidx.drawerlayout.widget.DrawerLayout>
+</LinearLayout>

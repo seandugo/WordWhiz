@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 
-class StudentActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener  {
+class StudentActivity : AppCompatActivity()  {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student) // Your login layout XML
@@ -21,21 +21,6 @@ class StudentActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                         showExitConfirmation()
                     }
             })
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.nav_home -> {
-                // Handle Home
-            }
-            R.id.nav_settings -> {
-                // Handle Settings
-            }
-            R.id.nav_logout -> {
-                showExitConfirmation()
-            }
-        }
-        return true
     }
 
     private fun showExitConfirmation() {

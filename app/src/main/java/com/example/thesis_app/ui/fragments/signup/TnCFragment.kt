@@ -1,4 +1,4 @@
-package com.example.thesis_app.ui.fragments
+package com.example.thesis_app.ui.fragments.signup
 
 import android.content.Intent
 import android.os.Bundle
@@ -15,7 +15,6 @@ import com.example.thesis_app.SignupActivity
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.firestore.FirebaseFirestore
 
 class TnCFragment : Fragment(R.layout.tnc_page_signup) {
     private lateinit var btnSignup: MaterialButton
