@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.util.Collections
 import com.example.thesis_app.models.ClassItem
+
 class ClassAdapter(
     private val classList: MutableList<ClassItem>,
     private val startDrag: (RecyclerView.ViewHolder) -> Unit,
@@ -31,7 +32,7 @@ class ClassAdapter(
         holder.title.text = item.className
         holder.subtitle.text = item.roomNo
 
-        // drag functionality
+        // Drag functionality
         holder.dragHandle.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 startDrag(holder)
@@ -39,7 +40,7 @@ class ClassAdapter(
             false
         }
 
-        // ✅ click anywhere on the card, not just the title
+        // Click anywhere on the card
         holder.itemView.setOnClickListener {
             onItemClick(item)
         }

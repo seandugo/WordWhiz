@@ -1,60 +1,112 @@
 package com.example.thesis_app
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.thesis_app.models.StudentItem
+import com.google.firebase.database.*
 
 class ClassDetailActivity : AppCompatActivity() {
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var backIcon: ImageView
+    private lateinit var classNameText: TextView
+    private lateinit var addStudentCard: CardView
+    private lateinit var adapter: StudentAdapter
+    private val studentList = mutableListOf<StudentItem>()
+    private var className: String = "Unknown Class"
+    private lateinit var database: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_class_detail)
-        window.navigationBarColor = getColor(R.color.my_nav_color)
-        window.statusBarColor = getColor(R.color.my_nav_color)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-        toolbar.setNavigationOnClickListener { finish() }
+        // System colors
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.my_nav_color)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.my_nav_color)
 
-        val className = intent.getStringExtra("CLASS_NAME") ?: "Unknown Class"
-        val roomNo = intent.getStringExtra("ROOM_NO") ?: "Unknown Room"
-        val classCode = intent.getStringExtra("CLASS_CODE") ?: ""
+        // Firebase reference
+        database = FirebaseDatabase.getInstance().reference
 
-        findViewById<TextView>(R.id.classNameText).text = className
+        // Get class name from Intent
+        className = intent.getStringExtra("CLASS_NAME") ?: "Unknown Class"
 
-        // Firebase integration
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user == null) {
-            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
-            finish()
-            return
+        // Find views
+        recyclerView = findViewById(R.id.studentRecyclerView)
+        backIcon = findViewById(R.id.backIcon)
+        classNameText = findViewById(R.id.classNameText)
+        addStudentCard = findViewById(R.id.addStudentCard)
+
+        classNameText.text = className
+        backIcon.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter = StudentAdapter(studentList) {}
+        recyclerView.adapter = adapter
+
+        loadStudentsFromFirebase()
+
+        addStudentCard.setOnClickListener { showAddStudentDialog() }
+    }
+
+    private fun loadStudentsFromFirebase() {
+        val classKey = className.replace(" ", "_")
+        database.child("classes").child(classKey).child("students")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    studentList.clear()
+                    for (child in snapshot.children) {
+                        val student = child.getValue(StudentItem::class.java)
+                        student?.let { studentList.add(it) }
+                    }
+                    adapter.notifyDataSetChanged()
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@ClassDetailActivity, "Failed to load students", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun showAddStudentDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_student, null)
+        val nameInput = dialogView.findViewById<EditText>(R.id.editStudentName)
+        val idInput = dialogView.findViewById<EditText>(R.id.editStudentId)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Add Student")
+            .setView(dialogView)
+            .setPositiveButton("Add", null)
+            .setNegativeButton("Cancel") { d, _ -> d.dismiss() }
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
+            val name = nameInput.text.toString().trim()
+            val id = idInput.text.toString().trim()
+            if (name.isEmpty() || id.isEmpty()) {
+                Toast.makeText(this, "Please enter both name and ID", Toast.LENGTH_SHORT).show()
+            } else {
+                val newStudent = StudentItem(name, id)
+                adapter.addItemAtTop(newStudent)
+                recyclerView.scrollToPosition(0)
+
+                // Save to Firebase
+                val classKey = className.replace(" ", "_")
+                database.child("classes").child(classKey).child("students").push().setValue(newStudent)
+                    .addOnSuccessListener { Toast.makeText(this, "Added $name", Toast.LENGTH_SHORT).show() }
+                    .addOnFailureListener { e -> Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_SHORT).show() }
+                dialog.dismiss()
+            }
         }
-
-        val database = FirebaseDatabase.getInstance()
-        val classRef = database.getReference("users")
-            .child(user.uid)
-            .child("classes")
-            .child(classCode)
-
-        // Example: Fetch students for the class (placeholder)
-        classRef.child("students").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // TODO: Process student data (e.g., display in a RecyclerView)
-                // Example: val students = snapshot.children.mapNotNull { it.getValue(Student::class.java) }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@ClassDetailActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
     }
 }
