@@ -58,6 +58,8 @@ class LoginActivity : ComponentActivity() {
                     if (task.isSuccessful) {
                         val userId = task.result.user?.uid ?: return@addOnCompleteListener
                         fetchUserData(userId)
+                        teacherEmail.text?.clear()
+                        teacherPassword.text?.clear()
                     } else {
                         Toast.makeText(this, task.exception?.message, Toast.LENGTH_SHORT).show()
                     }

@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
-            app:navigationIcon="@drawable/menu"
+            app:navigationIcon="@drawable/back"
             app:title="">
 
                 <TextView

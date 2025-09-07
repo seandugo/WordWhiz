@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:padding="12dp"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -26,14 +26,18 @@
             android:id="@+id/search_btn"
             android:text="Search"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="8dp"/>
-        <ProgressBar
+            android:fontFamily="@font/pixel"
+            android:layout_marginStart="8dp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#FFC007"/>
+        <com.github.ybq.android.spinkit.SpinKitView
+            android:id="@+id/progress_bar"
             android:layout_width="100dp"
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"
             android:layout_centerInParent="true"
-            android:indeterminateTint="@color/my_primary"
-            android:id="@+id/progress_bar"
+            app:SpinKit_Color="#FFC007"
+            app:SpinKit_Style="CubeGrid"
             android:visibility="gone"/>
     </RelativeLayout>
 
@@ -55,11 +59,20 @@
         android:textColor="#929292"
         tools:text="/t e s t/" />
 
+    <TextView
+        android:id="@+id/status_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_red_dark"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/meaning_recycler_view"/>
-
-
 
 </LinearLayout>

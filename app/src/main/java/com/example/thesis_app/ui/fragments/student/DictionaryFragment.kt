@@ -28,6 +28,8 @@ class DictionaryFragment : Fragment() {
     private lateinit var wordTextview: TextView
     private lateinit var phoneticTextview: TextView
     private lateinit var meaningRecyclerView: RecyclerView
+    private lateinit var statusTextview: TextView
+
 
     private lateinit var adapter: MeaningAdapter
 
@@ -42,21 +44,31 @@ class DictionaryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize views
+        // Initialize views...
         searchBtn = view.findViewById(R.id.search_btn)
         searchInput = view.findViewById(R.id.search_input)
         progressBar = view.findViewById(R.id.progress_bar)
         wordTextview = view.findViewById(R.id.word_textview)
         phoneticTextview = view.findViewById(R.id.phonetic_textview)
         meaningRecyclerView = view.findViewById(R.id.meaning_recycler_view)
+        statusTextview = view.findViewById(R.id.status_textview)
 
         adapter = MeaningAdapter(emptyList())
         meaningRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         meaningRecyclerView.adapter = adapter
 
+        // 👇 Show default message at first load
+        statusTextview.text = "Search for a word to see results"
+        statusTextview.visibility = View.VISIBLE
+
         searchBtn.setOnClickListener {
-            val word = searchInput.text.toString()
-            getMeaning(word)
+            val word = searchInput.text.toString().trim()
+            if (word.isEmpty()) {
+                statusTextview.text = "Please enter a word to search"
+                statusTextview.visibility = View.VISIBLE
+            } else {
+                getMeaning(word)
+            }
         }
     }
 
@@ -65,22 +77,37 @@ class DictionaryFragment : Fragment() {
         GlobalScope.launch {
             try {
                 val response = RetrofitInstance.dictionaryApi.getMeaning(word)
-                if (response.body() == null) throw Exception()
 
                 activity?.runOnUiThread {
                     setInProgress(false)
-                    response.body()?.first()?.let {
-                        setUI(it)
+
+                    val result = response.body()
+                    if (result.isNullOrEmpty()) {
+                        // ✅ No results found
+                        wordTextview.text = word
+                        phoneticTextview.text = ""
+                        adapter.updateNewData(emptyList())
+
+                        statusTextview.text = "0 search results for \"$word\""
+                        statusTextview.visibility = View.VISIBLE
+                    } else {
+                        // ✅ At least one result found
+                        setUI(result.first())
+
+                        statusTextview.text = ""   // clear message
+                        statusTextview.visibility = View.GONE
                     }
                 }
             } catch (e: Exception) {
                 activity?.runOnUiThread {
                     setInProgress(false)
-                    Toast.makeText(requireContext(), "Something went wrong", Toast.LENGTH_SHORT).show()
+                    statusTextview.text = "Something went wrong"
+                    statusTextview.visibility = View.VISIBLE
                 }
             }
         }
     }
+
 
     private fun setUI(response: WordResult) {
         wordTextview.text = response.word
