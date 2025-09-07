@@ -29,7 +29,7 @@ class LoadingActivity : ComponentActivity() {
                     if (role == "teacher") {
                         startActivity(Intent(this, TeacherActivity::class.java))
                     } else {
-                        startActivity(Intent(this, StudentListActivity::class.java))
+                        startActivity(Intent(this, StudentActivity::class.java))
                     }
                     finish()
                 }

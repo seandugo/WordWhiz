@@ -2,25 +2,23 @@ package com.example.thesis_app
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.StudentItem
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class ClassDetailActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var backIcon: ImageView
     private lateinit var classNameText: TextView
-    private lateinit var addStudentCard: CardView
     private lateinit var adapter: StudentAdapter
     private val studentList = mutableListOf<StudentItem>()
     private var className: String = "Unknown Class"
@@ -42,40 +40,61 @@ class ClassDetailActivity : AppCompatActivity() {
 
         // Find views
         recyclerView = findViewById(R.id.studentRecyclerView)
-        backIcon = findViewById(R.id.backIcon)
         classNameText = findViewById(R.id.classNameText)
-        addStudentCard = findViewById(R.id.addStudentCard)
 
+        // Set class name dynamically
         classNameText.text = className
-        backIcon.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
+        // ✅ Setup Toolbar with back navigation
+        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // RecyclerView setup
         recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = StudentAdapter(studentList) {}
+        adapter = StudentAdapter(studentList) { student ->
+            Toast.makeText(this, "Clicked: ${student.name}", Toast.LENGTH_SHORT).show()
+        }
         recyclerView.adapter = adapter
 
+        // Load existing students
         loadStudentsFromFirebase()
 
-        addStudentCard.setOnClickListener { showAddStudentDialog() }
+        // Add student button (CardView)
+        findViewById<androidx.cardview.widget.CardView>(R.id.addStudentCard).setOnClickListener {
+            showAddStudentDialog()
+        }
     }
 
     private fun loadStudentsFromFirebase() {
-        val classKey = className.replace(" ", "_")
-        database.child("classes").child(classKey).child("students")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    studentList.clear()
-                    for (child in snapshot.children) {
-                        val student = child.getValue(StudentItem::class.java)
-                        student?.let { studentList.add(it) }
-                    }
-                    adapter.notifyDataSetChanged()
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@ClassDetailActivity, "Failed to load students", Toast.LENGTH_SHORT).show()
-                }
-            })
-    }
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val classCode = intent.getStringExtra("CLASS_CODE") ?: return
 
+        val studentsRef = database.child("users")
+            .child(uid)
+            .child("classes")
+            .child(classCode)
+            .child("students")
+
+        studentsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                studentList.clear()
+                for (studentSnap in snapshot.children) {
+                    val student = studentSnap.getValue(StudentItem::class.java)
+                    if (student != null) {
+                        val studentWithId = student.copy()
+                        studentWithId.studentId = studentSnap.key ?: ""
+                        studentList.add(studentWithId)
+                    }
+                }
+                studentList.sortBy { it.order }
+                adapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
     private fun showAddStudentDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_student, null)
         val nameInput = dialogView.findViewById<EditText>(R.id.editStudentName)
@@ -93,20 +112,42 @@ class ClassDetailActivity : AppCompatActivity() {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
             val name = nameInput.text.toString().trim()
             val id = idInput.text.toString().trim()
+
             if (name.isEmpty() || id.isEmpty()) {
                 Toast.makeText(this, "Please enter both name and ID", Toast.LENGTH_SHORT).show()
             } else {
-                val newStudent = StudentItem(name, id)
-                adapter.addItemAtTop(newStudent)
-                recyclerView.scrollToPosition(0)
+                // ✅ set email = null
+                val newStudent = StudentItem(name = name, email = null, order = studentList.size)
 
-                // Save to Firebase
-                val classKey = className.replace(" ", "_")
-                database.child("classes").child(classKey).child("students").push().setValue(newStudent)
-                    .addOnSuccessListener { Toast.makeText(this, "Added $name", Toast.LENGTH_SHORT).show() }
-                    .addOnFailureListener { e -> Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_SHORT).show() }
-                dialog.dismiss()
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
+                val classCode = intent.getStringExtra("CLASS_CODE") ?: return@setOnClickListener
+
+                database.child("users")
+                    .child(uid)
+                    .child("classes")
+                    .child(classCode)
+                    .child("students")
+                    .child(id) // studentId as key
+                    .setValue(newStudent)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Added $name", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
+        }
+    }
+
+    // ✅ Handle Toolbar back button
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 }

@@ -25,7 +25,7 @@ class StudentAdapter(
 
     override fun onBindViewHolder(holder: StudentViewHolder, position: Int) {
         val student = studentList[position]
-        holder.name.text = student.studentName
+        holder.name.text = student.name
         holder.id.text = student.studentId
 
         holder.itemView.setOnClickListener {
@@ -34,8 +34,6 @@ class StudentAdapter(
     }
 
     override fun getItemCount(): Int = studentList.size
-
-    // ✅ same as ClassAdapter → add student at the top
     fun addItemAtTop(student: StudentItem) {
         studentList.add(0, student)
         notifyItemInserted(0)

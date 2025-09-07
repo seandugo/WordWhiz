@@ -112,7 +112,10 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                 for (classSnap in snapshot.children) {
                     val classItem = classSnap.getValue(ClassItem::class.java)
                     if (classItem != null) {
-                        classList.add(classItem)
+                        // 🔹 Attach key as classCode dynamically
+                        val itemWithCode = classItem.copy()
+                        itemWithCode.classCode = classSnap.key ?: ""
+                        classList.add(itemWithCode)
                     }
                 }
                 classList.sortBy { it.order }
@@ -122,6 +125,7 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
+
 
     private fun setupDragAndDrop() {
         val callback = object : ItemTouchHelper.SimpleCallback(
@@ -230,7 +234,7 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                                     generateUniqueCode { classCode ->
                                         val newClass = ClassItem(className, roomNo, classList.size)
                                         teacherRef.child(classCode).setValue(newClass)
-                                        adapter.addItemAtTop(newClass)
+                                        adapter.addItemAtTop(newClass.copy())
                                         recyclerView.scrollToPosition(0)
                                         dialog.dismiss()
                                     }

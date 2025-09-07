@@ -33,7 +33,7 @@
             android:label="Word Whiz"
             android:theme="@style/Theme.THESIS_APP"/>
         <activity
-            android:name=".StudentListActivity"
+            android:name=".StudentActivity"
             android:exported="true"
             android:label="Word Whiz"
             android:theme="@style/Theme.THESIS_APP"/>

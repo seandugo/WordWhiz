@@ -39,14 +39,6 @@
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/backIcon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_arrow_back_ios_new"
-                android:contentDescription="Back"
-                android:paddingEnd="8dp"/>
-
         </androidx.appcompat.widget.Toolbar>
 
         <androidx.cardview.widget.CardView
