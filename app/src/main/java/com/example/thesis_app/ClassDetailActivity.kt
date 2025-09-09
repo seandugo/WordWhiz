@@ -28,11 +28,6 @@ class ClassDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_class_detail)
-
-        // System colors
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.my_nav_color)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.my_nav_color)
-
         // Firebase reference
         database = FirebaseDatabase.getInstance().reference
 

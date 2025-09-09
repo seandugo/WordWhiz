@@ -22,9 +22,6 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login)
 
-        window.navigationBarColor = getColor(R.color.my_nav_color)
-        window.statusBarColor = getColor(R.color.my_nav_color)
-
         val login = findViewById<Button>(R.id.LoginButton)
         val signup = findViewById<TextView>(R.id.textView9)
         val teacherEmail = findViewById<TextInputEditText>(R.id.editEmail)

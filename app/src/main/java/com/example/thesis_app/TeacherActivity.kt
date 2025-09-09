@@ -19,10 +19,6 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         super.onCreate(savedInstanceState)
         setContentView(R.layout.teacher)
 
-        // Set system bar colors (optional)
-        window.navigationBarColor = getColor(R.color.my_nav_color)
-        window.statusBarColor = getColor(R.color.my_nav_color)
-
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -54,9 +50,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 // Handle Classes
             }
             R.id.nav_profile -> {
-                // Open ProfileActivity
-                val intent = Intent(this, ProfileActivity::class.java)
-                startActivity(intent)
+
             }
             R.id.nav_settings -> {
                 // Handle Settings

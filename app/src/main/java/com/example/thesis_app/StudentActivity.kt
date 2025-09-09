@@ -15,11 +15,6 @@ class StudentActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student)
-
-        // Set navigation and status bar colors
-        window.navigationBarColor = getColor(R.color.my_nav_color)
-        window.statusBarColor = getColor(R.color.my_nav_color)
-
         // Setup bottom navigation
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 

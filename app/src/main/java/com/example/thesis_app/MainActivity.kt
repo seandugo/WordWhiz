@@ -10,8 +10,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.loading)
-        window.navigationBarColor = getColor(R.color.my_nav_color)
-        window.statusBarColor = getColor(R.color.my_nav_color)
 
         Handler(Looper.getMainLooper()).postDelayed({
             startActivity(Intent(this, LoginActivity::class.java))

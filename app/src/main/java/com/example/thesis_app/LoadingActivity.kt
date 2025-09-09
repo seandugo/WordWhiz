@@ -11,8 +11,6 @@ class LoadingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_loading)
-        window.navigationBarColor = getColor(R.color.my_nav_color)
-        window.statusBarColor = getColor(R.color.my_nav_color)
 
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {

@@ -19,8 +19,6 @@ class SignupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_signup)
-        window.navigationBarColor = getColor(R.color.my_nav_color)
-        window.statusBarColor = getColor(R.color.my_nav_color)
 
         progressBar = findViewById(R.id.pageProgressBar)
         toolbarTitle = findViewById(R.id.toolbar_title)

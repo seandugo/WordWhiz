@@ -59,20 +59,30 @@
         android:textColor="#929292"
         tools:text="/t e s t/" />
 
+    <ImageView
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="260dp"
+        android:src="@drawable/search"
+        android:visibility="gone"
+        android:layout_weight="0"/>
+
     <TextView
         android:id="@+id/status_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="16sp"
-        android:textColor="@android:color/holo_red_dark"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/pixel"
         android:gravity="center"
+        android:text=""
         android:visibility="gone"
-        android:layout_marginTop="8dp"/>
+        android:textColor="#000000"
+        android:textSize="16sp" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/meaning_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/meaning_recycler_view"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
 </LinearLayout>
