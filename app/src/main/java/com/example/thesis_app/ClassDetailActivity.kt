@@ -9,11 +9,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.StudentItem
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class ClassDetailActivity : AppCompatActivity() {
@@ -64,9 +62,7 @@ class ClassDetailActivity : AppCompatActivity() {
     }
 
     private fun loadStudentsFromFirebase() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val classCode = intent.getStringExtra("CLASS_CODE") ?: return
-
         val studentsRef = database.child("classes")
             .child(classCode)
             .child("students")
