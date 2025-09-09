@@ -14,9 +14,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Toolbar -->
-
-        <!-- Add Student Card -->
+        <!-- Toolbar with dynamic class name -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -30,16 +28,43 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pixel"
+                android:text="WORDWHIZ"
+                android:textColor="#FFC107"
+                android:textSize="30sp"
+                android:textStyle="bold"
                 android:shadowColor="#000000"
                 android:shadowDx="2"
                 android:shadowDy="2"
                 android:shadowRadius="3"
-                android:text="classname"
-                android:textColor="#FFC107"
-                android:textSize="30sp"
-                android:textStyle="bold" />
-
+                android:layout_gravity="left"/>
         </androidx.appcompat.widget.Toolbar>
+
+        <!-- Header Section -->
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@color/my_nav_color">
+
+            <TextView
+                android:id="@+id/headerClassName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Class Name"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"/>
+
+            <TextView
+                android:id="@+id/headerRoomNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Room Number"
+                android:textSize="18sp"
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/addStudentCard"
@@ -90,9 +115,9 @@
             android:layout_weight="1"
             android:clipToPadding="false"
             android:padding="8dp"/>
-
     </LinearLayout>
 
+    <!-- Navigation drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
