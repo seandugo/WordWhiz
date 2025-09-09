@@ -72,28 +72,34 @@ class TeacherFragment : Fragment(R.layout.teachers) {
     }
 
     private fun setupTeacherRef() {
-        val uid = auth.currentUser!!.uid
-        val classesRef = database.getReference("classes")
+        // Use the teacherID stored in the user's node, for example:
+        val teacherId = auth.currentUser!!.uid  // or if you store teacherID in the profile, fetch it
 
-        classesRef.orderByChild("teacherId").equalTo(uid)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    classList.clear()
-                    for (classSnap in snapshot.children) {
-                        val classItem = classSnap.getValue(ClassItem::class.java)
-                        if (classItem != null) {
-                            val itemWithCode = classItem.copy()
-                            itemWithCode.classCode = classSnap.key ?: ""
-                            classList.add(itemWithCode)
-                        }
+        val teacherClassesRef = database.getReference("users")
+            .child(teacherId)
+            .child("classes")
+
+        teacherClassesRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                classList.clear()
+                for (classSnap in snapshot.children) {
+                    val classItem = classSnap.getValue(ClassItem::class.java)
+                    if (classItem != null) {
+                        // Save the Firebase key as classCode
+                        val itemWithCode = classItem.copy(classCode = classSnap.key ?: "")
+                        classList.add(itemWithCode)
                     }
-                    classList.sortBy { it.order }
-                    adapter.notifyDataSetChanged()
                 }
+                classList.sortBy { it.order }
+                adapter.notifyDataSetChanged()
+            }
 
-                override fun onCancelled(error: DatabaseError) {}
-            })
+            override fun onCancelled(error: DatabaseError) {
+                // Optional: show an error
+            }
+        })
     }
+
 
     private fun generateCode(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -209,25 +215,29 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                                     roomInput.requestFocus()
                                 } else {
                                     generateUniqueCode { classCode ->
-                                        val newClass = ClassItem(className, roomNo, classList.size)
-
-                                        // Save globally
-                                        val globalClassRef =
-                                            database.getReference("classes").child(classCode)
-                                        val classData = mapOf(
-                                            "className" to className,
-                                            "roomNo" to roomNo,
-                                            "order" to classList.size,
-                                            "teacherId" to auth.currentUser!!.uid
+                                        val newClass = ClassItem(
+                                            className = className,
+                                            roomNo = roomNo,
+                                            order = classList.size,
+                                            classCode = "" // will be set after reading
                                         )
-                                        globalClassRef.setValue(classData)
 
-                                        // Save pointer in teacher profile
-                                        database.getReference("users")
+                                        // Save under teacher node only
+                                        val teacherClassesRef = database.getReference("users")
                                             .child(auth.currentUser!!.uid)
                                             .child("classes")
                                             .child(classCode)
-                                            .setValue(true)
+
+                                        teacherClassesRef.setValue(newClass) // ✅ only this
+
+                                        // Optional: save globally without teacherId
+                                        val globalClassRef = database.getReference("classes").child(classCode)
+                                        val classData = mapOf(
+                                            "className" to className,
+                                            "roomNo" to roomNo,
+                                            "order" to classList.size
+                                        )
+                                        globalClassRef.setValue(classData)
 
                                         adapter.addItemAtTop(newClass.copy(classCode = classCode))
                                         recyclerView.scrollToPosition(0)

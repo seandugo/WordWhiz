@@ -13,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 
 class LoginActivity : ComponentActivity() {
 
@@ -56,8 +57,7 @@ class LoginActivity : ComponentActivity() {
                     }, 1000)
 
                     if (task.isSuccessful) {
-                        val userId = task.result.user?.uid ?: return@addOnCompleteListener
-                        fetchUserData(userId)
+                        fetchUserData(email) // pass email instead of userId
                         teacherEmail.text?.clear()
                         teacherPassword.text?.clear()
                     } else {
@@ -73,27 +73,28 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
-    private fun fetchUserData(userId: String) {
-        FirebaseDatabase.getInstance().reference
-            .child("users")
-            .child(userId)
-            .get()
+    private fun fetchUserData(email: String) {
+        val dbRef = FirebaseDatabase.getInstance().getReference("users")
+        dbRef.orderByChild("email").equalTo(email).get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
-                    val role = snapshot.child("role").value?.toString()
-                    val emailDb = snapshot.child("email").value?.toString()
+                    for (child in snapshot.children) {
+                        val role = child.child("role").getValue(String::class.java)
+                        val emailDb = child.child("email").getValue(String::class.java)
 
-                    val intent = Intent(this, LoadingActivity::class.java)
-                    intent.putExtra("mode", "login")
-                    intent.putExtra("role", role)
-                    intent.putExtra("email", emailDb)
-                    startActivity(intent)
+                        val intent = Intent(this, LoadingActivity::class.java)
+                        intent.putExtra("mode", "login")
+                        intent.putExtra("role", role)
+                        intent.putExtra("email", emailDb)
+                        startActivity(intent)
+                        break
+                    }
                 } else {
                     Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Failed to fetch user data: ${it.message}", Toast.LENGTH_SHORT).show()
+                Log.e("FirebaseError", "Failed to fetch user data: ${it.message}")
             }
     }
 
@@ -102,33 +103,43 @@ class LoginActivity : ComponentActivity() {
 
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
-            val userId = currentUser.uid
-            val databaseRef = FirebaseDatabase.getInstance().getReference("users").child(userId)
+            val email = currentUser.email
+            if (email != null) {
+                val dbRef = FirebaseDatabase.getInstance().getReference("users")
+                dbRef.orderByChild("email").equalTo(email).get()
+                    .addOnSuccessListener { snapshot ->
+                        if (snapshot.exists()) {
+                            for (child in snapshot.children) {
+                                val role = child.child("role").getValue(String::class.java)
+                                val name = child.child("name").getValue(String::class.java) // ✅ fetch name
+                                val emailDb = child.child("email").getValue(String::class.java)
 
-            databaseRef.get().addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val role = snapshot.child("role").getValue(String::class.java)
-                    when (role) {
-                        "teacher", "student" -> {
-                            val intent = Intent(this, LoadingActivity::class.java)
-                            intent.putExtra("mode", "login")
-                            intent.putExtra("role", role) // ✅ pass role forward
-                            startActivity(intent)
-                        }
-                        else -> {
-                            Toast.makeText(this, "Role not found", Toast.LENGTH_SHORT).show()
+                                if (!role.isNullOrEmpty()) {
+                                    val intent = Intent(this, LoadingActivity::class.java)
+                                    intent.putExtra("mode", "login")
+                                    intent.putExtra("role", role)
+                                    intent.putExtra("email", emailDb)
+                                    intent.putExtra("name", name) // ✅ pass name forward
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    Toast.makeText(this, "Role not found", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } else {
+                            Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
                         }
                     }
-
-                } else {
-                    Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
-                }
-            }.addOnFailureListener {
-                Toast.makeText(this, "Failed to load user role: ${it.message}", Toast.LENGTH_SHORT).show()
+                    .addOnFailureListener {
+                        Toast.makeText(
+                            this,
+                            "Failed to load user role: ${it.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
             }
         }
     }
-
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Exit App")

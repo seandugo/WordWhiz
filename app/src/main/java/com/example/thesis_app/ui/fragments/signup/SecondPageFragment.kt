@@ -14,6 +14,7 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
     private lateinit var editEmail: TextInputEditText
     private lateinit var editPassword: TextInputEditText
+    private lateinit var editTeacherName: TextInputEditText
     private lateinit var editConfirmPassword: TextInputEditText
     private lateinit var btnSignUp: MaterialButton
 
@@ -22,6 +23,7 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
         // Initialize views from fragment's layout
         editEmail = view.findViewById(R.id.editEmail)
+        editTeacherName = view.findViewById(R.id.editName)
         editPassword = view.findViewById(R.id.editPassword)
         editConfirmPassword = view.findViewById(R.id.editConfirmPassword)
         btnSignUp = view.findViewById(R.id.btnSignUp)
@@ -37,6 +39,7 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
         btnSignUp.setOnClickListener {
             val email = editEmail.text.toString()
+            val name = editTeacherName.text.toString()
             val password = editPassword.text.toString()
             val confirmPassword = editConfirmPassword.text.toString()
 
@@ -52,6 +55,7 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
             val bundle = Bundle()
             bundle.putString("role", arguments?.getString("role"))
+            bundle.putString("name", name)
             bundle.putString("email", email)
             bundle.putString("password", password)
 

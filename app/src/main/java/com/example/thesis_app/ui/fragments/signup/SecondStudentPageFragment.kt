@@ -15,14 +15,14 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
     private lateinit var btnSignUp: MaterialButton
     private lateinit var editEmail: TextInputEditText
     private lateinit var editPassword: TextInputEditText
-    private lateinit var editStudentId: TextInputEditText
+    private lateinit var editName: TextInputEditText
     private lateinit var editConfirmPassword: TextInputEditText
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         btnSignUp = view.findViewById(R.id.btnSignUp)
         editEmail = view.findViewById(R.id.editEmail)
-        editStudentId = view.findViewById(R.id.editStudentId)
+        editName = view.findViewById(R.id.editStudentName)
         editPassword = view.findViewById(R.id.editPassword)
         editConfirmPassword = view.findViewById(R.id.editConfirmPassword)
 
@@ -37,7 +37,7 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
 
         btnSignUp.setOnClickListener {
             val email = editEmail.text.toString()
-            val studentID = editStudentId.text.toString()
+            val studentName = editName.text.toString()
             val password = editPassword.text.toString()
             val confirmPassword = editConfirmPassword.text.toString()
 
@@ -46,7 +46,7 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
                 bundle.putString("role", arguments?.getString("role"))
                 bundle.putString("email", email)
                 bundle.putString("password", password)
-                bundle.putString("studentID", studentID)
+                bundle.putString("name", studentName)
 
                 val fragment = TnCFragment()
                 fragment.arguments = bundle

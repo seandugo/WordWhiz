@@ -41,7 +41,7 @@ class ClassDetailActivity : AppCompatActivity() {
 
         // Find views
         recyclerView = findViewById(R.id.studentRecyclerView)
-        classNameText = findViewById(R.id.classNameText)
+        classNameText = findViewById(R.id.headerClassName)
 
         // Set class name dynamically
         classNameText.text = className

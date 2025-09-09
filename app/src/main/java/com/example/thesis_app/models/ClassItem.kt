@@ -7,5 +7,3 @@ data class ClassItem(
     var order: Int = 0,
     @get:Exclude var classCode: String = "" // not saved in Firebase
 )
-
-

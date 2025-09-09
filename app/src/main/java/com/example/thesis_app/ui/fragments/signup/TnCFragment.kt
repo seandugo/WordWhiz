@@ -3,9 +3,9 @@ package com.example.thesis_app.ui.fragments.signup
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.widget.CheckBox
 import android.os.Looper
 import android.view.View
+import android.widget.CheckBox
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
@@ -15,6 +15,7 @@ import com.example.thesis_app.SignupActivity
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import kotlin.random.Random
 
 class TnCFragment : Fragment(R.layout.tnc_page_signup) {
     private lateinit var btnSignup: MaterialButton
@@ -38,24 +39,19 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
         btnSignup.setOnClickListener {
             btnSignup.isEnabled = false
             val role = arguments?.getString("role")
+            val name = arguments?.getString("name")
             val email = arguments?.getString("email")
             val password = arguments?.getString("password")
-            val studentID = arguments?.getString("studentID") // ✅ Get studentID if available
             val auth = FirebaseAuth.getInstance()
 
             if (role.isNullOrEmpty() || email.isNullOrEmpty() || password.isNullOrEmpty()) {
-                Toast.makeText(requireContext(), "Missing signup information", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Missing signup information", Toast.LENGTH_SHORT).show()
                 btnSignup.isEnabled = true
                 return@setOnClickListener
             }
 
             if (!checkBox.isChecked) {
-                Toast.makeText(
-                    requireContext(),
-                    "You must agree to the Terms & Conditions",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "You must agree to the Terms & Conditions", Toast.LENGTH_SHORT).show()
                 btnSignup.isEnabled = true
                 return@setOnClickListener
             }
@@ -74,6 +70,10 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
                                 .addOnCompleteListener { signupTask ->
                                     if (signupTask.isSuccessful) {
                                         val userId = signupTask.result.user?.uid
+                                        val dbRef = FirebaseDatabase.getInstance().reference.child("users")
+
+                                        // ✅ Generate unique ID based on role
+                                        val generatedId = generateUserId(role)
 
                                         // ✅ Store common data
                                         val userData = mutableMapOf<String, Any>(
@@ -81,25 +81,29 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
                                             "email" to email
                                         )
 
-                                        // ✅ Add studentID only for students
-                                        if (role == "student" && !studentID.isNullOrEmpty()) {
-                                            userData["studentID"] = studentID
-                                        }
-
-                                        FirebaseDatabase.getInstance().reference
-                                            .child("users")
-                                            .child(userId!!)
-                                            .setValue(userData)
-                                            .addOnSuccessListener {
-                                                auth.signOut()
-                                                val intent = Intent(
-                                                    requireContext(),
-                                                    LoadingActivity::class.java
-                                                )
-                                                intent.putExtra("mode", "createAccount")
-                                                startActivity(intent)
-                                                requireActivity().finish()
+                                        if (role == "student") {
+                                            userData["studentID"] = generatedId
+                                            if (!name.isNullOrEmpty()) {
+                                                userData["name"] = name
                                             }
+                                            dbRef.child(generatedId).setValue(userData)
+                                                .addOnSuccessListener { finishSignup(auth) }
+
+                                        }  else if (role == "teacher") {
+                                        // Remove teacherID, use Firebase UID as the key
+                                        if (!name.isNullOrEmpty()) {
+                                            userData["name"] = name
+                                            }
+                                            dbRef.child(userId!!).setValue(userData)
+                                            .addOnSuccessListener { finishSignup(auth) }
+
+                                        } else {
+                                                // Other roles → fallback to UID
+                                                dbRef.child(userId!!).setValue(userData)
+                                                    .addOnSuccessListener {
+                                                        finishSignup(auth)
+                                                    }
+                                        }
                                     } else {
                                         Toast.makeText(
                                             requireContext(),
@@ -120,4 +124,22 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
                 }
         }
     }
+
+    // ✅ Generate IDs (Sxxxxxx / Txxxxxx)
+    private fun generateUserId(role: String): String {
+        val number = Random.nextInt(100000, 999999) // 6-digit random
+        return if (role == "student") {
+            "S$number"
+        } else {
+            "T$number"
+        }
     }
+
+    private fun finishSignup(auth: FirebaseAuth) {
+        auth.signOut()
+        val intent = Intent(requireContext(), LoadingActivity::class.java)
+        intent.putExtra("mode", "createAccount")
+        startActivity(intent)
+        requireActivity().finish()
+    }
+}
