@@ -58,9 +58,9 @@
                 android:text="Class Code"
                 android:textSize="18sp"
                 android:textColor="@android:color/white"/>
-
         </LinearLayout>
 
+        <!-- CardView: Add Student -->
         <androidx.cardview.widget.CardView
             android:id="@+id/addStudentCard"
             android:layout_width="match_parent"

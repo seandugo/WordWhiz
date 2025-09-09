@@ -1,5 +1,6 @@
 package com.example.thesis_app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +35,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         toggle.syncState()
 
         toggle.drawerArrowDrawable.color = getColor(android.R.color.black)
+
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -49,7 +51,12 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_classes -> {
-                // Handle Home
+                // Handle Classes
+            }
+            R.id.nav_profile -> {
+                // Open ProfileActivity
+                val intent = Intent(this, ProfileActivity::class.java)
+                startActivity(intent)
             }
             R.id.nav_settings -> {
                 // Handle Settings
@@ -58,8 +65,13 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 showExitConfirmation()
             }
         }
+
+        // Close drawer after selection
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+        drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
+
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Logout")

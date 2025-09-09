@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="com.example.thesis_app">
+
+    <!-- Permissions (must be inside <manifest>, not <application>) -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/wordwhiz_logo"
-        android:label="Word Whiz"
+        android:label="@string/app_name"
         android:roundIcon="@drawable/wordwhiz_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.THESIS_APP">
 
+        <!-- Main launcher activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="Word Whiz"
+            android:label="@string/app_name"
             android:theme="@style/Theme.THESIS_APP">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,41 +27,16 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".LoginActivity"
-            android:exported="true"
-            android:label="Word Whiz"
-            android:theme="@style/Theme.THESIS_APP"/>
+        <!-- Other activities -->
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".TeacherActivity" />
+        <activity android:name=".LoginActivity" android:exported="true" />
+        <activity android:name=".LoadingActivity" android:exported="true" />
+        <activity android:name=".StudentActivity" android:exported="true" />
+        <activity android:name=".SignupActivity" android:exported="true" />
+        <activity android:name=".ClassDetailActivity" android:exported="true" />
+        <activity android:name=".TeacherProfileActivity" />
 
-        <activity
-            android:name=".LoadingActivity"
-            android:exported="true"
-            android:label="Word Whiz"
-            android:theme="@style/Theme.THESIS_APP"/>
-
-        <activity
-            android:name=".StudentActivity"
-            android:exported="true"
-            android:label="Word Whiz"
-            android:theme="@style/Theme.THESIS_APP"/>
-
-        <activity
-            android:name=".TeacherActivity"
-            android:exported="true"
-            android:label="Word Whiz"
-            android:theme="@style/Theme.THESIS_APP"/>
-
-        <activity
-            android:name=".SignupActivity"
-            android:exported="true"
-            android:label="Word Whiz"
-            android:theme="@style/Theme.THESIS_APP"/>
-
-        <activity
-            android:name=".ClassDetailActivity"
-            android:exported="true"
-            android:label=""
-            android:theme="@style/Theme.THESIS_APP"/>
     </application>
 
 </manifest>
