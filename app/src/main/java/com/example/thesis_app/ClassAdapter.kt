@@ -1,24 +1,21 @@
 package com.example.thesis_app
 
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import java.util.Collections
-import com.example.thesis_app.models.ClassItem
+import com.example.thesis_app.models.ClassItem   // ✅ import here
 
 class ClassAdapter(
     private val classList: MutableList<ClassItem>,
-    private val startDrag: (RecyclerView.ViewHolder) -> Unit,
+    private val onStartDrag: ((RecyclerView.ViewHolder) -> Unit)? = null,
     private val onItemClick: (ClassItem) -> Unit
 ) : RecyclerView.Adapter<ClassAdapter.ClassViewHolder>() {
 
     inner class ClassViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.findViewById(R.id.classTitle)
-        val subtitle: TextView = itemView.findViewById(R.id.roomNo)
-        val dragHandle: TextView = itemView.findViewById(R.id.dragHandle)
+        val className: TextView = itemView.findViewById(R.id.classNameText)
+        val roomNumber: TextView = itemView.findViewById(R.id.roomNumberText)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ClassViewHolder {
@@ -28,33 +25,32 @@ class ClassAdapter(
     }
 
     override fun onBindViewHolder(holder: ClassViewHolder, position: Int) {
-        val item = classList[position]
-        holder.title.text = item.className
-        holder.subtitle.text = item.roomNo
+        val classItem = classList[position]
+        holder.className.text = classItem.className
+        holder.roomNumber.text = classItem.roomNo
 
-        // Drag functionality
-        holder.dragHandle.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                startDrag(holder)
-            }
-            false
+        holder.itemView.setOnClickListener {
+            onItemClick(classItem)
         }
 
-        // Click anywhere on the card
-        holder.itemView.setOnClickListener {
-            onItemClick(item)
+        // Optional: drag handle if you have one
+        holder.itemView.setOnLongClickListener {
+            onStartDrag?.invoke(holder)
+            true
         }
     }
 
     override fun getItemCount(): Int = classList.size
 
-    fun swapItems(fromPosition: Int, toPosition: Int) {
-        Collections.swap(classList, fromPosition, toPosition)
-        notifyItemMoved(fromPosition, toPosition)
+    fun swapItems(fromPos: Int, toPos: Int) {
+        val temp = classList[fromPos]
+        classList[fromPos] = classList[toPos]
+        classList[toPos] = temp
+        notifyItemMoved(fromPos, toPos)
     }
 
-    fun addItemAtTop(item: ClassItem) {
-        classList.add(0, item)
+    fun addItemAtTop(newClass: ClassItem) {
+        classList.add(0, newClass)
         notifyItemInserted(0)
     }
 }

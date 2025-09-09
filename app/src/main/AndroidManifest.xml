@@ -11,6 +11,7 @@
         android:roundIcon="@drawable/wordwhiz_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.THESIS_APP">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -18,37 +19,45 @@
             android:theme="@style/Theme.THESIS_APP">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".LoginActivity"
             android:exported="true"
             android:label="Word Whiz"
             android:theme="@style/Theme.THESIS_APP"/>
+
         <activity
             android:name=".LoadingActivity"
             android:exported="true"
             android:label="Word Whiz"
             android:theme="@style/Theme.THESIS_APP"/>
+
         <activity
             android:name=".StudentActivity"
             android:exported="true"
             android:label="Word Whiz"
             android:theme="@style/Theme.THESIS_APP"/>
+
         <activity
             android:name=".TeacherActivity"
             android:exported="true"
             android:label="Word Whiz"
             android:theme="@style/Theme.THESIS_APP"/>
+
         <activity
             android:name=".SignupActivity"
             android:exported="true"
             android:label="Word Whiz"
             android:theme="@style/Theme.THESIS_APP"/>
 
-        <activity android:name=".ClassDetailActivity" />
+        <activity
+            android:name=".ClassDetailActivity"
+            android:exported="true"
+            android:label=""
+            android:theme="@style/Theme.THESIS_APP"/>
     </application>
 
 </manifest>

@@ -64,6 +64,15 @@
                 android:text="Room Number"
                 android:textSize="18sp"
                 android:textColor="@android:color/white"/>
+
+            <TextView
+                android:id="@+id/headerClassCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Class Code"
+                android:textSize="18sp"
+                android:textColor="@android:color/white"/>
+
         </LinearLayout>
 
         <androidx.cardview.widget.CardView

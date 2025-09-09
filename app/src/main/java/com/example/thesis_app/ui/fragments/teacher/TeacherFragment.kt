@@ -40,7 +40,7 @@ class TeacherFragment : Fragment(R.layout.teachers) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ Use `view.findViewById`, not just `findViewById`
+        // ✅ Use view.findViewById, not just findViewById
         recyclerView = view.findViewById(R.id.classRecyclerView)
         adapter = ClassAdapter(
             classList,
