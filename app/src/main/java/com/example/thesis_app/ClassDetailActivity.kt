@@ -3,6 +3,7 @@ package com.example.thesis_app
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
+import com.example.thesis_app.models.Achievement
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -71,9 +72,7 @@ class ClassDetailActivity : AppCompatActivity() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val classCode = intent.getStringExtra("CLASS_CODE") ?: return
 
-        val studentsRef = database.child("users")
-            .child(uid)
-            .child("classes")
+        val studentsRef = database.child("classes")
             .child(classCode)
             .child("students")
 
@@ -97,7 +96,6 @@ class ClassDetailActivity : AppCompatActivity() {
     }
     private fun showAddStudentDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_student, null)
-        val nameInput = dialogView.findViewById<EditText>(R.id.editStudentName)
         val idInput = dialogView.findViewById<EditText>(R.id.editStudentId)
 
         val dialog = AlertDialog.Builder(this)
@@ -110,34 +108,72 @@ class ClassDetailActivity : AppCompatActivity() {
         dialog.show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-            val name = nameInput.text.toString().trim()
-            val id = idInput.text.toString().trim()
+            val id = idInput.text.toString().trim() // student UID typed in
 
-            if (name.isEmpty() || id.isEmpty()) {
-                Toast.makeText(this, "Please enter both name and ID", Toast.LENGTH_SHORT).show()
-            } else {
-                // ✅ set email = null
-                val newStudent = StudentItem(name = name, email = null, order = studentList.size)
-
-                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
-                val classCode = intent.getStringExtra("CLASS_CODE") ?: return@setOnClickListener
-
-                database.child("users")
-                    .child(uid)
-                    .child("classes")
-                    .child(classCode)
-                    .child("students")
-                    .child(id) // studentId as key
-                    .setValue(newStudent)
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Added $name", Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
-                    }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
+            if (id.isEmpty()) {
+                Toast.makeText(this, "Please enter a student ID", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            val classCode = intent.getStringExtra("CLASS_CODE") ?: return@setOnClickListener
+
+            // 🔹 Look up the student in global users
+            val studentRef = database.child("users").child(id)
+            studentRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) {
+                        Toast.makeText(this@ClassDetailActivity, "No student found with that ID", Toast.LENGTH_SHORT).show()
+                        return
+                    }
+
+                    val role = snapshot.child("role").getValue(String::class.java)
+                    if (role != "student") {
+                        Toast.makeText(this@ClassDetailActivity, "This user is not a student", Toast.LENGTH_SHORT).show()
+                        return
+                    }
+
+                    val name = snapshot.child("name").getValue(String::class.java) ?: "Unknown"
+                    val email = snapshot.child("email").getValue(String::class.java)
+
+                    val achievementsList = snapshot.child("achievements").children.mapNotNull { achSnap ->
+                        achSnap.getValue(Achievement::class.java)
+                    }
+
+                    val newStudent = StudentItem(
+                        name = name,
+                        email = email,
+                        order = studentList.size,
+                        studentId = id,
+                        achievements = achievementsList
+                    )
+
+
+                    // 🔹 Save student into the class
+                    database.child("classes")
+                        .child(classCode)
+                        .child("students")
+                        .child(id)
+                        .setValue(newStudent)
+                        .addOnSuccessListener {
+                            // 🔹 Also add a pointer in student account -> classes
+                            database.child("users")
+                                .child(id)
+                                .child("classes")
+                                .child(classCode)
+                                .setValue(true)
+
+                            Toast.makeText(this@ClassDetailActivity, "Added $name", Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this@ClassDetailActivity, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
         }
+
     }
 
     // ✅ Handle Toolbar back button

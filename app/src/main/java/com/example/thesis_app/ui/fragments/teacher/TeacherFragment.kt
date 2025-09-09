@@ -5,8 +5,6 @@ import com.example.thesis_app.SignupActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.InputFilter
-import android.text.InputType
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -24,16 +22,12 @@ import com.example.thesis_app.ClassDetailActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.example.thesis_app.models.ClassItem
 
 class TeacherFragment : Fragment(R.layout.teachers) {
-    private lateinit var teacherButton: CardView
-    private lateinit var studentButton: CardView
     private lateinit var recyclerView: RecyclerView
-    private lateinit var teacherRef: DatabaseReference
     private lateinit var adapter: ClassAdapter
     private val classList = mutableListOf<ClassItem>()
     private lateinit var itemTouchHelper: ItemTouchHelper
@@ -79,23 +73,41 @@ class TeacherFragment : Fragment(R.layout.teachers) {
 
     private fun setupTeacherRef() {
         val uid = auth.currentUser!!.uid
-        teacherRef = database.getReference("users").child(uid).child("classes")
-        loadClassesFromFirebase()
+        val classesRef = database.getReference("classes")
+
+        classesRef.orderByChild("teacherId").equalTo(uid)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    classList.clear()
+                    for (classSnap in snapshot.children) {
+                        val classItem = classSnap.getValue(ClassItem::class.java)
+                        if (classItem != null) {
+                            val itemWithCode = classItem.copy()
+                            itemWithCode.classCode = classSnap.key ?: ""
+                            classList.add(itemWithCode)
+                        }
+                    }
+                    classList.sortBy { it.order }
+                    adapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
     }
 
-    fun generateCode(length: Int = 6): String {
+    private fun generateCode(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        return (1..length)
-            .map { chars.random() }
-            .joinToString("")
+        return (1..6).map { chars.random() }.joinToString("")
     }
 
     private fun generateUniqueCode(onCodeGenerated: (String) -> Unit) {
         val newCode = generateCode()
-        teacherRef.child(newCode).addListenerForSingleValueEvent(object : ValueEventListener {
+        val classesRef = database.getReference("classes")
+
+        classesRef.child(newCode).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    generateUniqueCode(onCodeGenerated)
+                    generateUniqueCode(onCodeGenerated) // try again
                 } else {
                     onCodeGenerated(newCode)
                 }
@@ -104,28 +116,6 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
-
-    private fun loadClassesFromFirebase() {
-        teacherRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                classList.clear()
-                for (classSnap in snapshot.children) {
-                    val classItem = classSnap.getValue(ClassItem::class.java)
-                    if (classItem != null) {
-                        // 🔹 Attach key as classCode dynamically
-                        val itemWithCode = classItem.copy()
-                        itemWithCode.classCode = classSnap.key ?: ""
-                        classList.add(itemWithCode)
-                    }
-                }
-                classList.sortBy { it.order }
-                adapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(error: DatabaseError) {}
-        })
-    }
-
 
     private fun setupDragAndDrop() {
         val callback = object : ItemTouchHelper.SimpleCallback(
@@ -166,23 +156,15 @@ class TeacherFragment : Fragment(R.layout.teachers) {
     }
 
     private fun updateOrderInFirebase() {
+        val classesRef = database.getReference("classes")
         classList.forEachIndexed { index, classItem ->
-            teacherRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (classSnap in snapshot.children) {
-                        val item = classSnap.getValue(ClassItem::class.java)
-                        if (item?.className == classItem.className && item.roomNo == classItem.roomNo) {
-                            teacherRef.child(classSnap.key!!).child("order").setValue(index)
-                        }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
-            })
+            if (classItem.classCode.isNotEmpty()) {
+                classesRef.child(classItem.classCode).child("order").setValue(index)
+            }
         }
     }
 
-    // ✅ Pass root view to access findViewById
+
     private fun setupAddClassCard(rootView: View) {
         val addCard = rootView.findViewById<CardView>(R.id.addClassCard)
         addCard.setOnClickListener {
@@ -194,37 +176,32 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             }
 
             val classInput = EditText(context).apply { hint = "Enter Class Name" }
-            val roomInput = EditText(context).apply {
-                hint = "Room number (e.g., 101)"
-                inputType = InputType.TYPE_CLASS_NUMBER
-                filters = arrayOf(InputFilter.LengthFilter(5))
-            }
+            val roomInput = EditText(context).apply { hint = "Enter Room Number" }
 
             dialogLayout.addView(classInput)
             dialogLayout.addView(roomInput)
 
-            val dialog = AlertDialog.Builder(context)
-                .setTitle("Add New Class")
+            AlertDialog.Builder(context)
+                .setTitle("Add Class")
                 .setView(dialogLayout)
-                .setPositiveButton("Add", null)
-                .setNegativeButton("Cancel", null)
-                .create()
+                .setPositiveButton("Create") { dialog, _ ->
+                    val className = classInput.text.toString().trim()
+                    val roomNo = roomInput.text.toString().trim()
 
-            dialog.setOnShowListener {
-                val addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                addButton.setOnClickListener {
-                    val className = classInput.text.toString().ifEmpty { "New Class" }
-                    val roomText = roomInput.text.toString().trim()
-
-                    if (roomText.isEmpty() || !roomText.matches(Regex("\\d+"))) {
-                        roomInput.error = "Enter numbers only"
+                    if (className.isEmpty()) {
+                        classInput.error = "Required"
+                        classInput.requestFocus()
+                        return@setPositiveButton
+                    }
+                    if (roomNo.isEmpty()) {
+                        roomInput.error = "Required"
                         roomInput.requestFocus()
-                        return@setOnClickListener
+                        return@setPositiveButton
                     }
 
-                    val roomNo = "Rm $roomText"
-
-                    teacherRef.orderByChild("roomNo").equalTo(roomNo)
+                    // 🔹 Prevent duplicate room numbers
+                    database.getReference("classes")
+                        .orderByChild("roomNo").equalTo(roomNo)
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 if (snapshot.exists()) {
@@ -233,19 +210,37 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                                 } else {
                                     generateUniqueCode { classCode ->
                                         val newClass = ClassItem(className, roomNo, classList.size)
-                                        teacherRef.child(classCode).setValue(newClass)
-                                        adapter.addItemAtTop(newClass.copy())
+
+                                        // Save globally
+                                        val globalClassRef =
+                                            database.getReference("classes").child(classCode)
+                                        val classData = mapOf(
+                                            "className" to className,
+                                            "roomNo" to roomNo,
+                                            "order" to classList.size,
+                                            "teacherId" to auth.currentUser!!.uid
+                                        )
+                                        globalClassRef.setValue(classData)
+
+                                        // Save pointer in teacher profile
+                                        database.getReference("users")
+                                            .child(auth.currentUser!!.uid)
+                                            .child("classes")
+                                            .child(classCode)
+                                            .setValue(true)
+
+                                        adapter.addItemAtTop(newClass.copy(classCode = classCode))
                                         recyclerView.scrollToPosition(0)
                                         dialog.dismiss()
                                     }
                                 }
                             }
+
                             override fun onCancelled(error: DatabaseError) {}
                         })
                 }
-            }
-
-            dialog.show()
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 

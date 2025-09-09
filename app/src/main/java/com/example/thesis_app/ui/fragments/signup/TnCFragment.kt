@@ -40,16 +40,22 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
             val role = arguments?.getString("role")
             val email = arguments?.getString("email")
             val password = arguments?.getString("password")
+            val studentID = arguments?.getString("studentID") // ✅ Get studentID if available
             val auth = FirebaseAuth.getInstance()
 
             if (role.isNullOrEmpty() || email.isNullOrEmpty() || password.isNullOrEmpty()) {
-                Toast.makeText(requireContext(), "Missing signup information", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Missing signup information", Toast.LENGTH_SHORT)
+                    .show()
                 btnSignup.isEnabled = true
                 return@setOnClickListener
             }
 
             if (!checkBox.isChecked) {
-                Toast.makeText(requireContext(), "You must agree to the Terms & Conditions", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "You must agree to the Terms & Conditions",
+                    Toast.LENGTH_SHORT
+                ).show()
                 btnSignup.isEnabled = true
                 return@setOnClickListener
             }
@@ -63,15 +69,22 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
 
                         val signInMethods = task.result.signInMethods
                         if (signInMethods.isNullOrEmpty()) {
-                            // ✅ Email not registered yet → create account
+                            // ✅ Create account
                             auth.createUserWithEmailAndPassword(email, password)
                                 .addOnCompleteListener { signupTask ->
                                     if (signupTask.isSuccessful) {
                                         val userId = signupTask.result.user?.uid
-                                        val userData = mapOf(
+
+                                        // ✅ Store common data
+                                        val userData = mutableMapOf<String, Any>(
                                             "role" to role,
                                             "email" to email
                                         )
+
+                                        // ✅ Add studentID only for students
+                                        if (role == "student" && !studentID.isNullOrEmpty()) {
+                                            userData["studentID"] = studentID
+                                        }
 
                                         FirebaseDatabase.getInstance().reference
                                             .child("users")
@@ -79,22 +92,32 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
                                             .setValue(userData)
                                             .addOnSuccessListener {
                                                 auth.signOut()
-                                                val intent = Intent(requireContext(), LoadingActivity::class.java)
+                                                val intent = Intent(
+                                                    requireContext(),
+                                                    LoadingActivity::class.java
+                                                )
                                                 intent.putExtra("mode", "createAccount")
                                                 startActivity(intent)
                                                 requireActivity().finish()
                                             }
                                     } else {
-                                        Toast.makeText(requireContext(), signupTask.exception?.message, Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            requireContext(),
+                                            signupTask.exception?.message,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                         } else {
                             // ⚠️ Email already exists
-                            Toast.makeText(requireContext(), "Account already exists. Please log in.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                requireContext(),
+                                "Account already exists. Please log in.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
-
         }
     }
-}
+    }
