@@ -1,6 +1,7 @@
 package com.example.thesis_app
 
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -12,12 +13,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class StudentActivity : AppCompatActivity() {
 
+    private lateinit var toolbarTitle: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student)
         // Setup bottom navigation
+        toolbarTitle = findViewById(R.id.toolbar_title)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-
         // Load default fragment
         if (savedInstanceState == null) {
             replaceFragment(LecturesFragment()) // change to your default fragment
@@ -26,10 +29,20 @@ class StudentActivity : AppCompatActivity() {
         // Handle bottom nav item clicks
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.action_lectures -> replaceFragment(LecturesFragment())
-                R.id.action_dictionary -> replaceFragment(DictionaryFragment())
-                R.id.action_profile -> null
-                R.id.action_settings -> null
+                R.id.action_lectures -> {
+                    replaceFragment(LecturesFragment())
+                    toolbarTitle.text = "Lectures"
+                }
+                R.id.action_dictionary -> {
+                    replaceFragment(DictionaryFragment())
+                    toolbarTitle.text = "Dictionary"
+                }
+                R.id.action_profile -> {
+                    toolbarTitle.text = "Profile"
+                }
+                R.id.action_settings -> {
+                    toolbarTitle.text = "Settings"
+                }
             }
             true
         }

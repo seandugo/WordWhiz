@@ -1,4 +1,4 @@
-package com.example.thesis_app.ui.fragments.student
+package com.example.thesis_app
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,10 +9,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.FirebaseDatabase
 import com.example.thesis_app.models.QuizModel
-import com.example.thesis_app.QuizListAdapter
-import com.example.thesis_app.R
 
-class LecturesFragment : Fragment() {
+class QuizFragment : Fragment() {
 
     private lateinit var quizModelList: MutableList<QuizModel>
     private lateinit var adapter: QuizListAdapter
@@ -40,11 +38,9 @@ class LecturesFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        if (!isAdded) return  // fragment not attached → skip
-
         progressBar.visibility = View.GONE
         adapter = QuizListAdapter(quizModelList)
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
     }
 
@@ -65,10 +61,5 @@ class LecturesFragment : Fragment() {
                 }
                 setupRecyclerView()
             }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        quizModelList.clear()
     }
 }

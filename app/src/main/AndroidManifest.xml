@@ -30,12 +30,12 @@
         <!-- Other activities -->
         <activity android:name=".ProfileActivity" />
         <activity android:name=".TeacherActivity" />
+        <activity android:name=".QuizActivity" android:exported="true" />
         <activity android:name=".LoginActivity" android:exported="true" />
         <activity android:name=".LoadingActivity" android:exported="true" />
         <activity android:name=".StudentActivity" android:exported="true" />
         <activity android:name=".SignupActivity" android:exported="true" />
         <activity android:name=".ClassDetailActivity" android:exported="true" />
-        <activity android:name=".TeacherProfileActivity" />
 
     </application>
 

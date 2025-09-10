@@ -1,5 +1,6 @@
 package com.example.thesis_app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -49,7 +50,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 // Handle Classes
             }
             R.id.nav_profile -> {
-
+                startActivity(Intent(this, ProfileActivity::class.java))
             }
             R.id.nav_settings -> {
                 // Handle Settings
