@@ -21,6 +21,9 @@ class StudentActivity : AppCompatActivity() {
         // Setup bottom navigation
         toolbarTitle = findViewById(R.id.toolbar_title)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        val studentId = intent.getStringExtra("studentId") ?: ""
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        prefs.edit().putString("studentId", studentId).apply()
         // Load default fragment
         if (savedInstanceState == null) {
             replaceFragment(LecturesFragment()) // change to your default fragment
@@ -31,7 +34,7 @@ class StudentActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_lectures -> {
                     replaceFragment(LecturesFragment())
-                    toolbarTitle.text = "Lectures"
+                    toolbarTitle.text = getString(R.string.app_name).uppercase()
                 }
                 R.id.action_dictionary -> {
                     replaceFragment(DictionaryFragment())

@@ -40,26 +40,33 @@ class LecturesFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        if (!isAdded) return  // fragment not attached → skip
+        if (!isAdded) return
 
         progressBar.visibility = View.GONE
-        adapter = QuizListAdapter(quizModelList)
+
+        val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
+        val studentId = prefs.getString("studentId", "") ?: ""   // ✅ fetch ID
+
+        adapter = QuizListAdapter(quizModelList, studentId, requireActivity())      // ✅ pass it
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
     }
+
 
     private fun getDataFromFirebase() {
         progressBar.visibility = View.VISIBLE
 
         FirebaseDatabase.getInstance().reference
-            .child("quizzes") // ✅ better to point to "quizzes" node
+            .child("quizzes")
             .get()
             .addOnSuccessListener { dataSnapshot ->
                 if (dataSnapshot.exists()) {
                     for (snapshot in dataSnapshot.children) {
                         val quizModel = snapshot.getValue(QuizModel::class.java)
                         if (quizModel != null) {
-                            quizModelList.add(quizModel)
+                            // Always overwrite with Firebase key
+                            val fixedModel = quizModel.copy(id = snapshot.key ?: "")
+                            quizModelList.add(fixedModel)
                         }
                     }
                 }

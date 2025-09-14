@@ -1,38 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:layout_margin="4dp"
-    android:elevation="10dp"
-    app:cardCornerRadius="24dp">
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <!-- LEFT: Title + Subtitle -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_toStartOf="@+id/progress_container"
+            android:layout_toLeftOf="@+id/progress_container">
+
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:id="@+id/quiz_title_text"
-                tools:text="Android"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
-            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Android" />
+
+            <TextView
                 android:id="@+id/quiz_subtitle_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                tools:text="All about Android OS"/>
+                tools:text="All about Android OS" />
         </LinearLayout>
+
+        <!-- RIGHT: Circular Progress -->
         <LinearLayout
+            android:id="@+id/progress_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -40,21 +47,32 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/icon_timer"
-                app:tint="@color/primaryColor" />
+            <!-- Material 3 Circular Progress -->
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/quiz_progress_bar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:indicatorSize="48dp"
+                app:indicatorInset="0dp"
+                app:trackThickness="6dp"
+                app:indicatorDirectionCircular="clockwise"
+                app:trackColor="?attr/colorSurfaceVariant"
+                app:indicatorColor="?attr/colorPrimary"
+                android:progress="0"
+                android:max="100"
+                style="@style/Widget.Material3.CircularProgressIndicator" />
+
+            <!-- Percentage text -->
             <TextView
+                android:id="@+id/quiz_percentage_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/quiz_time_text"
-                tools:text="20 min"/>
-
+                android:layout_marginTop="4dp"
+                android:text="0%"
+                android:textSize="12sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </RelativeLayout>
 
-
-
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

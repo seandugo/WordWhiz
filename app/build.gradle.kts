@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))

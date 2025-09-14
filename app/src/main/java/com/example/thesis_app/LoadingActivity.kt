@@ -21,13 +21,16 @@ class LoadingActivity : ComponentActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             val mode = intent.getStringExtra("mode")
             val role = intent.getStringExtra("role")
+            val studentId = intent.getStringExtra("studentId")
 
             when (mode) {
                 "login" -> {
                     if (role == "teacher") {
                         startActivity(Intent(this, TeacherActivity::class.java))
                     } else {
-                        startActivity(Intent(this, StudentActivity::class.java))
+                        val intent = Intent(this, StudentActivity::class.java)
+                        intent.putExtra("studentId", studentId)
+                        startActivity(intent)
                     }
                     finish()
                 }

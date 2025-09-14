@@ -39,7 +39,12 @@ class QuizFragment : Fragment() {
 
     private fun setupRecyclerView() {
         progressBar.visibility = View.GONE
-        adapter = QuizListAdapter(quizModelList)
+
+        // Example: get studentId from SharedPreferences
+        val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
+        val studentId = sharedPrefs.getString("studentId", "") ?: ""
+
+        adapter = QuizListAdapter(quizModelList, studentId, requireActivity()) // ✅ now pass it
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
     }

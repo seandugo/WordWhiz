@@ -1,17 +1,20 @@
 package com.example.thesis_app
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.thesis_app.models.QuestionModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -29,6 +32,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var questionIndicatorTextview: TextView
     private lateinit var questionProgressIndicator: ProgressBar
     private lateinit var questionTextview: TextView
+    private lateinit var quizId: String
+    private lateinit var studentId: String
 
     private var currentQuestionIndex = 0
     private var selectedAnswer = ""
@@ -48,6 +53,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         questionIndicatorTextview = findViewById(R.id.question_indicator_textview)
         questionProgressIndicator = findViewById(R.id.question_progress_indicator)
         questionTextview = findViewById(R.id.question_textview)
+        quizId = intent.getStringExtra("QUIZ_ID") ?: ""
+        studentId = intent.getStringExtra("STUDENT_ID") ?: ""   // ✅ get studentId
 
         // Set click listeners
         btn0.setOnClickListener(this)
@@ -57,25 +64,37 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         nextBtn.setOnClickListener(this)
 
         loadQuestions()
-        startTimer()
+
+        onBackPressedDispatcher.addCallback(this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    showExitConfirmation()
+                }
+            })
     }
 
-    private fun startTimer() {
-        val totalTimeInMillis = time.toInt() * 60 * 1000L
-        object : CountDownTimer(totalTimeInMillis, 1000L) {
-            override fun onTick(millisUntilFinished: Long) {
-                val seconds = millisUntilFinished / 1000
-                val minutes = seconds / 60
-                val remainingSeconds = seconds % 60
-                timerIndicatorTextview.text =
-                    String.format("%02d:%02d", minutes, remainingSeconds)
-            }
+    private fun updateProgress(studentId: String, quizId: String, answeredCount: Int, totalQuestions: Int) {
+        val db = FirebaseDatabase.getInstance().reference
 
-            override fun onFinish() {
-                finishQuiz()
+        val progressData = mapOf(
+            "answeredCount" to answeredCount,
+            "totalQuestions" to totalQuestions,
+            "lastUpdated" to System.currentTimeMillis()
+        )
+
+        db.child("users")
+            .child(studentId)   // ✅ use studentId instead of uid
+            .child("progress")
+            .child(quizId)
+            .setValue(progressData)
+            .addOnSuccessListener {
+                Log.d("QuizActivity", "Progress updated: $answeredCount/$totalQuestions")
             }
-        }.start()
+            .addOnFailureListener { e ->
+                Log.w("QuizActivity", "Error updating progress", e)
+            }
     }
+
 
     private fun loadQuestions() {
         selectedAnswer = ""
@@ -117,6 +136,13 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 score++
                 Log.i("Score of quiz", score.toString())
             }
+
+            val answeredCount = currentQuestionIndex + 1
+            val totalQuestions = questionModelList.size
+
+            // ✅ Always update progress when Next is pressed
+            updateProgress(studentId, quizId, answeredCount, totalQuestions)
+
             currentQuestionIndex++
             loadQuestions()
         } else {
@@ -130,8 +156,12 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         val totalQuestions = questionModelList.size
         val percentage = ((score.toFloat() / totalQuestions.toFloat()) * 100).toInt()
 
+        // ✅ Make sure progress is saved even if it's the last question
+        updateProgress(studentId, quizId, totalQuestions, totalQuestions)
+
         val dialogView = layoutInflater.inflate(R.layout.score_dialog, null)
-        val scoreProgressIndicator: ProgressBar = dialogView.findViewById(R.id.score_progress_indicator)
+        val scoreProgressIndicator: ProgressBar =
+            dialogView.findViewById(R.id.score_progress_indicator)
         val scoreProgressText: TextView = dialogView.findViewById(R.id.score_progress_text)
         val scoreTitle: TextView = dialogView.findViewById(R.id.score_title)
         val scoreSubtitle: TextView = dialogView.findViewById(R.id.score_subtitle)
@@ -155,9 +185,26 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
         finishBtn.setOnClickListener {
             dialog.dismiss()
+            val intent = Intent(this, StudentActivity::class.java)
+            intent.putExtra("studentId", studentId)
+            startActivity(intent)
             finish()
         }
 
         dialog.show()
+    }
+
+    private fun showExitConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Exit")
+            .setMessage("Are you sure you want exit? Unsaved progress might lost.")
+            .setPositiveButton("Yes") { _, _ ->
+                val intent = Intent(this, StudentActivity::class.java)
+                intent.putExtra("studentId", studentId)
+                startActivity(intent)
+                finish()
+            }
+            .setNegativeButton("No", null)
+            .show()
     }
 }

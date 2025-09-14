@@ -78,11 +78,13 @@ class LoginActivity : ComponentActivity() {
                     for (child in snapshot.children) {
                         val role = child.child("role").getValue(String::class.java)
                         val emailDb = child.child("email").getValue(String::class.java)
+                        val studentId = child.child("studentID").getValue(String::class.java) // ✅ fetch studentId
 
                         val intent = Intent(this, LoadingActivity::class.java)
                         intent.putExtra("mode", "login")
                         intent.putExtra("role", role)
                         intent.putExtra("email", emailDb)
+                        intent.putExtra("studentId", studentId) // ✅ pass forward
                         startActivity(intent)
                         break
                     }
@@ -107,21 +109,27 @@ class LoginActivity : ComponentActivity() {
                     .addOnSuccessListener { snapshot ->
                         if (snapshot.exists()) {
                             for (child in snapshot.children) {
-                                val role = child.child("role").getValue(String::class.java)
                                 val name = child.child("name").getValue(String::class.java) // ✅ fetch name
                                 val emailDb = child.child("email").getValue(String::class.java)
+                                val role = child.child("role").getValue(String::class.java)
 
                                 if (!role.isNullOrEmpty()) {
                                     val intent = Intent(this, LoadingActivity::class.java)
                                     intent.putExtra("mode", "login")
                                     intent.putExtra("role", role)
                                     intent.putExtra("email", emailDb)
-                                    intent.putExtra("name", name) // ✅ pass name forward
+                                    intent.putExtra("name", name)
+
+                                    // Only add studentId if the role is "student"
+                                    if (role == "student") {
+                                        val studentId = child.child("studentID").getValue(String::class.java)
+                                        intent.putExtra("studentId", studentId)
+                                    }
+
                                     startActivity(intent)
                                     finish()
-                                } else {
-                                    Toast.makeText(this, "Role not found", Toast.LENGTH_SHORT).show()
                                 }
+
                             }
                         } else {
                             Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
