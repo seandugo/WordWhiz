@@ -1,5 +1,6 @@
 package com.example.thesis_app
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -13,7 +14,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.thesis_app.models.QuestionModel
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
 class QuizActivity : AppCompatActivity(), View.OnClickListener {
@@ -28,7 +28,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var btn2: Button
     private lateinit var btn3: Button
     private lateinit var nextBtn: Button
-    private lateinit var timerIndicatorTextview: TextView
     private lateinit var questionIndicatorTextview: TextView
     private lateinit var questionProgressIndicator: ProgressBar
     private lateinit var questionTextview: TextView
@@ -37,6 +36,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
     private var currentQuestionIndex = 0
     private var selectedAnswer = ""
+    private var selectedAnswerIndex = -1   // <-- track index (0..3)
     private var score = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,12 +49,12 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn2 = findViewById(R.id.btn2)
         btn3 = findViewById(R.id.btn3)
         nextBtn = findViewById(R.id.next_btn)
-        timerIndicatorTextview = findViewById(R.id.timer_indicator_textview)
         questionIndicatorTextview = findViewById(R.id.question_indicator_textview)
         questionProgressIndicator = findViewById(R.id.question_progress_indicator)
         questionTextview = findViewById(R.id.question_textview)
         quizId = intent.getStringExtra("QUIZ_ID") ?: ""
-        studentId = intent.getStringExtra("STUDENT_ID") ?: ""   // ✅ get studentId
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        studentId = prefs.getString("studentId", "") ?: ""
 
         // Set click listeners
         btn0.setOnClickListener(this)
@@ -83,7 +83,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         )
 
         db.child("users")
-            .child(studentId)   // ✅ use studentId instead of uid
+            .child(studentId)
             .child("progress")
             .child(quizId)
             .setValue(progressData)
@@ -95,9 +95,16 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             }
     }
 
-
+    @SuppressLint("SetTextI18n")
     private fun loadQuestions() {
         selectedAnswer = ""
+        selectedAnswerIndex = -1
+        // reset button colors
+        btn0.setBackgroundColor(getColor(R.color.gray))
+        btn1.setBackgroundColor(getColor(R.color.gray))
+        btn2.setBackgroundColor(getColor(R.color.gray))
+        btn3.setBackgroundColor(getColor(R.color.gray))
+
         if (currentQuestionIndex == questionModelList.size) {
             finishQuiz()
             return
@@ -115,16 +122,16 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onClick(view: View?) {
-        // Reset button colors
+        // Reset button colors every click (so selected is highlighted after)
         btn0.setBackgroundColor(getColor(R.color.gray))
         btn1.setBackgroundColor(getColor(R.color.gray))
         btn2.setBackgroundColor(getColor(R.color.gray))
         btn3.setBackgroundColor(getColor(R.color.gray))
 
         val clickedBtn = view as Button
+
         if (clickedBtn.id == R.id.next_btn) {
-            // next button is clicked
-            if (selectedAnswer.isEmpty()) {
+            if (selectedAnswerIndex == -1) {
                 Toast.makeText(
                     applicationContext,
                     "Please select answer to continue",
@@ -132,22 +139,42 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 ).show()
                 return
             }
-            if (selectedAnswer == questionModelList[currentQuestionIndex].correct) {
+            val correctRaw = questionModelList[currentQuestionIndex].correct
+            val correctIndex = correctRaw.toIntOrNull()
+            val isCorrect: Boolean = if (correctIndex != null) {
+                (correctIndex == selectedAnswerIndex) || (correctIndex - 1 == selectedAnswerIndex)
+            } else {
+                selectedAnswer.trim().equals(correctRaw.trim(), ignoreCase = true)
+            }
+
+            // Logging for debugging
+            Log.d("QuizDebug", "SelectedText='$selectedAnswer' SelectedIdx=$selectedAnswerIndex CorrectRaw='$correctRaw' CorrectIdx=$correctIndex isCorrect=$isCorrect")
+
+            if (isCorrect) {
                 score++
-                Log.i("Score of quiz", score.toString())
+                Log.i("QuizActivity", "Correct! Score: $score")
+            } else {
+                Log.i("QuizActivity", "Wrong! Selected: $selectedAnswer, Correct: $correctRaw")
             }
 
             val answeredCount = currentQuestionIndex + 1
             val totalQuestions = questionModelList.size
 
-            // ✅ Always update progress when Next is pressed
+            // Always update progress when Next is pressed
             updateProgress(studentId, quizId, answeredCount, totalQuestions)
 
             currentQuestionIndex++
             loadQuestions()
         } else {
-            // options button is clicked
+            // options button is clicked -> set selected text & index and highlight
             selectedAnswer = clickedBtn.text.toString()
+            selectedAnswerIndex = when (clickedBtn.id) {
+                R.id.btn0 -> 0
+                R.id.btn1 -> 1
+                R.id.btn2 -> 2
+                R.id.btn3 -> 3
+                else -> -1
+            }
             clickedBtn.setBackgroundColor(getColor(R.color.primaryColor))
         }
     }
@@ -156,8 +183,14 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         val totalQuestions = questionModelList.size
         val percentage = ((score.toFloat() / totalQuestions.toFloat()) * 100).toInt()
 
-        // ✅ Make sure progress is saved even if it's the last question
+        // Make sure progress is saved even if it's the last question
         updateProgress(studentId, quizId, totalQuestions, totalQuestions)
+
+        // Mark pretest as completed in Firebase
+        val db = FirebaseDatabase.getInstance().reference
+        db.child("users").child(studentId).child("pretestCompleted").setValue(true)
+
+        Log.d("QuizDebug", "Final Score: $score (percentage $percentage%)")
 
         val dialogView = layoutInflater.inflate(R.layout.score_dialog, null)
         val scoreProgressIndicator: ProgressBar =
@@ -186,7 +219,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         finishBtn.setOnClickListener {
             dialog.dismiss()
             val intent = Intent(this, StudentActivity::class.java)
-            intent.putExtra("studentId", studentId)
             startActivity(intent)
             finish()
         }
@@ -200,7 +232,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             .setMessage("Are you sure you want exit? Unsaved progress might lost.")
             .setPositiveButton("Yes") { _, _ ->
                 val intent = Intent(this, StudentActivity::class.java)
-                intent.putExtra("studentId", studentId)
                 startActivity(intent)
                 finish()
             }

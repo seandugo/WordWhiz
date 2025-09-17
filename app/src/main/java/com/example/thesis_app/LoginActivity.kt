@@ -80,12 +80,23 @@ class LoginActivity : ComponentActivity() {
                         val emailDb = child.child("email").getValue(String::class.java)
                         val studentId = child.child("studentID").getValue(String::class.java) // ✅ fetch studentId
 
+                        // 🔹 Save user info into SharedPreferences
+                        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+                        prefs.edit().apply {
+                            putString("role", role)
+                            putString("email", emailDb)
+                            putString("studentId", studentId)   // ✅ persist studentId
+                            apply()
+                        }
+
+                        // 🔹 Proceed to LoadingActivity
                         val intent = Intent(this, LoadingActivity::class.java)
                         intent.putExtra("mode", "login")
                         intent.putExtra("role", role)
                         intent.putExtra("email", emailDb)
-                        intent.putExtra("studentId", studentId) // ✅ pass forward
+                        intent.putExtra("studentId", studentId)
                         startActivity(intent)
+                        finish()
                         break
                     }
                 } else {
@@ -123,6 +134,15 @@ class LoginActivity : ComponentActivity() {
                                     // Only add studentId if the role is "student"
                                     if (role == "student") {
                                         val studentId = child.child("studentID").getValue(String::class.java)
+
+                                        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+                                        prefs.edit().apply {
+                                            putString("role", role)
+                                            putString("email", emailDb)
+                                            putString("studentId", studentId)   // ✅ save again here
+                                            apply()
+                                        }
+
                                         intent.putExtra("studentId", studentId)
                                     }
 

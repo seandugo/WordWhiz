@@ -1,5 +1,6 @@
 package com.example.thesis_app
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -15,16 +16,13 @@ class StudentActivity : AppCompatActivity() {
 
     private lateinit var toolbarTitle: TextView
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student)
         // Setup bottom navigation
         toolbarTitle = findViewById(R.id.toolbar_title)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        val studentId = intent.getStringExtra("studentId") ?: ""
-        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-        prefs.edit().putString("studentId", studentId).apply()
-        // Load default fragment
         if (savedInstanceState == null) {
             replaceFragment(LecturesFragment()) // change to your default fragment
         }
