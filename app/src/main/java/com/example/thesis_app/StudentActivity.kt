@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.thesis_app.ui.fragments.student.DictionaryFragment
 import com.example.thesis_app.ui.fragments.student.LecturesFragment
+import com.example.thesis_app.ui.fragments.student.ProfileFragment
+import com.example.thesis_app.ui.fragments.student.SettingsFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -32,16 +34,18 @@ class StudentActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_lectures -> {
                     replaceFragment(LecturesFragment())
-                    toolbarTitle.text = getString(R.string.app_name).uppercase()
+                    toolbarTitle.text = "Lectures"
                 }
                 R.id.action_dictionary -> {
                     replaceFragment(DictionaryFragment())
                     toolbarTitle.text = "Dictionary"
                 }
                 R.id.action_profile -> {
+                    replaceFragment(ProfileFragment())
                     toolbarTitle.text = "Profile"
                 }
                 R.id.action_settings -> {
+                    replaceFragment(SettingsFragment())
                     toolbarTitle.text = "Settings"
                 }
             }
