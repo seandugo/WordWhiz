@@ -11,6 +11,11 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.activity.OnBackPressedCallback
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.Fragment
+import com.example.thesis_app.ui.fragments.profile.TeacherProfileFragment
+import com.example.thesis_app.ui.fragments.student.SettingsFragment
+import com.example.thesis_app.ui.fragments.student.TeacherSettingsFragment
+import com.example.thesis_app.ui.fragments.teacher.TeacherFragment
 import com.google.firebase.auth.FirebaseAuth
 
 class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -55,13 +60,13 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_classes -> {
-                // TODO: Handle Classes
+                replaceFragment(TeacherFragment())
             }
             R.id.nav_profile -> {
-                startActivity(Intent(this, ProfileActivity::class.java))
+                replaceFragment(TeacherProfileFragment())
             }
             R.id.nav_settings -> {
-                // TODO: Handle Settings
+                replaceFragment(TeacherSettingsFragment())
             }
             R.id.nav_logout -> {
                 showLogoutConfirmation()
@@ -70,6 +75,12 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
 
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainerView, fragment)
+            .commit()
     }
 
     private fun showLogoutConfirmation() {
