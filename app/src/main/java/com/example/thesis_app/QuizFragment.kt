@@ -24,10 +24,8 @@ class QuizFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the fragment layout (create fragment_main.xml)
         val view = inflater.inflate(R.layout.courses, container, false)
 
-        // Find views
         progressBar = view.findViewById(R.id.progress_bar)
         recyclerView = view.findViewById(R.id.recycler_view)
 
@@ -40,11 +38,10 @@ class QuizFragment : Fragment() {
     private fun setupRecyclerView() {
         progressBar.visibility = View.GONE
 
-        // Example: get studentId from SharedPreferences
         val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
         val studentId = sharedPrefs.getString("studentId", "") ?: ""
 
-        adapter = QuizListAdapter(quizModelList, studentId, requireActivity()) // ✅ now pass it
+        adapter = QuizListAdapter(quizModelList, studentId, requireActivity())
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
     }
@@ -52,19 +49,39 @@ class QuizFragment : Fragment() {
     private fun getDataFromFirebase() {
         progressBar.visibility = View.VISIBLE
 
+        val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
+        val studentId = sharedPrefs.getString("studentId", "") ?: ""
+
+        if (studentId.isEmpty()) return
+
+        // 1. Get user's grade level
         FirebaseDatabase.getInstance().reference
-            .child("quizzes") // ✅ better to point to "quizzes" node
+            .child("users")
+            .child(studentId)
+            .child("grade_level")
             .get()
-            .addOnSuccessListener { dataSnapshot ->
-                if (dataSnapshot.exists()) {
-                    for (snapshot in dataSnapshot.children) {
-                        val quizModel = snapshot.getValue(QuizModel::class.java)
-                        if (quizModel != null) {
-                            quizModelList.add(quizModel)
+            .addOnSuccessListener { gradeSnapshot ->
+                if (gradeSnapshot.exists()) {
+                    val gradeLevel = gradeSnapshot.getValue(Int::class.java) ?: 0
+
+                    // 2. Fetch quizzes only from that grade level node
+                    FirebaseDatabase.getInstance().reference
+                        .child("quizzes")
+                        .child(gradeLevel.toString())
+                        .get()
+                        .addOnSuccessListener { quizSnapshot ->
+                            quizModelList.clear()
+                            if (quizSnapshot.exists()) {
+                                for (snapshot in quizSnapshot.children) {
+                                    val quizModel = snapshot.getValue(QuizModel::class.java)
+                                    if (quizModel != null) {
+                                        quizModelList.add(quizModel)
+                                    }
+                                }
+                            }
+                            setupRecyclerView()
                         }
-                    }
                 }
-                setupRecyclerView()
             }
     }
 }

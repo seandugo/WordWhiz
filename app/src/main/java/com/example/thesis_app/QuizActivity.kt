@@ -36,8 +36,13 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
     private var currentQuestionIndex = 0
     private var selectedAnswer = ""
-    private var selectedAnswerIndex = -1   // <-- track index (0..3)
+    private var selectedAnswerIndex = -1
     private var score = 0
+    private var wrongQuestions: MutableList<QuestionModel> = mutableListOf()
+
+    // ✅ Always keep the original total count
+    private var originalTotalQuestions: Int = 0
+    private var answeredCount: Int = 0  // ✅ Track across retries
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +61,9 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
         studentId = prefs.getString("studentId", "") ?: ""
 
+        // Save the original total (before retries)
+        originalTotalQuestions = questionModelList.size
+
         // Set click listeners
         btn0.setOnClickListener(this)
         btn1.setOnClickListener(this)
@@ -73,12 +81,12 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             })
     }
 
-    private fun updateProgress(studentId: String, quizId: String, answeredCount: Int, totalQuestions: Int) {
+    private fun updateProgress(studentId: String, quizId: String, answeredCount: Int) {
         val db = FirebaseDatabase.getInstance().reference
 
         val progressData = mapOf(
             "answeredCount" to answeredCount,
-            "totalQuestions" to totalQuestions,
+            "totalQuestions" to originalTotalQuestions, // ✅ Always use original
             "lastUpdated" to System.currentTimeMillis()
         )
 
@@ -88,7 +96,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             .child(quizId)
             .setValue(progressData)
             .addOnSuccessListener {
-                Log.d("QuizActivity", "Progress updated: $answeredCount/$totalQuestions")
+                Log.d("QuizActivity", "Progress updated: $answeredCount/$originalTotalQuestions")
             }
             .addOnFailureListener { e ->
                 Log.w("QuizActivity", "Error updating progress", e)
@@ -106,23 +114,35 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn3.setBackgroundColor(getColor(R.color.gray))
 
         if (currentQuestionIndex == questionModelList.size) {
-            finishQuiz()
-            return
+            if (wrongQuestions.isNotEmpty()) {
+                // 🔄 Retry only wrong questions
+                questionModelList = wrongQuestions.toList()
+                wrongQuestions.clear()
+                currentQuestionIndex = 0
+                Toast.makeText(this, "Retry the incorrect questions!", Toast.LENGTH_LONG).show()
+                loadQuestions()
+                return
+            } else {
+                finishQuiz()
+                return
+            }
         }
 
         questionIndicatorTextview.text =
             "Question ${currentQuestionIndex + 1}/ ${questionModelList.size} "
         questionProgressIndicator.progress =
-            (currentQuestionIndex.toFloat() / questionModelList.size.toFloat() * 100).toInt()
-        questionTextview.text = questionModelList[currentQuestionIndex].question
-        btn0.text = questionModelList[currentQuestionIndex].options[0]
-        btn1.text = questionModelList[currentQuestionIndex].options[1]
-        btn2.text = questionModelList[currentQuestionIndex].options[2]
-        btn3.text = questionModelList[currentQuestionIndex].options[3]
+            (answeredCount.toFloat() / originalTotalQuestions.toFloat() * 100).toInt()
+
+        val currentQ = questionModelList[currentQuestionIndex]
+        questionTextview.text = currentQ.question
+        btn0.text = currentQ.options[0]
+        btn1.text = currentQ.options[1]
+        btn2.text = currentQ.options[2]
+        btn3.text = currentQ.options[3]
     }
 
     override fun onClick(view: View?) {
-        // Reset button colors every click (so selected is highlighted after)
+        // Reset button colors every click
         btn0.setBackgroundColor(getColor(R.color.gray))
         btn1.setBackgroundColor(getColor(R.color.gray))
         btn2.setBackgroundColor(getColor(R.color.gray))
@@ -147,26 +167,26 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 selectedAnswer.trim().equals(correctRaw.trim(), ignoreCase = true)
             }
 
-            // Logging for debugging
-            Log.d("QuizDebug", "SelectedText='$selectedAnswer' SelectedIdx=$selectedAnswerIndex CorrectRaw='$correctRaw' CorrectIdx=$correctIndex isCorrect=$isCorrect")
+            Log.d("QuizDebug", "Selected='$selectedAnswer' Index=$selectedAnswerIndex Correct='$correctRaw' -> $isCorrect")
 
             if (isCorrect) {
                 score++
                 Log.i("QuizActivity", "Correct! Score: $score")
             } else {
+                wrongQuestions.add(questionModelList[currentQuestionIndex])
                 Log.i("QuizActivity", "Wrong! Selected: $selectedAnswer, Correct: $correctRaw")
             }
 
-            val answeredCount = currentQuestionIndex + 1
-            val totalQuestions = questionModelList.size
-
-            // Always update progress when Next is pressed
-            updateProgress(studentId, quizId, answeredCount, totalQuestions)
+            // ✅ Increase answered count only once per original question
+            if (answeredCount < originalTotalQuestions) {
+                answeredCount++
+                updateProgress(studentId, quizId, answeredCount)
+            }
 
             currentQuestionIndex++
             loadQuestions()
         } else {
-            // options button is clicked -> set selected text & index and highlight
+            // Option clicked
             selectedAnswer = clickedBtn.text.toString()
             selectedAnswerIndex = when (clickedBtn.id) {
                 R.id.btn0 -> 0
@@ -180,13 +200,12 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun finishQuiz() {
-        val totalQuestions = questionModelList.size
-        val percentage = ((score.toFloat() / totalQuestions.toFloat()) * 100).toInt()
+        val percentage = ((score.toFloat() / originalTotalQuestions.toFloat()) * 100).toInt()
 
-        // Make sure progress is saved even if it's the last question
-        updateProgress(studentId, quizId, totalQuestions, totalQuestions)
+        // ✅ Final progress
+        updateProgress(studentId, quizId, originalTotalQuestions)
 
-        // Mark pretest as completed in Firebase
+        // Mark pretest as completed
         val db = FirebaseDatabase.getInstance().reference
         db.child("users").child(studentId).child("pretestCompleted").setValue(true)
 
@@ -209,7 +228,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             scoreTitle.text = "Oops! You have failed"
             scoreTitle.setTextColor(Color.RED)
         }
-        scoreSubtitle.text = "$score out of $totalQuestions are correct"
+        scoreSubtitle.text = "$score out of $originalTotalQuestions are correct"
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -229,7 +248,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Exit")
-            .setMessage("Are you sure you want exit? Unsaved progress might lost.")
+            .setMessage("Are you sure you want exit? Unsaved progress might be lost.")
             .setPositiveButton("Yes") { _, _ ->
                 val intent = Intent(this, StudentActivity::class.java)
                 startActivity(intent)

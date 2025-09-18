@@ -26,10 +26,8 @@ class LecturesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the fragment layout (create fragment_main.xml)
         val view = inflater.inflate(R.layout.courses, container, false)
 
-        // Find views
         progressBar = view.findViewById(R.id.progress_bar)
         recyclerView = view.findViewById(R.id.recycler_view)
 
@@ -39,19 +37,18 @@ class LecturesFragment : Fragment() {
         return view
     }
 
-        private fun setupRecyclerView() {
-            if (!isAdded) return
+    private fun setupRecyclerView() {
+        if (!isAdded) return
 
-            progressBar.visibility = View.GONE
+        progressBar.visibility = View.GONE
 
-            val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
-            val studentId = prefs.getString("studentId", "") ?: ""
+        val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
+        val studentId = prefs.getString("studentId", "") ?: ""
 
-            adapter = QuizListAdapter(quizModelList, studentId, requireActivity())      // ✅ pass it
-            recyclerView.layoutManager = LinearLayoutManager(context)
-            recyclerView.adapter = adapter
-        }
-
+        adapter = QuizListAdapter(quizModelList, studentId, requireActivity())
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = adapter
+    }
 
     private fun getDataFromFirebase() {
         progressBar.visibility = View.VISIBLE
@@ -64,7 +61,12 @@ class LecturesFragment : Fragment() {
                     for (snapshot in dataSnapshot.children) {
                         val quizModel = snapshot.getValue(QuizModel::class.java)
                         if (quizModel != null) {
-                            val fixedModel = quizModel.copy(id = snapshot.key ?: "")
+                            // ✅ Always store the original total questions
+                            val originalTotalQuestions = quizModel.questionList?.size ?: 0
+                            val fixedModel = quizModel.copy(
+                                id = snapshot.key ?: "",
+                                totalQuestions = originalTotalQuestions // ensure this is stored
+                            )
                             quizModelList.add(fixedModel)
                         }
                     }

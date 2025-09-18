@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import com.example.thesis_app.PreAssessmentActivity
 import com.example.thesis_app.R
 import android.widget.AutoCompleteTextView
+import com.google.firebase.database.FirebaseDatabase
 
 class GradeLevelPage : Fragment(R.layout.grade_level) {
     private lateinit var nextButton: Button
@@ -17,7 +18,7 @@ class GradeLevelPage : Fragment(R.layout.grade_level) {
         super.onViewCreated(view, savedInstanceState)
 
         nextButton = view.findViewById(R.id.button)
-        val items = listOf("Grade 7", "Grade 8", "Grade 9","Grade 10")
+        val items = listOf("Grade 7", "Grade 8", "Grade 9", "Grade 10")
         val autoCompleteTextView =
             view.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView)
 
@@ -38,6 +39,13 @@ class GradeLevelPage : Fragment(R.layout.grade_level) {
             })
 
         nextButton.setOnClickListener {
+            // 🔹 Get selected grade text (e.g. "Grade 9")
+            val selectedGrade = autoCompleteTextView.text.toString()
+            // Extract the number only -> "9"
+            val gradeNumber = selectedGrade.filter { it.isDigit() }
+            val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
+            sharedPrefs.edit().putString("grade_level", gradeNumber).apply()
+
             val secondPageFragment = ClassCodePage()
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainerView2, secondPageFragment)
@@ -46,5 +54,4 @@ class GradeLevelPage : Fragment(R.layout.grade_level) {
             (activity as? PreAssessmentActivity)?.nextStep()
         }
     }
-
 }

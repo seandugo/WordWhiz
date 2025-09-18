@@ -20,7 +20,6 @@ class LoadingActivity : ComponentActivity() {
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    // Disable back
                 }
             })
 
