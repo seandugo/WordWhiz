@@ -53,25 +53,39 @@ class LecturesFragment : Fragment() {
     private fun getDataFromFirebase() {
         progressBar.visibility = View.VISIBLE
 
+        val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
+        val studentGrade = prefs.getString("grade_level", null)
+
+        if (studentGrade.isNullOrEmpty()) {
+            progressBar.visibility = View.GONE
+            return
+        }
+
+        // Example: studentGrade = "7" → go to quizzes/grade7
+        val gradePath = "grade$studentGrade"
+
         FirebaseDatabase.getInstance().reference
             .child("quizzes")
+            .child(gradePath)
             .get()
-            .addOnSuccessListener { dataSnapshot ->
-                if (dataSnapshot.exists()) {
-                    for (snapshot in dataSnapshot.children) {
-                        val quizModel = snapshot.getValue(QuizModel::class.java)
+            .addOnSuccessListener { gradeSnapshot ->
+                if (gradeSnapshot.exists()) {
+                    for (quizSnapshot in gradeSnapshot.children) {
+                        val quizModel = quizSnapshot.getValue(QuizModel::class.java)
                         if (quizModel != null) {
-                            // ✅ Always store the original total questions
                             val originalTotalQuestions = quizModel.questionList?.size ?: 0
                             val fixedModel = quizModel.copy(
-                                id = snapshot.key ?: "",
-                                totalQuestions = originalTotalQuestions // ensure this is stored
+                                id = quizSnapshot.key ?: "",
+                                totalQuestions = originalTotalQuestions
                             )
                             quizModelList.add(fixedModel)
                         }
                     }
                 }
                 setupRecyclerView()
+            }
+            .addOnFailureListener {
+                progressBar.visibility = View.GONE
             }
     }
 

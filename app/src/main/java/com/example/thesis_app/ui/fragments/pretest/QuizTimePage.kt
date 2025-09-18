@@ -30,12 +30,12 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
             })
 
         nextButton.setOnClickListener {
-            // ✅ Retrieve the grade from SharedPreferences (set in GradeLevelPage)
             val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
             val gradeNumber = sharedPrefs.getString("grade_level", null)
             val studentId = sharedPrefs.getString("studentId", "") ?: ""
 
             if (!gradeNumber.isNullOrEmpty()) {
+                // ✅ Save grade level in DB
                 FirebaseDatabase.getInstance().reference
                     .child("users")
                     .child(studentId)
@@ -43,11 +43,15 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                     .setValue(gradeNumber.toInt())
             } else {
                 android.util.Log.e("QuizTimePage", "Grade number is null or empty!")
+                return@setOnClickListener
             }
 
-            // ✅ Now proceed to load quiz
+            // ✅ Build the path: quizzes/grade{level}/quiz1
+            val quizPath = "quizzes/grade$gradeNumber/quiz1"
+
             FirebaseDatabase.getInstance().reference
                 .child("quizzes")
+                .child("grade$gradeNumber")
                 .child("quiz1")
                 .get()
                 .addOnSuccessListener { snapshot ->
@@ -64,6 +68,8 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                             startActivity(intent)
                             requireActivity().finish()
                         }
+                    } else {
+                        android.util.Log.e("QuizTimePage", "❌ No quiz found at $quizPath")
                     }
                 }
         }

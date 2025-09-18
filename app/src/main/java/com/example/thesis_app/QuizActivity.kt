@@ -39,6 +39,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private var selectedAnswerIndex = -1
     private var score = 0
     private var wrongQuestions: MutableList<QuestionModel> = mutableListOf()
+    private lateinit var explanationText: TextView
+    private var showingExplanation = false
 
     // ✅ Always keep the original total count
     private var originalTotalQuestions: Int = 0
@@ -57,6 +59,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         questionIndicatorTextview = findViewById(R.id.question_indicator_textview)
         questionProgressIndicator = findViewById(R.id.question_progress_indicator)
         questionTextview = findViewById(R.id.question_textview)
+        explanationText = findViewById(R.id.explanation_text)
         quizId = intent.getStringExtra("QUIZ_ID") ?: ""
         val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
         studentId = prefs.getString("studentId", "") ?: ""
@@ -107,6 +110,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private fun loadQuestions() {
         selectedAnswer = ""
         selectedAnswerIndex = -1
+
         // reset button colors
         btn0.setBackgroundColor(getColor(R.color.gray))
         btn1.setBackgroundColor(getColor(R.color.gray))
@@ -114,8 +118,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn3.setBackgroundColor(getColor(R.color.gray))
 
         if (currentQuestionIndex == questionModelList.size) {
-            if (wrongQuestions.isNotEmpty()) {
-                // 🔄 Retry only wrong questions
+            if (quizId != "quiz1" && wrongQuestions.isNotEmpty()) {
+                // 🔄 Retry only wrong questions for non-pretest quizzes
                 questionModelList = wrongQuestions.toList()
                 wrongQuestions.clear()
                 currentQuestionIndex = 0
@@ -123,6 +127,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 loadQuestions()
                 return
             } else {
+                // ✅ For quiz1 → no retry
+                // ✅ For others → finish if no wrong questions left
                 finishQuiz()
                 return
             }
@@ -142,52 +148,79 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onClick(view: View?) {
-        // Reset button colors every click
-        btn0.setBackgroundColor(getColor(R.color.gray))
-        btn1.setBackgroundColor(getColor(R.color.gray))
-        btn2.setBackgroundColor(getColor(R.color.gray))
-        btn3.setBackgroundColor(getColor(R.color.gray))
-
         val clickedBtn = view as Button
 
         if (clickedBtn.id == R.id.next_btn) {
-            if (selectedAnswerIndex == -1) {
-                Toast.makeText(
-                    applicationContext,
-                    "Please select answer to continue",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return
-            }
-            val correctRaw = questionModelList[currentQuestionIndex].correct
-            val correctIndex = correctRaw.toIntOrNull()
-            val isCorrect: Boolean = if (correctIndex != null) {
-                (correctIndex == selectedAnswerIndex) || (correctIndex - 1 == selectedAnswerIndex)
+            // ✅ Next/Continue button logic
+            if (!showingExplanation) {
+                if (selectedAnswerIndex == -1) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Please select answer to continue",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
+                val correctRaw = questionModelList[currentQuestionIndex].correct
+                val correctIndex = correctRaw.toIntOrNull()
+                val isCorrect: Boolean = if (correctIndex != null) {
+                    (correctIndex == selectedAnswerIndex) || (correctIndex - 1 == selectedAnswerIndex)
+                } else {
+                    selectedAnswer.trim().equals(correctRaw.trim(), ignoreCase = true)
+                }
+
+                if (isCorrect) {
+                    score++
+                } else {
+                    wrongQuestions.add(questionModelList[currentQuestionIndex])
+                }
+
+                if (answeredCount < originalTotalQuestions) {
+                    answeredCount++
+                    updateProgress(studentId, quizId, answeredCount)
+                }
+
+                val explanation = questionModelList[currentQuestionIndex].explanation.ifBlank {
+                    if (isCorrect) "Correct! Good job." else "Review this question carefully."
+                }
+
+                explanationText.text = explanation
+                explanationText.visibility = View.VISIBLE
+
+                // Disable choices
+                btn0.isEnabled = false
+                btn1.isEnabled = false
+                btn2.isEnabled = false
+                btn3.isEnabled = false
+
+                showingExplanation = true
+                nextBtn.text = "Continue"
+
             } else {
-                selectedAnswer.trim().equals(correctRaw.trim(), ignoreCase = true)
+                // ✅ Load next question
+                explanationText.visibility = View.GONE
+                showingExplanation = false
+                nextBtn.text = "Next"
+
+                // Enable choices again
+                btn0.isEnabled = true
+                btn1.isEnabled = true
+                btn2.isEnabled = true
+                btn3.isEnabled = true
+
+                currentQuestionIndex++
+                loadQuestions()
             }
-
-            Log.d("QuizDebug", "Selected='$selectedAnswer' Index=$selectedAnswerIndex Correct='$correctRaw' -> $isCorrect")
-
-            if (isCorrect) {
-                score++
-                Log.i("QuizActivity", "Correct! Score: $score")
-            } else {
-                wrongQuestions.add(questionModelList[currentQuestionIndex])
-                Log.i("QuizActivity", "Wrong! Selected: $selectedAnswer, Correct: $correctRaw")
-            }
-
-            // ✅ Increase answered count only once per original question
-            if (answeredCount < originalTotalQuestions) {
-                answeredCount++
-                updateProgress(studentId, quizId, answeredCount)
-            }
-
-            currentQuestionIndex++
-            loadQuestions()
         } else {
-            // Option clicked
-            selectedAnswer = clickedBtn.text.toString()
+            // ✅ Option button clicked
+            // Reset button colors
+            btn0.setBackgroundColor(getColor(R.color.gray))
+            btn1.setBackgroundColor(getColor(R.color.gray))
+            btn2.setBackgroundColor(getColor(R.color.gray))
+            btn3.setBackgroundColor(getColor(R.color.gray))
+
+            // Mark selected
             selectedAnswerIndex = when (clickedBtn.id) {
                 R.id.btn0 -> 0
                 R.id.btn1 -> 1
@@ -195,6 +228,9 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 R.id.btn3 -> 3
                 else -> -1
             }
+            selectedAnswer = clickedBtn.text.toString()
+
+            // Highlight selected
             clickedBtn.setBackgroundColor(getColor(R.color.primaryColor))
         }
     }
