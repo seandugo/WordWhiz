@@ -3,7 +3,6 @@ package com.example.thesis_app
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
-import com.example.thesis_app.models.Achievement
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -11,6 +10,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.cardview.widget.CardView
+import com.example.thesis_app.models.Achievement
 import com.example.thesis_app.models.StudentItem
 import com.google.firebase.database.*
 
@@ -26,20 +27,19 @@ class ClassDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_class_detail)
+
         // Firebase reference
         database = FirebaseDatabase.getInstance().reference
 
-        // Get class name from Intent
+        // Get class info from Intent
         className = intent.getStringExtra("CLASS_NAME") ?: "Unknown Class"
 
         // Find views
         recyclerView = findViewById(R.id.studentRecyclerView)
         classNameText = findViewById(R.id.headerClassName)
-
-        // Set class name dynamically
         classNameText.text = className
 
-        // ✅ Setup Toolbar with back navigation
+        // Toolbar setup
         val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
@@ -52,11 +52,11 @@ class ClassDetailActivity : AppCompatActivity() {
         }
         recyclerView.adapter = adapter
 
-        // Load existing students
+        // Load students
         loadStudentsFromFirebase()
 
-        // Add student button (CardView)
-        findViewById<androidx.cardview.widget.CardView>(R.id.addStudentCard).setOnClickListener {
+        // Add student button
+        findViewById<CardView>(R.id.addStudentCard).setOnClickListener {
             showAddStudentDialog()
         }
     }
@@ -85,6 +85,7 @@ class ClassDetailActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
+
     private fun showAddStudentDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_student, null)
         val idInput = dialogView.findViewById<EditText>(R.id.editStudentId)
@@ -99,16 +100,22 @@ class ClassDetailActivity : AppCompatActivity() {
         dialog.show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-            val id = idInput.text.toString().trim() // student UID typed in
+            val id = idInput.text.toString().trim()
 
+            // ✅ Basic validation: not empty, optionally numeric only
             if (id.isEmpty()) {
                 Toast.makeText(this, "Please enter a student ID", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            if (!id.matches(Regex("^\\d+\$"))) {
+                Toast.makeText(this, "Student ID must be numeric", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val classCode = intent.getStringExtra("CLASS_CODE") ?: return@setOnClickListener
 
-            // 🔹 Look up the student in global users
+            // 🔹 Validate student exists in "users" and role = student
             val studentRef = database.child("users").child(id)
             studentRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -138,15 +145,14 @@ class ClassDetailActivity : AppCompatActivity() {
                         achievements = achievementsList
                     )
 
-
-                    // 🔹 Save student into the class
+                    // 🔹 Save student into class
                     database.child("classes")
                         .child(classCode)
                         .child("students")
                         .child(id)
                         .setValue(newStudent)
                         .addOnSuccessListener {
-                            // 🔹 Also add a pointer in student account -> classes
+                            // 🔹 Also add pointer in student -> classes
                             database.child("users")
                                 .child(id)
                                 .child("classes")
@@ -164,10 +170,9 @@ class ClassDetailActivity : AppCompatActivity() {
                 override fun onCancelled(error: DatabaseError) {}
             })
         }
-
     }
 
-    // ✅ Handle Toolbar back button
+    // Toolbar back button
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {

@@ -1,32 +1,31 @@
 package com.example.thesis_app.ui.fragments.teacher
 
 import android.content.Intent
-import com.example.thesis_app.SignupActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.InputFilter
+import android.text.InputType
 import android.view.View
-import android.widget.EditText
-import android.widget.LinearLayout
-import androidx.cardview.widget.CardView
-import androidx.fragment.app.Fragment
-import com.example.thesis_app.R
+import android.widget.*
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
+import androidx.cardview.widget.CardView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.ClassAdapter
 import com.example.thesis_app.ClassDetailActivity
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.example.thesis_app.R
+import com.example.thesis_app.SignupActivity
 import com.example.thesis_app.models.ClassItem
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 
 class TeacherFragment : Fragment(R.layout.teachers) {
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ClassAdapter
     private val classList = mutableListOf<ClassItem>()
@@ -35,32 +34,41 @@ class TeacherFragment : Fragment(R.layout.teachers) {
     private val database = FirebaseDatabase.getInstance()
     private val handler = Handler(Looper.getMainLooper())
     private var isOrderChanged = false
-    private var pendingUpdateRunnable: Runnable? = null // ✅ You forgot to declare this
+    private var pendingUpdateRunnable: Runnable? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ Use view.findViewById, not just findViewById
         recyclerView = view.findViewById(R.id.classRecyclerView)
+
         adapter = ClassAdapter(
             classList,
-            { viewHolder -> itemTouchHelper.startDrag(viewHolder) }
-        ) { classItem ->
-            val intent = Intent(requireContext(), ClassDetailActivity::class.java).apply {
-                putExtra("CLASS_NAME", classItem.className)
-                putExtra("ROOM_NO", classItem.roomNo)
-                putExtra("CLASS_CODE", classItem.classCode)
-            }
-            startActivity(intent)
-        }
+            onStartDrag = { vh -> itemTouchHelper.startDrag(vh) },
+            onItemClick = { classItem ->
+                val intent = Intent(requireContext(), ClassDetailActivity::class.java).apply {
+                    putExtra("CLASS_NAME", classItem.className)
+                    putExtra("ROOM_NO", classItem.roomNo)
+                    putExtra("CLASS_CODE", classItem.classCode)
+                }
+                startActivity(intent)
+            },
+            onEditClick = { showEditDialog(it) },
+            onDeleteClick = { showDeleteDialog(it) }
+        )
 
         recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext()) // ✅ pass context
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.itemAnimator = DefaultItemAnimator()
 
         setupDragAndDrop()
-        setupAddClassCard(view) // ✅ pass the fragment's root view
+        setupAddClassCard(view)
         setupTeacherRef()
+
+        // Toggle button beside WORDWHIZ logo
+        val toggleEdit = view.findViewById<Switch>(R.id.toggleEditMode)
+        toggleEdit.setOnCheckedChangeListener { _, isChecked ->
+            adapter.updateEditMode(isChecked)
+        }
 
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -72,12 +80,8 @@ class TeacherFragment : Fragment(R.layout.teachers) {
     }
 
     private fun setupTeacherRef() {
-        // Use the teacherID stored in the user's node, for example:
-        val teacherId = auth.currentUser!!.uid  // or if you store teacherID in the profile, fetch it
-
-        val teacherClassesRef = database.getReference("users")
-            .child(teacherId)
-            .child("classes")
+        val teacherId = auth.currentUser!!.uid
+        val teacherClassesRef = database.getReference("users").child(teacherId).child("classes")
 
         teacherClassesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -85,21 +89,15 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                 for (classSnap in snapshot.children) {
                     val classItem = classSnap.getValue(ClassItem::class.java)
                     if (classItem != null) {
-                        // Save the Firebase key as classCode
-                        val itemWithCode = classItem.copy(classCode = classSnap.key ?: "")
-                        classList.add(itemWithCode)
+                        classList.add(classItem.copy(classCode = classSnap.key ?: ""))
                     }
                 }
-                classList.sortBy { it.order }
+                classList.sortByDescending { it.order } // newest on top
                 adapter.notifyDataSetChanged()
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Optional: show an error
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
-
 
     private fun generateCode(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -109,16 +107,11 @@ class TeacherFragment : Fragment(R.layout.teachers) {
     private fun generateUniqueCode(onCodeGenerated: (String) -> Unit) {
         val newCode = generateCode()
         val classesRef = database.getReference("classes")
-
         classesRef.child(newCode).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    generateUniqueCode(onCodeGenerated) // try again
-                } else {
-                    onCodeGenerated(newCode)
-                }
+                if (snapshot.exists()) generateUniqueCode(onCodeGenerated)
+                else onCodeGenerated(newCode)
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }
@@ -141,17 +134,14 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
-
             override fun isLongPressDragEnabled(): Boolean = false
         }
-
         itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
     private fun scheduleFirebaseUpdate() {
         pendingUpdateRunnable?.let { handler.removeCallbacks(it) }
-
         pendingUpdateRunnable = Runnable {
             if (isOrderChanged) {
                 updateOrderInFirebase()
@@ -165,98 +155,204 @@ class TeacherFragment : Fragment(R.layout.teachers) {
         val classesRef = database.getReference("classes")
         classList.forEachIndexed { index, classItem ->
             if (classItem.classCode.isNotEmpty()) {
-                classesRef.child(classItem.classCode).child("order").setValue(index)
+                classesRef.child(classItem.classCode).child("order")
+                    .setValue(classList.size - 1 - index)
             }
         }
     }
-
 
     private fun setupAddClassCard(rootView: View) {
         val addCard = rootView.findViewById<CardView>(R.id.addClassCard)
         addCard.setOnClickListener {
             val context = requireContext()
-
             val dialogLayout = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(40, 30, 40, 10)
             }
 
-            val classInput = EditText(context).apply { hint = "Enter Class Name" }
-            val roomInput = EditText(context).apply { hint = "Enter Room Number" }
+            // Grade Spinner
+            val gradeSpinner = Spinner(context).apply {
+                val grades = arrayOf("Select", "7", "8", "9", "10")
+                adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, grades)
+            }
 
-            dialogLayout.addView(classInput)
+            // Section Input
+            val sectionInput = EditText(context).apply {
+                hint = "Section"
+                inputType = InputType.TYPE_CLASS_TEXT
+                filters = arrayOf(InputFilter.LengthFilter(20))
+            }
+
+            // Room Input
+            val roomInput = EditText(context).apply {
+                hint = "Room No."
+                inputType = InputType.TYPE_CLASS_TEXT
+                filters = arrayOf(InputFilter.LengthFilter(18))
+            }
+
+            dialogLayout.addView(TextView(context).apply { text = "Grade:" })
+            dialogLayout.addView(gradeSpinner)
+            dialogLayout.addView(TextView(context).apply { text = "Section:" })
+            dialogLayout.addView(sectionInput)
+            dialogLayout.addView(TextView(context).apply { text = "Room No. (Optional):" })
             dialogLayout.addView(roomInput)
 
-            AlertDialog.Builder(context)
+            val dialog = AlertDialog.Builder(context)
                 .setTitle("Add Class")
                 .setView(dialogLayout)
-                .setPositiveButton("Create") { dialog, _ ->
-                    val className = classInput.text.toString().trim()
-                    val roomNo = roomInput.text.toString().trim()
+                .setPositiveButton("Create", null)
+                .setNegativeButton("Cancel", null)
+                .create()
 
-                    if (className.isEmpty()) {
-                        classInput.error = "Required"
-                        classInput.requestFocus()
-                        return@setPositiveButton
-                    }
-                    if (roomNo.isEmpty()) {
-                        roomInput.error = "Required"
-                        roomInput.requestFocus()
-                        return@setPositiveButton
-                    }
+            dialog.show()
 
-                    // 🔹 Prevent duplicate room numbers
-                    database.getReference("classes")
-                        .orderByChild("roomNo").equalTo(roomNo)
-                        .addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                if (snapshot.exists()) {
-                                    roomInput.error = "Room already exists"
-                                    roomInput.requestFocus()
-                                } else {
-                                    generateUniqueCode { classCode ->
-                                        val newClass = ClassItem(
-                                            className = className,
-                                            roomNo = roomNo,
-                                            order = classList.size,
-                                            classCode = "" // will be set after reading
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val grade = gradeSpinner.selectedItem.toString().trim()
+                var section = sectionInput.text.toString().trim().uppercase() // uppercase
+                val roomNo = roomInput.text.toString().trim()
+
+                // Validation
+                if (grade == "Select") {
+                    Toast.makeText(context, "Please select a grade", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                if (section.isEmpty()) {
+                    sectionInput.error = "Section is required"
+                    sectionInput.requestFocus()
+                    return@setOnClickListener
+                }
+
+                if (!section.matches(Regex("^[A-Z]+$"))) { // letters-only
+                    sectionInput.error = "Only letters allowed"
+                    sectionInput.requestFocus()
+                    return@setOnClickListener
+                }
+
+                val className = "$grade - $section"
+                val teacherClassesRef = database.getReference("users")
+                    .child(auth.currentUser!!.uid)
+                    .child("classes")
+
+                // Check for duplicates
+                teacherClassesRef.orderByChild("className").equalTo(className)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (snapshot.exists()) {
+                                sectionInput.error = "This class already exists"
+                                sectionInput.requestFocus()
+                            } else {
+                                generateUniqueCode { classCode ->
+                                    val newOrder = (classList.maxOfOrNull { it.order } ?: -1) + 1
+                                    val newClass = ClassItem(className, roomNo, newOrder, classCode)
+
+                                    teacherClassesRef.child(classCode).setValue(newClass)
+                                    database.getReference("classes").child(classCode)
+                                        .setValue(
+                                            mapOf(
+                                                "className" to className,
+                                                "roomNo" to roomNo,
+                                                "order" to newOrder
+                                            )
                                         )
 
-                                        // Save under teacher node only
-                                        val teacherClassesRef = database.getReference("users")
-                                            .child(auth.currentUser!!.uid)
-                                            .child("classes")
-                                            .child(classCode)
-
-                                        teacherClassesRef.setValue(newClass) // ✅ only this
-
-                                        // Optional: save globally without teacherId
-                                        val globalClassRef = database.getReference("classes").child(classCode)
-                                        val classData = mapOf(
-                                            "className" to className,
-                                            "roomNo" to roomNo,
-                                            "order" to classList.size
-                                        )
-                                        globalClassRef.setValue(classData)
-
-                                        adapter.addItemAtTop(newClass.copy(classCode = classCode))
-                                        recyclerView.scrollToPosition(0)
-                                        dialog.dismiss()
-                                    }
+                                    adapter.addItemAtTop(newClass)
+                                    recyclerView.scrollToPosition(0)
+                                    dialog.dismiss()
                                 }
                             }
+                        }
 
-                            override fun onCancelled(error: DatabaseError) {}
-                        })
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
+                        override fun onCancelled(error: DatabaseError) {}
+                    })
+            }
         }
+    }
+
+    private fun showEditDialog(classItem: ClassItem) {
+        val context = requireContext()
+        val dialogLayout = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; setPadding(40,30,40,10) }
+
+        val classParts = classItem.className.split(" - ")
+        val gradeSpinner = Spinner(context).apply {
+            val grades = arrayOf("7","8","9","10")
+            adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, grades)
+            setSelection(grades.indexOf(classParts.getOrNull(0) ?: "7"))
+        }
+
+        val sectionInput = EditText(context).apply {
+            hint="Section"
+            setText(classParts.getOrNull(1) ?: "")
+            inputType = InputType.TYPE_CLASS_TEXT
+            filters = arrayOf(InputFilter.LengthFilter(20), InputFilter { source, _, _, _, _, _ ->
+                if (source.matches(Regex("[a-zA-Z]+"))) source else ""
+            })
+        }
+
+        // Auto-uppercase
+        sectionInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val text = s.toString()
+                if (text != text.uppercase()) {
+                    sectionInput.setText(text.uppercase())
+                    sectionInput.setSelection(sectionInput.text?.length ?: 0)
+                }
+            }
+        })
+
+        val roomInput = EditText(context).apply { hint="Room No."; setText(classItem.roomNo); inputType = InputType.TYPE_CLASS_TEXT }
+
+        dialogLayout.addView(TextView(context).apply{ text="Grade:" })
+        dialogLayout.addView(gradeSpinner)
+        dialogLayout.addView(TextView(context).apply{ text="Section:" })
+        dialogLayout.addView(sectionInput)
+        dialogLayout.addView(TextView(context).apply{ text="Room No.:" })
+        dialogLayout.addView(roomInput)
+
+        AlertDialog.Builder(context)
+            .setTitle("Edit Class")
+            .setView(dialogLayout)
+            .setPositiveButton("Save", null)
+            .setNegativeButton("Cancel", null)
+            .create().also { dialog ->
+                dialog.show()
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val grade = gradeSpinner.selectedItem.toString()
+                    val section = sectionInput.text.toString().trim()
+                    val roomNo = roomInput.text.toString().trim()
+                    if(section.isEmpty()) return@setOnClickListener
+
+                    val newName = "$grade - $section"
+                    classItem.className = newName
+                    classItem.roomNo = roomNo
+                    database.getReference("users").child(auth.currentUser!!.uid)
+                        .child("classes").child(classItem.classCode).setValue(classItem)
+                    database.getReference("classes").child(classItem.classCode)
+                        .updateChildren(mapOf("className" to newName, "roomNo" to roomNo))
+                    adapter.updateItem(classItem)
+                    dialog.dismiss()
+                }
+            }
+    }
+
+    private fun showDeleteDialog(classItem: ClassItem) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Class")
+            .setMessage("Are you sure you want to delete ${classItem.className}?")
+            .setPositiveButton("Delete"){_,_ ->
+                database.getReference("users").child(auth.currentUser!!.uid)
+                    .child("classes").child(classItem.classCode).removeValue()
+                database.getReference("classes").child(classItem.classCode).removeValue()
+                adapter.removeItem(classItem)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Clean up pending updates
         pendingUpdateRunnable?.let { handler.removeCallbacks(it) }
     }
 }

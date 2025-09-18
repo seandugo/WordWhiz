@@ -15,21 +15,29 @@ import com.google.firebase.auth.FirebaseAuth
 
 class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
+    private lateinit var drawerLayout: DrawerLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.teacher)
 
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+        drawerLayout = findViewById(R.id.drawer_layout)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
+
         val navigationView = findViewById<NavigationView>(R.id.navigation_view)
         navigationView.setNavigationItemSelectedListener(this)
 
-        val toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-
         toggle.drawerArrowDrawable.color = getColor(android.R.color.black)
 
         onBackPressedDispatcher.addCallback(this,
@@ -38,7 +46,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                     if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                         drawerLayout.closeDrawer(GravityCompat.START)
                     } else {
-                        showExitConfirmation()
+                        showLogoutConfirmation()
                     }
                 }
             })
@@ -47,31 +55,38 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_classes -> {
-                // Handle Classes
+                // TODO: Handle Classes
             }
             R.id.nav_profile -> {
                 startActivity(Intent(this, ProfileActivity::class.java))
             }
             R.id.nav_settings -> {
-                // Handle Settings
+                // TODO: Handle Settings
             }
             R.id.nav_logout -> {
-                showExitConfirmation()
+                showLogoutConfirmation()
             }
         }
 
-        // Close drawer after selection
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
-    private fun showExitConfirmation() {
+    private fun showLogoutConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Logout")
             .setMessage("Are you sure you want to log out?")
             .setPositiveButton("Yes") { _, _ ->
                 FirebaseAuth.getInstance().signOut()
+
+                // Clear any stored user info in SharedPreferences
+                val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+                prefs.edit().clear().apply()
+
+                // Go to LoginActivity
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
                 finish()
             }
             .setNegativeButton("No", null)

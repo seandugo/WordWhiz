@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="20dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
 
-    <EditText
-        android:id="@+id/editStudentName"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutStudentId"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Name Here"
-        android:inputType="textPersonName"/>
+        android:hint="Student ID">
 
-    <EditText
-        android:id="@+id/editStudentId"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter ID Here"
-        android:inputType="text"/>
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editStudentId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:maxLength="10" />
+    </com.google.android.material.textfield.TextInputLayout>
+
 </LinearLayout>
