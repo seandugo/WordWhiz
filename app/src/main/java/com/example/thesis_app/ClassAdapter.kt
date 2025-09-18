@@ -3,19 +3,25 @@ package com.example.thesis_app
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.thesis_app.models.ClassItem   // ✅ import here
+import com.example.thesis_app.models.ClassItem
 
 class ClassAdapter(
     private val classList: MutableList<ClassItem>,
     private val onStartDrag: ((RecyclerView.ViewHolder) -> Unit)? = null,
-    private val onItemClick: (ClassItem) -> Unit
+    private val onItemClick: (ClassItem) -> Unit,
+    private val onEditClick: (ClassItem) -> Unit,
+    private val onDeleteClick: (ClassItem) -> Unit,
+    private var isEditMode: Boolean = false
 ) : RecyclerView.Adapter<ClassAdapter.ClassViewHolder>() {
 
     inner class ClassViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val className: TextView = itemView.findViewById(R.id.classNameText)
         val roomNumber: TextView = itemView.findViewById(R.id.roomNumberText)
+        val editButton: ImageButton = itemView.findViewById(R.id.editButton)
+        val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ClassViewHolder {
@@ -29,15 +35,22 @@ class ClassAdapter(
         holder.className.text = classItem.className
         holder.roomNumber.text = classItem.roomNo
 
-        holder.itemView.setOnClickListener {
-            onItemClick(classItem)
-        }
+        // Normal click
+        holder.itemView.setOnClickListener { onItemClick(classItem) }
 
-        // Optional: drag handle if you have one
+        // Drag
         holder.itemView.setOnLongClickListener {
             onStartDrag?.invoke(holder)
             true
         }
+
+        // Edit/Delete visibility
+        val visibility = if (isEditMode) View.VISIBLE else View.GONE
+        holder.editButton.visibility = visibility
+        holder.deleteButton.visibility = visibility
+
+        holder.editButton.setOnClickListener { onEditClick(classItem) }
+        holder.deleteButton.setOnClickListener { onDeleteClick(classItem) }
     }
 
     override fun getItemCount(): Int = classList.size
@@ -52,5 +65,26 @@ class ClassAdapter(
     fun addItemAtTop(newClass: ClassItem) {
         classList.add(0, newClass)
         notifyItemInserted(0)
+    }
+
+    fun updateEditMode(isEdit: Boolean) {
+        isEditMode = isEdit
+        notifyDataSetChanged()
+    }
+
+    fun updateItem(updatedClass: ClassItem) {
+        val index = classList.indexOfFirst { it.classCode == updatedClass.classCode }
+        if (index != -1) {
+            classList[index] = updatedClass
+            notifyItemChanged(index)
+        }
+    }
+
+    fun removeItem(classItem: ClassItem) {
+        val index = classList.indexOfFirst { it.classCode == classItem.classCode }
+        if (index != -1) {
+            classList.removeAt(index)
+            notifyItemRemoved(index)
+        }
     }
 }
