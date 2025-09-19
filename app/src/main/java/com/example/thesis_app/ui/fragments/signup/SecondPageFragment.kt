@@ -56,9 +56,7 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
         btnSignUp = view.findViewById(R.id.btnSignUp)
 
-        // Restrict input length for name (max 50)
         editName.filters = arrayOf(InputFilter.LengthFilter(50))
-
         val yellowColor = Color.parseColor("#FFC007")
         layoutPassword.setEndIconTintList(ColorStateList.valueOf(yellowColor))
         layoutConfirmPassword.setEndIconTintList(ColorStateList.valueOf(yellowColor))
@@ -89,8 +87,9 @@ class SecondPageFragment : Fragment(R.layout.signup) {
             validateInputs()
         }
         editPassword.addTextChangedListener {
-            updatePasswordStrength(it.toString())
-            showPasswordRequirements(it.toString())
+            val pwd = it.toString()
+            updatePasswordStrength(pwd)
+            showPasswordRequirements(pwd)
             validateInputs()
         }
         editConfirmPassword.addTextChangedListener {
@@ -101,14 +100,8 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
     private fun validateName() {
         val name = editName.text?.toString()?.trim() ?: ""
-        // Regex: FirstName [MiddleInitial.] LastName
         val nameValid = name.matches(Regex("^[A-Za-z]+(\\s[A-Z]\\.)?\\s[A-Za-z]+\$"))
-
-        if (!nameValid && name.isNotEmpty()) {
-            layoutName.error = "Name (F.N./M.I./Surname)"
-        } else {
-            layoutName.error = null
-        }
+        layoutName.error = if (!nameValid && name.isNotEmpty()) "Name (F.N./M.I./Surname)" else null
     }
 
     private fun checkEmailWithFirebase() {
@@ -123,13 +116,10 @@ class SecondPageFragment : Fragment(R.layout.signup) {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val signInMethods = task.result?.signInMethods ?: emptyList<String>()
-                    if (signInMethods.isNotEmpty()) {
-                        layoutEmail.error = "Email already in use"
-                        disableNextButton()
-                    } else {
-                        layoutEmail.error = null
-                        validateInputs()
-                    }
+                    layoutEmail.error = if (signInMethods.isNotEmpty()) {
+                        disableNextButton(); "Email already in use"
+                    } else null
+                    validateInputs()
                 } else {
                     layoutEmail.error = "Could not verify email"
                     disableNextButton()
@@ -161,9 +151,7 @@ class SecondPageFragment : Fragment(R.layout.signup) {
                 layoutConfirmPassword.helperText = "Passwords do not match"
                 layoutConfirmPassword.setHelperTextColor(ColorStateList.valueOf(Color.RED))
             }
-        } else {
-            layoutConfirmPassword.helperText = null
-        }
+        } else layoutConfirmPassword.helperText = null
     }
 
     private fun showExitConfirmationDialog() {
@@ -214,7 +202,7 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
     private fun updatePasswordStrength(password: String) {
         val score = calculatePasswordScore(password)
-        val progress = (score * 20)
+        val progress = (score * 20).coerceAtMost(100)
         passwordStrengthBar.max = 100
 
         ObjectAnimator.ofInt(passwordStrengthBar, "progress", passwordStrengthBar.progress, progress).apply {
@@ -222,18 +210,18 @@ class SecondPageFragment : Fragment(R.layout.signup) {
             start()
         }
 
-        when (score) {
-            0, 1, 2 -> {
+        when {
+            score <= 2 -> {
                 passwordStrengthText.text = "Weak"
                 passwordStrengthText.setTextColor(Color.RED)
                 passwordStrengthBar.progressTintList = ColorStateList.valueOf(Color.RED)
             }
-            3, 4 -> {
+            score in 3..4 -> {
                 passwordStrengthText.text = "Medium"
                 passwordStrengthText.setTextColor(Color.parseColor("#FFA500"))
                 passwordStrengthBar.progressTintList = ColorStateList.valueOf(Color.parseColor("#FFA500"))
             }
-            5 -> {
+            else -> {
                 passwordStrengthText.text = "Strong"
                 passwordStrengthText.setTextColor(Color.parseColor("#008000"))
                 passwordStrengthBar.progressTintList = ColorStateList.valueOf(Color.parseColor("#008000"))
@@ -246,39 +234,37 @@ class SecondPageFragment : Fragment(R.layout.signup) {
         val lowerCase = password.any { it.isLowerCase() }
         val number = password.any { it.isDigit() }
         val special = password.any { "!@#\$%^&*()-_=+[]{}|;:'\",.<>?/`~".contains(it) }
-        val lengthValid = password.length in 5..8
 
         val requirements = mutableListOf<String>()
-        if (!lengthValid) requirements.add("5-8 characters")
         if (!upperCase) requirements.add("1 uppercase")
         if (!lowerCase) requirements.add("1 lowercase")
         if (!number) requirements.add("1 number")
         if (!special) requirements.add("1 special character")
 
-        if (requirements.isEmpty()) {
-            layoutPassword.helperText = "✔ Strong password"
-            layoutPassword.setHelperTextColor(ColorStateList.valueOf(Color.parseColor("#FFC007")))
-        } else {
-            layoutPassword.helperText = "Missing: ${requirements.joinToString(", ")}"
-            layoutPassword.setHelperTextColor(ColorStateList.valueOf(Color.RED))
-        }
+        layoutPassword.helperText = if (requirements.isEmpty()) {
+            "✔ Strong password"
+        } else "Missing: ${requirements.joinToString(", ")}"
+
+        layoutPassword.setHelperTextColor(ColorStateList.valueOf(if (requirements.isEmpty()) Color.parseColor("#FFC007") else Color.RED))
     }
 
     private fun isStrongPassword(password: String): Boolean {
-        return password.length in 5..8 &&
-                password.any { it.isUpperCase() } &&
+        val lengthBonus = password.length >= 12 // automatically strong if very long
+        val hasAllTypes = password.any { it.isUpperCase() } &&
                 password.any { it.isLowerCase() } &&
                 password.any { it.isDigit() } &&
                 password.any { "!@#\$%^&*()-_=+[]{}|;:'\",.<>?/`~".contains(it) }
+        return hasAllTypes || lengthBonus
     }
 
     private fun calculatePasswordScore(password: String): Int {
         var score = 0
-        if (password.length in 5..8) score++
+        if (password.isNotEmpty()) score++
         if (password.any { it.isUpperCase() }) score++
         if (password.any { it.isLowerCase() }) score++
         if (password.any { it.isDigit() }) score++
         if (password.any { "!@#\$%^&*()-_=+[]{}|;:'\",.<>?/`~".contains(it) }) score++
+        if (password.length >= 12) score++ // bonus for long password
         return score
     }
 

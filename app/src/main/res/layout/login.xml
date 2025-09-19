@@ -44,14 +44,12 @@
         android:orientation="vertical">
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:id="@+id/emailLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="12dp"
-            android:fontFamily="@font/pixel"
             android:hint="Email"
-            app:boxStrokeColor="#FFC007"
-            app:hintTextColor="#000">
+            app:boxStrokeColor="#FFC007">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editEmail"
@@ -61,14 +59,13 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:id="@+id/passwordLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="12dp"
             android:hint="Password"
             app:boxStrokeColor="#FFC007"
-            app:endIconMode="password_toggle"
-            app:hintTextColor="#000">
+            app:endIconMode="password_toggle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/Password"
@@ -76,6 +73,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
+
     </LinearLayout>
 
     <!-- Login Button -->
@@ -111,6 +109,13 @@
             android:fontFamily="@font/pixel"
             android:text=" Create Account"
             android:textColor="#FFC007" />
+
+        <ProgressBar
+            android:id="@+id/loginProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginTop="12dp"/>
     </LinearLayout>
 
 </LinearLayout>

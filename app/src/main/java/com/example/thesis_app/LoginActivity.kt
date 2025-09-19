@@ -1,32 +1,27 @@
 package com.example.thesis_app
 
-import android.app.AlertDialog
-import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import android.widget.Button
-import android.widget.TextView
+import android.util.Patterns
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.database.FirebaseDatabase
+import androidx.core.widget.doAfterTextChanged
+import com.example.thesis_app.databinding.LoginBinding
 import com.google.firebase.auth.FirebaseAuth
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
+import com.google.firebase.database.FirebaseDatabase
 
 class LoginActivity : ComponentActivity() {
 
+    private lateinit var binding: LoginBinding
+    private val firebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.login)
+        binding = LoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val login = findViewById<Button>(R.id.LoginButton)
-        val signup = findViewById<TextView>(R.id.textView9)
-        val teacherEmail = findViewById<TextInputEditText>(R.id.editEmail)
-        val teacherPassword = findViewById<TextInputEditText>(R.id.Password)
-
+        // Back press confirmation
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -34,40 +29,107 @@ class LoginActivity : ComponentActivity() {
                 }
             })
 
-        login.setOnClickListener {
-            login.isEnabled = false // turns gray
+        // Initially disable login button
+        binding.LoginButton.isEnabled = false
+        binding.LoginButton.alpha = 0.5f
 
-            val email = teacherEmail.text.toString().trim()
-            val password = teacherPassword.text.toString().trim()
+        // Setup live validation for email and password
+        setupLiveValidation()
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter teacher email and password", Toast.LENGTH_SHORT).show()
-                login.isEnabled = true // enable back
-                return@setOnClickListener
-            }
+        // Button listeners
+        binding.LoginButton.setOnClickListener { attemptLogin() }
+        binding.textView9.setOnClickListener { goToSignup() }
 
-            FirebaseAuth.getInstance()
-                .signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        login.isEnabled = true
-                    }, 1000)
+        // Auto-login if user already signed in
+        autoLoginIfAvailable()
+    }
 
-                    if (task.isSuccessful) {
-                        fetchUserData(email) // pass email instead of userId
-                        teacherEmail.text?.clear()
-                        teacherPassword.text?.clear()
-                    } else {
-                        Toast.makeText(this, task.exception?.message, Toast.LENGTH_SHORT).show()
-                    }
+    private fun setupLiveValidation() {
+        val yellowColor = Color.parseColor("#FFC007")
+        val redColor = Color.RED
+
+        // Email live validation
+        binding.editEmail.doAfterTextChanged { text ->
+            val email = text?.toString()?.trim() ?: ""
+            when {
+                email.isEmpty() -> {
+                    binding.emailLayout.error = "Email cannot be empty"
+                    binding.emailLayout.boxStrokeColor = redColor
                 }
+                else -> {
+                    binding.emailLayout.error = null
+                    binding.emailLayout.helperText = null
+                    binding.emailLayout.boxStrokeColor = yellowColor
+                }
+            }
+            enableLoginIfValid()
         }
 
-        signup.setOnClickListener {
-            val intent = Intent(this, LoadingActivity::class.java)
-            intent.putExtra("mode", "signup")
-            startActivity(intent)
+        // Password live validation
+        binding.Password.doAfterTextChanged { text ->
+            val password = text?.toString() ?: ""
+            if (password.isEmpty()) {
+                binding.passwordLayout.error = "Password cannot be empty"
+                binding.passwordLayout.boxStrokeColor = redColor
+            } else {
+                binding.passwordLayout.error = null
+                binding.passwordLayout.helperText = null
+                binding.passwordLayout.boxStrokeColor = yellowColor
+            }
+            enableLoginIfValid()
         }
+    }
+
+    private fun enableLoginIfValid() {
+        val emailValid = binding.editEmail.text?.isNotEmpty() == true
+        val passwordValid = binding.Password.text?.isNotEmpty() == true
+
+        val enable = emailValid && passwordValid
+        binding.LoginButton.isEnabled = enable
+        binding.LoginButton.alpha = if (enable) 1f else 0.5f
+    }
+
+    private fun attemptLogin() {
+        val email = binding.editEmail.text.toString().trim()
+        val password = binding.Password.text.toString()
+
+        // Safety check before calling Firebase
+        if (email.isEmpty() || password.isEmpty()) {
+            if (email.isEmpty()) binding.emailLayout.error = "Email cannot be empty"
+            if (password.isEmpty()) binding.passwordLayout.error = "Password cannot be empty"
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.LoginButton.isEnabled = false
+        binding.loginProgress.visibility = android.widget.ProgressBar.VISIBLE
+
+        firebaseAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                binding.loginProgress.visibility = android.widget.ProgressBar.GONE
+                binding.LoginButton.isEnabled = true
+
+                if (task.isSuccessful) {
+                    // Clear any previous error states on success
+                    binding.emailLayout.error = null
+                    binding.passwordLayout.error = null
+                    binding.emailLayout.helperText = null
+                    binding.passwordLayout.helperText = null
+                    binding.emailLayout.boxStrokeColor = Color.parseColor("#FFC007")
+                    binding.passwordLayout.boxStrokeColor = Color.parseColor("#FFC007")
+
+                    fetchUserData(email)
+                    binding.editEmail.text?.clear()
+                    binding.Password.text?.clear()
+                } else {
+                    // Red boxes for incorrect credentials
+                    binding.emailLayout.error = "Email or password is incorrect"
+                    binding.passwordLayout.error = "Email or password is incorrect"
+                    binding.emailLayout.boxStrokeColor = Color.RED
+                    binding.passwordLayout.boxStrokeColor = Color.RED
+                    Toast.makeText(this, "Email or password is incorrect", Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     private fun fetchUserData(email: String) {
@@ -78,23 +140,22 @@ class LoginActivity : ComponentActivity() {
                     for (child in snapshot.children) {
                         val role = child.child("role").getValue(String::class.java)
                         val emailDb = child.child("email").getValue(String::class.java)
-                        val studentId = child.child("studentID").getValue(String::class.java) // ✅ fetch studentId
+                        val studentId = child.child("studentID").getValue(String::class.java)
 
-                        // 🔹 Save user info into SharedPreferences
                         val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
                         prefs.edit().apply {
                             putString("role", role)
                             putString("email", emailDb)
-                            putString("studentId", studentId)   // ✅ persist studentId
+                            putString("studentId", studentId)
                             apply()
                         }
 
-                        // 🔹 Proceed to LoadingActivity
-                        val intent = Intent(this, LoadingActivity::class.java)
-                        intent.putExtra("mode", "login")
-                        intent.putExtra("role", role)
-                        intent.putExtra("email", emailDb)
-                        intent.putExtra("studentId", studentId)
+                        val intent = android.content.Intent(this, LoadingActivity::class.java).apply {
+                            putExtra("mode", "login")
+                            putExtra("role", role)
+                            putExtra("email", emailDb)
+                            putExtra("studentId", studentId)
+                        }
                         startActivity(intent)
                         finish()
                         break
@@ -104,69 +165,22 @@ class LoginActivity : ComponentActivity() {
                 }
             }
             .addOnFailureListener {
-                Log.e("FirebaseError", "Failed to fetch user data: ${it.message}")
+                android.util.Log.e("FirebaseError", "Failed to fetch user data: ${it.message}")
             }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            val email = currentUser.email
-            if (email != null) {
-                val dbRef = FirebaseDatabase.getInstance().getReference("users")
-                dbRef.orderByChild("email").equalTo(email).get()
-                    .addOnSuccessListener { snapshot ->
-                        if (snapshot.exists()) {
-                            for (child in snapshot.children) {
-                                val name = child.child("name").getValue(String::class.java) // ✅ fetch name
-                                val emailDb = child.child("email").getValue(String::class.java)
-                                val role = child.child("role").getValue(String::class.java)
-
-                                if (!role.isNullOrEmpty()) {
-                                    val intent = Intent(this, LoadingActivity::class.java)
-                                    intent.putExtra("mode", "login")
-                                    intent.putExtra("role", role)
-                                    intent.putExtra("email", emailDb)
-                                    intent.putExtra("name", name)
-
-                                    // Only add studentId if the role is "student"
-                                    if (role == "student") {
-                                        val studentId = child.child("studentID").getValue(String::class.java)
-
-                                        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-                                        prefs.edit().apply {
-                                            putString("role", role)
-                                            putString("email", emailDb)
-                                            putString("studentId", studentId)   // ✅ save again here
-                                            apply()
-                                        }
-
-                                        intent.putExtra("studentId", studentId)
-                                    }
-
-                                    startActivity(intent)
-                                    finish()
-                                }
-
-                            }
-                        } else {
-                            Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(
-                            this,
-                            "Failed to load user role: ${it.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-            }
-        }
+    private fun goToSignup() {
+        val intent = android.content.Intent(this, LoadingActivity::class.java)
+        intent.putExtra("mode", "signup")
+        startActivity(intent)
     }
+
+    private fun autoLoginIfAvailable() {
+        firebaseAuth.currentUser?.email?.let { fetchUserData(it) }
+    }
+
     private fun showExitConfirmation() {
-        AlertDialog.Builder(this)
+        androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Exit App")
             .setMessage("Are you sure you want to exit?")
             .setPositiveButton("Yes") { _, _ -> finish() }

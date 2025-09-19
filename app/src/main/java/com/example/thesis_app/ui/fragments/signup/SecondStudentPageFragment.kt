@@ -53,8 +53,12 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
 
         btnSignUp = view.findViewById(R.id.btnSignUp)
 
-        // Restrict input length for name (max 50)
+        // Restrict input length for name only
         editName.filters = arrayOf(InputFilter.LengthFilter(50))
+
+        // Allow unlimited characters for passwords
+        editPassword.filters = arrayOf<InputFilter>()
+        editConfirmPassword.filters = arrayOf<InputFilter>()
 
         val yellowColor = Color.parseColor("#FFC007")
         layoutPassword.setEndIconTintList(ColorStateList.valueOf(yellowColor))
@@ -86,9 +90,10 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
             validateInputs()
         }
         editPassword.addTextChangedListener {
-            val password = it.toString()
-            updatePasswordStrength(password)
-            showPasswordRequirements(password)
+            val pwd = it.toString()
+            updatePasswordStrength(pwd)
+            showPasswordRequirements(pwd)
+            validatePasswordMatch()
             validateInputs()
         }
         editConfirmPassword.addTextChangedListener {
@@ -99,35 +104,15 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
 
     private fun validateName() {
         val name = editName.text?.toString()?.trim() ?: ""
-        // Regex: FirstName [MiddleInitial.] LastName
-        val nameValid = name.matches(Regex("^[A-Za-z]+(\\s[A-Z]\\.)?\\s[A-Za-z]+\$"))
-
-        if (!nameValid && name.isNotEmpty()) {
-            layoutName.error = "Name (F.N./M.I./Surname)"
-        } else {
-            layoutName.error = null
-        }
+        val nameValid = name.matches(Regex("^[A-Za-z]+(\\s[A-Z]\\.)?\\s[A-Za-z]+$"))
+        layoutName.error = if (!nameValid && name.isNotEmpty()) "Name (F.N./M.I./Surname)" else null
     }
 
     private fun validateEmail() {
         val email = editEmail.text?.toString()?.trim() ?: ""
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() && email.isNotEmpty()) {
-            layoutEmail.error = "Enter a valid email"
-        } else {
-            layoutEmail.error = null
-        }
-    }
-
-    private fun validateInputs() {
-        val nameValid = layoutName.error == null && editName.text?.isNotEmpty() == true
-        val emailValid = layoutEmail.error == null && editEmail.text?.isNotEmpty() == true
-        val passwordValid = isStrongPassword(editPassword.text?.toString() ?: "")
-        val passwordsMatch = editPassword.text.toString() == editConfirmPassword.text.toString() &&
-                editPassword.text.toString().isNotEmpty()
-
-        val enable = nameValid && emailValid && passwordValid && passwordsMatch
-        btnSignUp.isEnabled = enable
-        btnSignUp.alpha = if (enable) 1f else 0.5f
+        layoutEmail.error =
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() && email.isNotEmpty()) "Enter a valid email"
+            else null
     }
 
     private fun validatePasswordMatch() {
@@ -136,15 +121,27 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
         if (confirmPassword.isNotEmpty()) {
             if (password == confirmPassword) {
                 layoutConfirmPassword.helperText = "✔ Passwords match"
-                layoutConfirmPassword.setHelperTextColor(ColorStateList.valueOf(Color.parseColor("#FFC007")))
+                layoutConfirmPassword.setHelperTextColor(
+                    ColorStateList.valueOf(Color.parseColor("#FFC007"))
+                )
                 layoutConfirmPassword.error = null
             } else {
                 layoutConfirmPassword.helperText = "Passwords do not match"
                 layoutConfirmPassword.setHelperTextColor(ColorStateList.valueOf(Color.RED))
             }
-        } else {
-            layoutConfirmPassword.helperText = null
-        }
+        } else layoutConfirmPassword.helperText = null
+    }
+
+    private fun validateInputs() {
+        val nameValid = layoutName.error == null && editName.text?.isNotEmpty() == true
+        val emailValid = layoutEmail.error == null && editEmail.text?.isNotEmpty() == true
+        val passwordValid = editPassword.text?.isNotEmpty() == true
+        val passwordsMatch = editPassword.text.toString() == editConfirmPassword.text.toString() &&
+                editPassword.text.toString().isNotEmpty()
+
+        val enable = nameValid && emailValid && passwordValid && passwordsMatch
+        btnSignUp.isEnabled = enable
+        btnSignUp.alpha = if (enable) 1f else 0.5f
     }
 
     private fun showExitConfirmationDialog() {
@@ -171,14 +168,13 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
         layoutConfirmPassword.error = null
         passwordStrengthBar.progress = 0
         passwordStrengthText.text = ""
+        layoutPassword.helperText = null
+        layoutConfirmPassword.helperText = null
         btnSignUp.isEnabled = false
         btnSignUp.alpha = 0.5f
     }
 
     private fun validateInputsAndProceed() {
-        validateInputs()
-        if (!btnSignUp.isEnabled) return
-
         val bundle = Bundle().apply {
             putString("role", arguments?.getString("role"))
             putString("name", editName.text.toString().trim())
@@ -197,8 +193,14 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
     }
 
     private fun updatePasswordStrength(password: String) {
-        val score = calculatePasswordScore(password)
-        val progress = score * 20
+        // Simple strength scoring
+        var score = 0
+        if (password.length >= 8) score++
+        if (password.any { it.isDigit() }) score++
+        if (password.any { it.isLowerCase() } && password.any { it.isUpperCase() }) score++
+        if (password.any { !it.isLetterOrDigit() }) score++
+
+        val progress = (score * 25).coerceAtMost(100)
         passwordStrengthBar.max = 100
 
         ObjectAnimator.ofInt(passwordStrengthBar, "progress", passwordStrengthBar.progress, progress).apply {
@@ -206,18 +208,18 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
             start()
         }
 
-        when (score) {
-            0, 1, 2 -> {
+        when {
+            score <= 1 -> {
                 passwordStrengthText.text = "Weak"
                 passwordStrengthText.setTextColor(Color.RED)
                 passwordStrengthBar.progressTintList = ColorStateList.valueOf(Color.RED)
             }
-            3, 4 -> {
+            score in 2..3 -> {
                 passwordStrengthText.text = "Medium"
                 passwordStrengthText.setTextColor(Color.parseColor("#FFA500"))
                 passwordStrengthBar.progressTintList = ColorStateList.valueOf(Color.parseColor("#FFA500"))
             }
-            5 -> {
+            else -> {
                 passwordStrengthText.text = "Strong"
                 passwordStrengthText.setTextColor(Color.parseColor("#008000"))
                 passwordStrengthBar.progressTintList = ColorStateList.valueOf(Color.parseColor("#008000"))
@@ -230,44 +232,17 @@ class SecondStudentPageFragment : Fragment(R.layout.student_signup) {
         val lowerCase = password.any { it.isLowerCase() }
         val number = password.any { it.isDigit() }
         val special = password.any { "!@#\$%^&*()-_=+[]{}|;:'\",.<>?/`~".contains(it) }
-        val lengthValid = password.length in 5..8
 
         val requirements = mutableListOf<String>()
-        if (!lengthValid) requirements.add("5-8 characters")
         if (!upperCase) requirements.add("1 uppercase")
         if (!lowerCase) requirements.add("1 lowercase")
         if (!number) requirements.add("1 number")
         if (!special) requirements.add("1 special character")
 
-        if (requirements.isEmpty()) {
-            layoutPassword.helperText = "✔ Strong password"
-            layoutPassword.setHelperTextColor(ColorStateList.valueOf(Color.parseColor("#FFC007")))
-        } else {
-            layoutPassword.helperText = "Missing: ${requirements.joinToString(", ")}"
-            layoutPassword.setHelperTextColor(ColorStateList.valueOf(Color.RED))
-        }
-    }
+        layoutPassword.helperText = if (requirements.isEmpty()) {
+            "✔ Strong password"
+        } else "Missing: ${requirements.joinToString(", ")}"
 
-    private fun isStrongPassword(password: String): Boolean {
-        return password.length in 5..8 &&
-                password.any { it.isUpperCase() } &&
-                password.any { it.isLowerCase() } &&
-                password.any { it.isDigit() } &&
-                password.any { "!@#\$%^&*()-_=+[]{}|;:'\",.<>?/`~".contains(it) }
-    }
-
-    private fun calculatePasswordScore(password: String): Int {
-        var score = 0
-        if (password.length in 5..8) score++
-        if (password.any { it.isUpperCase() }) score++
-        if (password.any { it.isLowerCase() }) score++
-        if (password.any { it.isDigit() }) score++
-        if (password.any { "!@#\$%^&*()-_=+[]{}|;:'\",.<>?/`~".contains(it) }) score++
-        return score
-    }
-
-    private fun disableNextButton() {
-        btnSignUp.isEnabled = false
-        btnSignUp.alpha = 0.5f
+        layoutPassword.setHelperTextColor(ColorStateList.valueOf(if (requirements.isEmpty()) Color.parseColor("#FFC007") else Color.RED))
     }
 }
