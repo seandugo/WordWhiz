@@ -39,12 +39,23 @@ class GradeLevelPage : Fragment(R.layout.grade_level) {
             })
 
         nextButton.setOnClickListener {
-            // 🔹 Get selected grade text (e.g. "Grade 9")
-            val selectedGrade = autoCompleteTextView.text.toString()
-            // Extract the number only -> "9"
-            val gradeNumber = selectedGrade.filter { it.isDigit() }
-            val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
-            sharedPrefs.edit().putString("grade_level", gradeNumber).apply()
+            val selectedGrade = autoCompleteTextView.text.toString()       // "Grade 9"
+            val gradeNumber = selectedGrade.filter { it.isDigit() }.toIntOrNull() ?: 7
+            val gradeLevelStr = "grade$gradeNumber"
+
+            // Save locally
+            val prefs = requireContext().getSharedPreferences("USER_PREFS", 0).edit()
+            prefs.putInt("grade_number", gradeNumber)
+            prefs.putString("grade_level", gradeLevelStr)
+            prefs.apply()
+
+            // ✅ Save to Firebase
+            val studentId = requireContext().getSharedPreferences("USER_PREFS", 0)
+                .getString("studentId", null)
+            if (!studentId.isNullOrEmpty()) {
+                val dbRef = FirebaseDatabase.getInstance().getReference("users")
+                dbRef.child(studentId).child("grade_level").setValue(gradeLevelStr)
+            }
 
             val secondPageFragment = ClassCodePage()
             parentFragmentManager.beginTransaction()

@@ -27,13 +27,21 @@ class LoadingActivity : ComponentActivity() {
             val mode = intent.getStringExtra("mode")
             val role = intent.getStringExtra("role")
             val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-            val studentId = prefs.getString("studentId", "") ?: ""
             when (mode) {
                 "login" -> {
                     if (role == "teacher") {
                         startActivity(Intent(this, TeacherActivity::class.java))
                         finish()
                     } else {
+                        val studentId = intent.getStringExtra("studentId") ?: ""
+                        val gradeNumber = intent.getIntExtra("grade_number", 0)  // guaranteed to be correct now
+
+                        if (studentId.isEmpty() || gradeNumber == 0) {
+                            // fallback if missing
+                            startActivity(Intent(this, PreAssessmentActivity::class.java))
+                            finish()
+                            return@postDelayed
+                        }
                         checkPretestStatus(studentId)
                     }
                 }

@@ -93,17 +93,28 @@ class LoginActivity : ComponentActivity() {
 
                         if (role == "student") {
                             val studentId = child.child("studentID").getValue(String::class.java)
-                            val gradeValue = child.child("grade_level").value
-                            val gradeLevel = when (gradeValue) {
+                            var gradeValue = child.child("grade_level").value
+                            var gradeNumber = when (gradeValue) {
                                 is Long -> gradeValue.toInt()
                                 is Int -> gradeValue
-                                is String -> gradeValue.toIntOrNull() ?: 0
+                                is String -> gradeValue.filter { it.isDigit() }.toIntOrNull() ?: 0
                                 else -> 0
                             }
 
+                            if (gradeNumber == 0) {
+                                // Firebase has 0 or missing → set a default or prompt for correct grade
+                                gradeNumber = 7  // for example, default to grade 7
+                                FirebaseDatabase.getInstance().reference
+                                    .child("users")
+                                    .child(studentId ?: "")
+                                    .child("grade_level")
+                                    .setValue(gradeNumber)
+                            }
+
+                            prefs.putInt("grade_number", gradeNumber)
+                            prefs.putString("grade_level", "grade$gradeNumber")
                             prefs.putString("studentId", studentId)
-                            prefs.putInt("grade_number", gradeLevel)       // <-- for LecturesFragment
-                            prefs.putString("grade_level", "grade$gradeLevel") // <-- optional, same as before
+                            prefs.apply()
                         }
 
                         prefs.apply()
@@ -159,27 +170,28 @@ class LoginActivity : ComponentActivity() {
                                         val gradeNumber = when (gradeValue) {
                                             is Long -> gradeValue.toInt()
                                             is Int -> gradeValue
-                                            is String -> gradeValue.toIntOrNull() ?: 0
+                                            is String -> gradeValue.filter { it.isDigit() }.toIntOrNull() ?: 0
                                             else -> 0
                                         }
-                                        val gradeLevelStr = "grade$gradeNumber"
 
-                                        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-                                        prefs.edit().apply {
-                                            putString("role", role)
-                                            putString("email", emailDb)
-                                            putString("studentId", studentId)
-                                            putInt("grade_number", gradeNumber)       // for LecturesFragment
-                                            putString("grade_level", gradeLevelStr)   // optional
-                                            apply()
-                                        }
+                                        // Save to SharedPreferences
+                                        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE).edit()
+                                        prefs.putInt("grade_number", gradeNumber)
+                                        prefs.putString("grade_level", "grade$gradeNumber")
+                                        prefs.putString("studentId", studentId)
+                                        prefs.putString("role", role)
+                                        prefs.putString("email", emailDb ?: email)
+                                        prefs.apply()  // Make sure prefs are written BEFORE launching next activity
 
+                                        // Pass important values via Intent
+                                        val intent = Intent(this, LoadingActivity::class.java)
+                                        intent.putExtra("mode", "login")
+                                        intent.putExtra("role", role)
                                         intent.putExtra("studentId", studentId)
-                                        intent.putExtra("grade_level", gradeNumber)
+                                        intent.putExtra("grade_number", gradeNumber)
+                                        startActivity(intent)
+                                        finish()
                                     }
-
-                                    startActivity(intent)
-                                    finish()
                                 }
 
                             }

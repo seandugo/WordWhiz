@@ -34,20 +34,13 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
             val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
             val studentId = sharedPrefs.getString("studentId", "") ?: ""
             val numericGrade = sharedPrefs.getInt("grade_number", 0)
-            if (numericGrade == 0) {
-                Log.e("QuizTimePage", "Grade number is 0 or not set!")
-                return@setOnClickListener
-            }
             val gradeLevel = "grade$numericGrade"
+            Log.d("QuizTimePage", "Computed gradeLevel = $gradeLevel") // ✅ Log the gradeLevel
+
             if (gradeLevel.isNullOrEmpty()) {
                 Log.e("QuizTimePage", "Grade level is null or empty!")
                 return@setOnClickListener
             }
-            FirebaseDatabase.getInstance().reference
-                .child("users")
-                .child(studentId)
-                .child("grade_level")
-                .setValue(numericGrade)
 
             // Use gradeLevel string for Firebase path
             val quizPath = "quizzes/$gradeLevel/quiz1"
