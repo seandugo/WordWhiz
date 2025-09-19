@@ -34,7 +34,6 @@ class LoadingActivity : ComponentActivity() {
                         startActivity(Intent(this, TeacherActivity::class.java))
                         finish()
                     } else {
-                        // ✅ Check in Firebase if pretest is completed
                         checkPretestStatus(studentId)
                     }
                 }

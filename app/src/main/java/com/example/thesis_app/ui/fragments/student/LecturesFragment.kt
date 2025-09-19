@@ -1,16 +1,17 @@
 package com.example.thesis_app.ui.fragments.student
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.FirebaseDatabase
 import com.example.thesis_app.models.QuizModel
 import com.example.thesis_app.QuizListAdapter
 import com.example.thesis_app.R
+import com.google.firebase.database.FirebaseDatabase
 
 class LecturesFragment : Fragment() {
 
@@ -43,9 +44,15 @@ class LecturesFragment : Fragment() {
         progressBar.visibility = View.GONE
 
         val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
-        val studentId = prefs.getString("studentId", "") ?: ""
+        val studentId = prefs.getString("studentId", null)
+        val gradeLevel = prefs.getString("grade_level", null)
 
-        adapter = QuizListAdapter(quizModelList, studentId, requireActivity())
+        Log.d("LecturesFragment", "Setting up RecyclerView")
+        Log.d("LecturesFragment", "studentId = $studentId")
+        Log.d("LecturesFragment", "grade_level = $gradeLevel")
+        Log.d("LecturesFragment", "quizModelList size = ${quizModelList.size}")
+
+        adapter = QuizListAdapter(quizModelList, studentId ?: "", requireActivity())
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
     }
@@ -54,15 +61,20 @@ class LecturesFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
 
         val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
-        val studentGrade = prefs.getString("grade_level", null)
+        val studentGradeNumber = prefs.getInt("grade_number", -1)
+        val studentId = prefs.getString("studentId", "")
 
-        if (studentGrade.isNullOrEmpty()) {
+        Log.d("LecturesFragment", "studentId = $studentId")
+        Log.d("LecturesFragment", "grade_number = $studentGradeNumber")
+
+        if (studentGradeNumber == -1) {
             progressBar.visibility = View.GONE
+            Log.d("LecturesFragment", "No grade_number found. Cannot fetch quizzes.")
             return
         }
 
-        // Example: studentGrade = "7" → go to quizzes/grade7
-        val gradePath = "grade$studentGrade"
+        val gradePath = "grade$studentGradeNumber"
+        Log.d("LecturesFragment", "Fetching quizzes from path: quizzes/$gradePath")
 
         FirebaseDatabase.getInstance().reference
             .child("quizzes")
@@ -73,19 +85,19 @@ class LecturesFragment : Fragment() {
                     for (quizSnapshot in gradeSnapshot.children) {
                         val quizModel = quizSnapshot.getValue(QuizModel::class.java)
                         if (quizModel != null) {
-                            val originalTotalQuestions = quizModel.questionList?.size ?: 0
-                            val fixedModel = quizModel.copy(
-                                id = quizSnapshot.key ?: "",
-                                totalQuestions = originalTotalQuestions
-                            )
+                            val fixedModel = quizModel.copy(id = quizSnapshot.key ?: "")
                             quizModelList.add(fixedModel)
                         }
                     }
+                    Log.d("LecturesFragment", "Quizzes found: ${quizModelList.size}")
+                } else {
+                    Log.d("LecturesFragment", "No quizzes found at this grade level")
                 }
                 setupRecyclerView()
             }
             .addOnFailureListener {
                 progressBar.visibility = View.GONE
+                Log.e("LecturesFragment", "Failed to fetch quizzes: ${it.message}")
             }
     }
 

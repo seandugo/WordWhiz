@@ -26,7 +26,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pixel"
-                android:text="WORDWHIZ"
+                android:text="Lectures"
                 android:textColor="#FFC007"
                 android:textSize="30sp"
                 android:textStyle="bold"

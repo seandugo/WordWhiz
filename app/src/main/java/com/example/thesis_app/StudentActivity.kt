@@ -1,6 +1,7 @@
 package com.example.thesis_app
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -69,10 +70,9 @@ class StudentActivity : AppCompatActivity() {
 
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
-            .setTitle("Logout")
-            .setMessage("Are you sure you want to log out?")
+            .setTitle("Exit App")
+            .setMessage("Are you sure you want to exit?")
             .setPositiveButton("Yes") { _, _ ->
-                FirebaseAuth.getInstance().signOut()
                 finish()
             }
             .setNegativeButton("No", null)

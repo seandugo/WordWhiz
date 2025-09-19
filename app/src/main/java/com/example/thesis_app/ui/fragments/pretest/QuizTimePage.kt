@@ -2,6 +2,7 @@ package com.example.thesis_app.ui.fragments.pretest
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.activity.OnBackPressedCallback
@@ -31,27 +32,30 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
 
         nextButton.setOnClickListener {
             val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
-            val gradeNumber = sharedPrefs.getString("grade_level", null)
             val studentId = sharedPrefs.getString("studentId", "") ?: ""
-
-            if (!gradeNumber.isNullOrEmpty()) {
-                // ✅ Save grade level in DB
-                FirebaseDatabase.getInstance().reference
-                    .child("users")
-                    .child(studentId)
-                    .child("grade_level")
-                    .setValue(gradeNumber.toInt())
-            } else {
-                android.util.Log.e("QuizTimePage", "Grade number is null or empty!")
+            val numericGrade = sharedPrefs.getInt("grade_number", 0)
+            if (numericGrade == 0) {
+                Log.e("QuizTimePage", "Grade number is 0 or not set!")
                 return@setOnClickListener
             }
+            val gradeLevel = "grade$numericGrade"
+            if (gradeLevel.isNullOrEmpty()) {
+                Log.e("QuizTimePage", "Grade level is null or empty!")
+                return@setOnClickListener
+            }
+            FirebaseDatabase.getInstance().reference
+                .child("users")
+                .child(studentId)
+                .child("grade_level")
+                .setValue(numericGrade)
 
-            // ✅ Build the path: quizzes/grade{level}/quiz1
-            val quizPath = "quizzes/grade$gradeNumber/quiz1"
+            // Use gradeLevel string for Firebase path
+            val quizPath = "quizzes/$gradeLevel/quiz1"
+            Log.d("QuizTimePage", "Fetching quiz from $quizPath")
 
             FirebaseDatabase.getInstance().reference
                 .child("quizzes")
-                .child("grade$gradeNumber")
+                .child(gradeLevel)
                 .child("quiz1")
                 .get()
                 .addOnSuccessListener { snapshot ->
@@ -69,8 +73,11 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                             requireActivity().finish()
                         }
                     } else {
-                        android.util.Log.e("QuizTimePage", "❌ No quiz found at $quizPath")
+                        Log.e("QuizTimePage", "❌ No quiz found at $quizPath")
                     }
+                }
+                .addOnFailureListener {
+                    Log.e("QuizTimePage", "Failed to fetch quiz: ${it.message}")
                 }
         }
     }
