@@ -164,30 +164,22 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                 setPadding(40, 30, 40, 10)
             }
 
-            // Grade Spinner
-            val gradeSpinner = Spinner(context).apply {
-                val grades = arrayOf("Select", "7", "8", "9", "10")
-                adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, grades)
-            }
-
-            // Section Input
-            val sectionInput = EditText(context).apply {
-                hint = "Section"
+            // Class Name Input
+            val classNameInput = EditText(context).apply {
+                hint = "Class Name"
                 inputType = InputType.TYPE_CLASS_TEXT
                 filters = arrayOf(InputFilter.LengthFilter(20))
             }
 
-            // Room Input
+            // Room Input (numeric only, max 12 digits)
             val roomInput = EditText(context).apply {
-                hint = "Room No."
-                inputType = InputType.TYPE_CLASS_TEXT
-                filters = arrayOf(InputFilter.LengthFilter(18))
+                hint = "Room No. (Optional)"
+                inputType = InputType.TYPE_CLASS_NUMBER
+                filters = arrayOf(InputFilter.LengthFilter(12))
             }
 
-            dialogLayout.addView(TextView(context).apply { text = "Grade:" })
-            dialogLayout.addView(gradeSpinner)
-            dialogLayout.addView(TextView(context).apply { text = "Section:" })
-            dialogLayout.addView(sectionInput)
+            dialogLayout.addView(TextView(context).apply { text = "Class Name:" })
+            dialogLayout.addView(classNameInput)
             dialogLayout.addView(TextView(context).apply { text = "Room No. (Optional):" })
             dialogLayout.addView(roomInput)
 
@@ -201,29 +193,23 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             dialog.show()
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val grade = gradeSpinner.selectedItem.toString().trim()
-                var section = sectionInput.text.toString().trim().uppercase() // uppercase
+                var className = classNameInput.text.toString().trim().uppercase() // force UPPERCASE
                 val roomNo = roomInput.text.toString().trim()
 
                 // Validation
-                if (grade == "Select") {
-                    Toast.makeText(context, "Please select a grade", Toast.LENGTH_SHORT).show()
+                if (className.isEmpty()) {
+                    classNameInput.error = "Class Name is required"
+                    classNameInput.requestFocus()
                     return@setOnClickListener
                 }
 
-                if (section.isEmpty()) {
-                    sectionInput.error = "Section is required"
-                    sectionInput.requestFocus()
+                // Optional: enforce only letters/numbers/spaces
+                if (!className.matches(Regex("^[A-Z0-9 ]+$"))) {
+                    classNameInput.error = "Only letters, numbers, and spaces allowed"
+                    classNameInput.requestFocus()
                     return@setOnClickListener
                 }
 
-                if (!section.matches(Regex("^[A-Z]+$"))) { // letters-only
-                    sectionInput.error = "Only letters allowed"
-                    sectionInput.requestFocus()
-                    return@setOnClickListener
-                }
-
-                val className = "$grade - $section"
                 val teacherClassesRef = database.getReference("users")
                     .child(auth.currentUser!!.uid)
                     .child("classes")
@@ -233,8 +219,8 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                     .addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             if (snapshot.exists()) {
-                                sectionInput.error = "This class already exists"
-                                sectionInput.requestFocus()
+                                classNameInput.error = "This class already exists"
+                                classNameInput.requestFocus()
                             } else {
                                 generateUniqueCode { classCode ->
                                     val newOrder = (classList.maxOfOrNull { it.order } ?: -1) + 1
@@ -265,44 +251,40 @@ class TeacherFragment : Fragment(R.layout.teachers) {
 
     private fun showEditDialog(classItem: ClassItem) {
         val context = requireContext()
-        val dialogLayout = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; setPadding(40,30,40,10) }
-
-        val classParts = classItem.className.split(" - ")
-        val gradeSpinner = Spinner(context).apply {
-            val grades = arrayOf("7","8","9","10")
-            adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, grades)
-            setSelection(grades.indexOf(classParts.getOrNull(0) ?: "7"))
+        val dialogLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(40, 30, 40, 10)
         }
 
-        val sectionInput = EditText(context).apply {
-            hint="Section"
-            setText(classParts.getOrNull(1) ?: "")
+        val classNameInput = EditText(context).apply {
+            hint = "Class Name"
+            setText(classItem.className)
             inputType = InputType.TYPE_CLASS_TEXT
-            filters = arrayOf(InputFilter.LengthFilter(20), InputFilter { source, _, _, _, _, _ ->
-                if (source.matches(Regex("[a-zA-Z]+"))) source else ""
-            })
+            filters = arrayOf(InputFilter.LengthFilter(20))
         }
 
-        // Auto-uppercase
-        sectionInput.addTextChangedListener(object : android.text.TextWatcher {
+        classNameInput.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) {
                 val text = s.toString()
                 if (text != text.uppercase()) {
-                    sectionInput.setText(text.uppercase())
-                    sectionInput.setSelection(sectionInput.text?.length ?: 0)
+                    classNameInput.setText(text.uppercase())
+                    classNameInput.setSelection(classNameInput.text?.length ?: 0)
                 }
             }
         })
 
-        val roomInput = EditText(context).apply { hint="Room No."; setText(classItem.roomNo); inputType = InputType.TYPE_CLASS_TEXT }
+        val roomInput = EditText(context).apply {
+            hint = "Room No."
+            setText(classItem.roomNo)
+            inputType = InputType.TYPE_CLASS_NUMBER
+            filters = arrayOf(InputFilter.LengthFilter(12))
+        }
 
-        dialogLayout.addView(TextView(context).apply{ text="Grade:" })
-        dialogLayout.addView(gradeSpinner)
-        dialogLayout.addView(TextView(context).apply{ text="Section:" })
-        dialogLayout.addView(sectionInput)
-        dialogLayout.addView(TextView(context).apply{ text="Room No.:" })
+        dialogLayout.addView(TextView(context).apply { text = "Class Name:" })
+        dialogLayout.addView(classNameInput)
+        dialogLayout.addView(TextView(context).apply { text = "Room No.:" })
         dialogLayout.addView(roomInput)
 
         AlertDialog.Builder(context)
@@ -313,19 +295,47 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             .create().also { dialog ->
                 dialog.show()
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    val grade = gradeSpinner.selectedItem.toString()
-                    val section = sectionInput.text.toString().trim()
+                    val className = classNameInput.text.toString().trim().uppercase()
                     val roomNo = roomInput.text.toString().trim()
-                    if(section.isEmpty()) return@setOnClickListener
 
-                    val newName = "$grade - $section"
-                    classItem.className = newName
+                    if (className.isEmpty()) {
+                        classNameInput.error = "Class Name is required"
+                        classNameInput.requestFocus()
+                        return@setOnClickListener
+                    }
+
+                    if (!className.matches(Regex("^[A-Z0-9 ]+$"))) {
+                        classNameInput.error = "Only letters, numbers, and spaces allowed"
+                        classNameInput.requestFocus()
+                        return@setOnClickListener
+                    }
+
+                    val newOrder = (classList.maxOfOrNull { it.order } ?: -1) + 1
+                    classItem.className = className
                     classItem.roomNo = roomNo
-                    database.getReference("users").child(auth.currentUser!!.uid)
-                        .child("classes").child(classItem.classCode).setValue(classItem)
-                    database.getReference("classes").child(classItem.classCode)
-                        .updateChildren(mapOf("className" to newName, "roomNo" to roomNo))
-                    adapter.updateItem(classItem)
+                    classItem.order = newOrder
+
+                    database.getReference("users")
+                        .child(auth.currentUser!!.uid)
+                        .child("classes")
+                        .child(classItem.classCode)
+                        .setValue(classItem)
+
+                    database.getReference("classes")
+                        .child(classItem.classCode)
+                        .updateChildren(
+                            mapOf(
+                                "className" to className,
+                                "roomNo" to roomNo,
+                                "order" to newOrder
+                            )
+                        )
+
+                    adapter.removeItem(classItem)
+                    adapter.addItemAtTop(classItem)
+                    recyclerView.scrollToPosition(0)
+
+                    Toast.makeText(requireContext(), "Class updated successfully", Toast.LENGTH_SHORT).show()
                     dialog.dismiss()
                 }
             }
@@ -340,13 +350,9 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                     .child("classes").child(classItem.classCode).removeValue()
                 database.getReference("classes").child(classItem.classCode).removeValue()
                 adapter.removeItem(classItem)
+                Toast.makeText(requireContext(), "Class deleted successfully", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        pendingUpdateRunnable?.let { handler.removeCallbacks(it) }
     }
 }

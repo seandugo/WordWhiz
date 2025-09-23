@@ -38,13 +38,16 @@
                 android:shadowRadius="3" />
         </androidx.appcompat.widget.Toolbar>
 
+        <!-- Fragment container -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragmentContainerView"
             android:name="com.example.thesis_app.ui.fragments.teacher.TeacherFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
     </LinearLayout>
+
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
