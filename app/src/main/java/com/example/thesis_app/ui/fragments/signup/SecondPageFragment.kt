@@ -66,6 +66,22 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
         addLiveValidation()
 
+        // Auto Title Case when focus leaves Name field
+        editName.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val text = editName.text?.toString()?.trim() ?: ""
+                if (text.isNotEmpty()) {
+                    val titleCase = text.lowercase().split("\\s+".toRegex())
+                        .joinToString(" ") { word ->
+                            word.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase() else it.toString()
+                            }
+                        }
+                    editName.setText(titleCase)
+                }
+            }
+        }
+
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
