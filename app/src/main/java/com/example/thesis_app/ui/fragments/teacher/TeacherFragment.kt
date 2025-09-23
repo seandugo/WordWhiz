@@ -261,19 +261,8 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             setText(classItem.className)
             inputType = InputType.TYPE_CLASS_TEXT
             filters = arrayOf(InputFilter.LengthFilter(20))
+            // Removed the TextWatcher that forced uppercase
         }
-
-        classNameInput.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) {
-                val text = s.toString()
-                if (text != text.uppercase()) {
-                    classNameInput.setText(text.uppercase())
-                    classNameInput.setSelection(classNameInput.text?.length ?: 0)
-                }
-            }
-        })
 
         val roomInput = EditText(context).apply {
             hint = "Room No."
@@ -295,6 +284,7 @@ class TeacherFragment : Fragment(R.layout.teachers) {
             .create().also { dialog ->
                 dialog.show()
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    // Convert to uppercase only on save
                     val className = classNameInput.text.toString().trim().uppercase()
                     val roomNo = roomInput.text.toString().trim()
 
