@@ -10,29 +10,6 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Top bar: WORDWHIZ logo + toggle -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
-
-        <!-- Spacer -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
-
-        <!-- Edit/Delete Toggle Switch -->
-        <Switch
-            android:id="@+id/toggleEditMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Edit/Delete"
-            android:textSize="14sp" />
-    </LinearLayout>
-
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"

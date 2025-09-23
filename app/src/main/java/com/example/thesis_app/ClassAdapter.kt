@@ -3,8 +3,9 @@ package com.example.thesis_app
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.ClassItem
 
@@ -13,15 +14,13 @@ class ClassAdapter(
     private val onStartDrag: ((RecyclerView.ViewHolder) -> Unit)? = null,
     private val onItemClick: (ClassItem) -> Unit,
     private val onEditClick: (ClassItem) -> Unit,
-    private val onDeleteClick: (ClassItem) -> Unit,
-    private var isEditMode: Boolean = false
+    private val onDeleteClick: (ClassItem) -> Unit
 ) : RecyclerView.Adapter<ClassAdapter.ClassViewHolder>() {
 
     inner class ClassViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val className: TextView = itemView.findViewById(R.id.classNameText)
         val roomNumber: TextView = itemView.findViewById(R.id.roomNumberText)
-        val editButton: ImageButton = itemView.findViewById(R.id.editButton)
-        val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
+        val menuButton: ImageView = itemView.findViewById(R.id.menuButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ClassViewHolder {
@@ -44,13 +43,26 @@ class ClassAdapter(
             true
         }
 
-        // Edit/Delete visibility
-        val visibility = if (isEditMode) View.VISIBLE else View.GONE
-        holder.editButton.visibility = visibility
-        holder.deleteButton.visibility = visibility
+        // Popup menu
+        holder.menuButton.setOnClickListener { v ->
+            val popup = PopupMenu(v.context, v)
+            popup.inflate(R.menu.class_item_menu)
 
-        holder.editButton.setOnClickListener { onEditClick(classItem) }
-        holder.deleteButton.setOnClickListener { onDeleteClick(classItem) }
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_edit -> {
+                        onEditClick(classItem)
+                        true
+                    }
+                    R.id.action_delete -> {
+                        onDeleteClick(classItem)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
     }
 
     override fun getItemCount(): Int = classList.size
@@ -65,11 +77,6 @@ class ClassAdapter(
     fun addItemAtTop(newClass: ClassItem) {
         classList.add(0, newClass)
         notifyItemInserted(0)
-    }
-
-    fun updateEditMode(isEdit: Boolean) {
-        isEditMode = isEdit
-        notifyDataSetChanged()
     }
 
     fun updateItem(updatedClass: ClassItem) {

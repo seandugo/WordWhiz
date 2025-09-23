@@ -93,26 +93,6 @@ class LoginActivity : ComponentActivity() {
 
                         if (role == "student") {
                             val studentId = child.child("studentID").getValue(String::class.java)
-                            var gradeValue = child.child("grade_level").value
-                            var gradeNumber = when (gradeValue) {
-                                is Long -> gradeValue.toInt()
-                                is Int -> gradeValue
-                                is String -> gradeValue.filter { it.isDigit() }.toIntOrNull() ?: 0
-                                else -> 0
-                            }
-
-                            if (gradeNumber == 0) {
-                                // Firebase has 0 or missing → set a default or prompt for correct grade
-                                gradeNumber = 7  // for example, default to grade 7
-                                FirebaseDatabase.getInstance().reference
-                                    .child("users")
-                                    .child(studentId ?: "")
-                                    .child("grade_level")
-                                    .setValue(gradeNumber)
-                            }
-
-                            prefs.putInt("grade_number", gradeNumber)
-                            prefs.putString("grade_level", "grade$gradeNumber")
                             prefs.putString("studentId", studentId)
                             prefs.apply()
                         }
@@ -122,6 +102,9 @@ class LoginActivity : ComponentActivity() {
                         val intent = Intent(this, LoadingActivity::class.java)
                         intent.putExtra("mode", "login")
                         intent.putExtra("role", role)
+                        if (role == "student") {
+                            intent.putExtra("studentId", child.child("studentID").getValue(String::class.java))
+                        }
                         startActivity(intent)
                         finish()
                         break
@@ -144,70 +127,58 @@ class LoginActivity : ComponentActivity() {
         if (currentUser != null) {
             val email = currentUser.email
             if (email != null) {
-                disableButtons()
-                Snackbar.make(findViewById(android.R.id.content), "Logging in…", Snackbar.LENGTH_SHORT).show()
+                val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+                val savedRole = prefs.getString("role", null)
+                val savedStudentId = prefs.getString("studentId", null)
 
-                val dbRef = FirebaseDatabase.getInstance().getReference("users")
-                dbRef.orderByChild("email").equalTo(email).get()
-                    .addOnSuccessListener { snapshot ->
-                        enableButtons()
-                        if (snapshot.exists()) {
-                            for (child in snapshot.children) {
-                                val name = child.child("name").getValue(String::class.java)
-                                val emailDb = child.child("email").getValue(String::class.java)
-                                val role = child.child("role").getValue(String::class.java)
-
-                                if (!role.isNullOrEmpty()) {
-                                    val intent = Intent(this, LoadingActivity::class.java)
-                                    intent.putExtra("mode", "login")
-                                    intent.putExtra("role", role)
-                                    intent.putExtra("email", emailDb)
-                                    intent.putExtra("name", name)
-
-                                    if (role == "student") {
-                                        val studentId = child.child("studentID").getValue(String::class.java)
-                                        val gradeValue = child.child("grade_level").value
-                                        val gradeNumber = when (gradeValue) {
-                                            is Long -> gradeValue.toInt()
-                                            is Int -> gradeValue
-                                            is String -> gradeValue.filter { it.isDigit() }.toIntOrNull() ?: 0
-                                            else -> 0
+                if (savedRole != null) {
+                    // Fast auto-login with cached prefs
+                    val intent = Intent(this, LoadingActivity::class.java)
+                    intent.putExtra("mode", "login")
+                    intent.putExtra("role", savedRole)
+                    if (savedRole == "student") {
+                        intent.putExtra("studentId", savedStudentId)
+                    }
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // Fetch fresh from DB
+                    val dbRef = FirebaseDatabase.getInstance().getReference("users")
+                    dbRef.orderByChild("email").equalTo(email).get()
+                        .addOnSuccessListener { snapshot ->
+                            if (snapshot.exists()) {
+                                for (child in snapshot.children) {
+                                    val role = child.child("role").getValue(String::class.java)
+                                    if (!role.isNullOrEmpty()) {
+                                        val editor = prefs.edit()
+                                        editor.putString("role", role)
+                                        editor.putString("email", email)
+                                        if (role == "student") {
+                                            val studentId = child.child("studentID")
+                                                .getValue(String::class.java)
+                                            editor.putString("studentId", studentId)
                                         }
+                                        editor.apply()
 
-                                        // Save to SharedPreferences
-                                        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE).edit()
-                                        prefs.putInt("grade_number", gradeNumber)
-                                        prefs.putString("grade_level", "grade$gradeNumber")
-                                        prefs.putString("studentId", studentId)
-                                        prefs.putString("role", role)
-                                        prefs.putString("email", emailDb ?: email)
-                                        prefs.apply()  // Make sure prefs are written BEFORE launching next activity
-
-                                        // Pass important values via Intent
                                         val intent = Intent(this, LoadingActivity::class.java)
                                         intent.putExtra("mode", "login")
                                         intent.putExtra("role", role)
-                                        intent.putExtra("studentId", studentId)
-                                        intent.putExtra("grade_number", gradeNumber)
+                                        if (role == "student") {
+                                            intent.putExtra("studentId",
+                                                child.child("studentID")
+                                                    .getValue(String::class.java)
+                                            )
+                                        }
                                         startActivity(intent)
                                         finish()
                                     }
                                 }
-
+                            } else {
+                                Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT)
+                                    .show()
                             }
-                        } else {
-                            Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
-                            enableButtons()
                         }
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(
-                            this,
-                            "Failed to load user role: ${it.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        enableButtons()
-                    }
+                }
             }
         }
     }

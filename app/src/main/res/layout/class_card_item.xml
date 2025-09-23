@@ -37,27 +37,14 @@
             android:layout_alignParentStart="true"
             android:layout_marginTop="4dp"/>
 
-        <!-- Edit Button -->
-        <ImageButton
-            android:id="@+id/editButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+        <ImageView
+            android:id="@+id/menuButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/more"
+            android:contentDescription="Options"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_edit"
-            android:contentDescription="Edit"
-            android:visibility="gone"/>
-
-        <!-- Delete Button -->
-        <ImageButton
-            android:id="@+id/deleteButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_toStartOf="@id/editButton"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_delete"
-            android:contentDescription="Delete"
-            android:visibility="gone"/>
+            android:layout_centerVertical="true"
+            android:padding="8dp" />
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

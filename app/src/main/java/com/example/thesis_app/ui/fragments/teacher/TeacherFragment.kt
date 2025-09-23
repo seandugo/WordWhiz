@@ -64,12 +64,6 @@ class TeacherFragment : Fragment(R.layout.teachers) {
         setupAddClassCard(view)
         setupTeacherRef()
 
-        // Toggle button beside WORDWHIZ logo
-        val toggleEdit = view.findViewById<Switch>(R.id.toggleEditMode)
-        toggleEdit.setOnCheckedChangeListener { _, isChecked ->
-            adapter.updateEditMode(isChecked)
-        }
-
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {

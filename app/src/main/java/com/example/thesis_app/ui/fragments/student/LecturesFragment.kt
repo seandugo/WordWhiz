@@ -45,11 +45,9 @@ class LecturesFragment : Fragment() {
 
         val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
         val studentId = prefs.getString("studentId", null)
-        val gradeLevel = prefs.getString("grade_level", null)
 
         Log.d("LecturesFragment", "Setting up RecyclerView")
         Log.d("LecturesFragment", "studentId = $studentId")
-        Log.d("LecturesFragment", "grade_level = $gradeLevel")
         Log.d("LecturesFragment", "quizModelList size = ${quizModelList.size}")
 
         adapter = QuizListAdapter(quizModelList, studentId ?: "", requireActivity())
@@ -61,28 +59,15 @@ class LecturesFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
 
         val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
-        val studentGradeNumber = prefs.getInt("grade_number", -1)
         val studentId = prefs.getString("studentId", "")
-
         Log.d("LecturesFragment", "studentId = $studentId")
-        Log.d("LecturesFragment", "grade_number = $studentGradeNumber")
-
-        if (studentGradeNumber == -1) {
-            progressBar.visibility = View.GONE
-            Log.d("LecturesFragment", "No grade_number found. Cannot fetch quizzes.")
-            return
-        }
-
-        val gradePath = "grade$studentGradeNumber"
-        Log.d("LecturesFragment", "Fetching quizzes from path: quizzes/$gradePath")
 
         FirebaseDatabase.getInstance().reference
             .child("quizzes")
-            .child(gradePath)
             .get()
-            .addOnSuccessListener { gradeSnapshot ->
-                if (gradeSnapshot.exists()) {
-                    for (quizSnapshot in gradeSnapshot.children) {
+            .addOnSuccessListener { database ->
+                if (database.exists()) {
+                    for (quizSnapshot in database.children) {
                         val quizModel = quizSnapshot.getValue(QuizModel::class.java)
                         if (quizModel != null) {
                             val fixedModel = quizModel.copy(id = quizSnapshot.key ?: "")

@@ -17,32 +17,33 @@ class LoadingActivity : ComponentActivity() {
 
         database = FirebaseDatabase.getInstance().reference
 
+        // Disable back button
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                }
+                override fun handleOnBackPressed() { }
             })
 
         Handler(Looper.getMainLooper()).postDelayed({
             val mode = intent.getStringExtra("mode")
             val role = intent.getStringExtra("role")
             val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+
             when (mode) {
                 "login" -> {
                     if (role == "teacher") {
                         startActivity(Intent(this, TeacherActivity::class.java))
                         finish()
                     } else {
-                        val studentId = intent.getStringExtra("studentId") ?: ""
-                        val gradeNumber = intent.getIntExtra("grade_number", 0)  // guaranteed to be correct now
+                        val studentId = intent.getStringExtra("studentId")
+                            ?: prefs.getString("studentId", null)
 
-                        if (studentId.isEmpty() || gradeNumber == 0) {
-                            // fallback if missing
-                            startActivity(Intent(this, PreAssessmentActivity::class.java))
+                        if (studentId.isNullOrEmpty()) {
+                            // Fallback if no studentId found
+                            startActivity(Intent(this, LoginActivity::class.java))
                             finish()
-                            return@postDelayed
+                        } else {
+                            checkPretestStatus(studentId)
                         }
-                        checkPretestStatus(studentId)
                     }
                 }
 
@@ -59,18 +60,16 @@ class LoadingActivity : ComponentActivity() {
         }, 3000)
     }
 
-    private fun checkPretestStatus(studentId: String?) {
-        if (studentId.isNullOrEmpty()) {
-            // fallback → go to PreAssessment
-            startActivity(Intent(this, PreAssessmentActivity::class.java))
-            finish()
-            return
-        }
-
+    private fun checkPretestStatus(studentId: String) {
         database.child("users").child(studentId).child("pretestCompleted")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val completed = snapshot.getValue(Boolean::class.java) ?: false
+                    // Handle both Boolean and String cases
+                    val completed: Boolean = when (val value = snapshot.value) {
+                        is Boolean -> value
+                        is String -> value.equals("true", ignoreCase = true)
+                        else -> false
+                    }
 
                     val nextActivity = if (completed) StudentActivity::class.java
                     else PreAssessmentActivity::class.java
@@ -85,5 +84,4 @@ class LoadingActivity : ComponentActivity() {
                 }
             })
     }
-
 }

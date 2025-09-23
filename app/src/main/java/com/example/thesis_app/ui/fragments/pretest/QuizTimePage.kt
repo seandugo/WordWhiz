@@ -33,22 +33,9 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
         nextButton.setOnClickListener {
             val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
             val studentId = sharedPrefs.getString("studentId", "") ?: ""
-            val numericGrade = sharedPrefs.getInt("grade_number", 0)
-            val gradeLevel = "grade$numericGrade"
-            Log.d("QuizTimePage", "Computed gradeLevel = $gradeLevel") // ✅ Log the gradeLevel
-
-            if (gradeLevel.isNullOrEmpty()) {
-                Log.e("QuizTimePage", "Grade level is null or empty!")
-                return@setOnClickListener
-            }
-
-            // Use gradeLevel string for Firebase path
-            val quizPath = "quizzes/$gradeLevel/quiz1"
-            Log.d("QuizTimePage", "Fetching quiz from $quizPath")
 
             FirebaseDatabase.getInstance().reference
                 .child("quizzes")
-                .child(gradeLevel)
                 .child("quiz1")
                 .get()
                 .addOnSuccessListener { snapshot ->
@@ -65,8 +52,6 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                             startActivity(intent)
                             requireActivity().finish()
                         }
-                    } else {
-                        Log.e("QuizTimePage", "❌ No quiz found at $quizPath")
                     }
                 }
                 .addOnFailureListener {

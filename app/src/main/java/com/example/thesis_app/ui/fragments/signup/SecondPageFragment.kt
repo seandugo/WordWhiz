@@ -154,6 +154,13 @@ class SecondPageFragment : Fragment(R.layout.signup) {
         val passwordValid = isStrongPassword(editPassword.text?.toString() ?: "")
         val passwordsMatch = editPassword.text.toString() == editConfirmPassword.text.toString()
 
+        // Just check local format here
+        if (!Patterns.EMAIL_ADDRESS.matcher(editEmail.text.toString().trim()).matches()) {
+            layoutEmail.error = "Enter a valid email"
+        } else {
+            layoutEmail.error = null
+        }
+
         val enable = nameValid && emailValid && passwordValid && passwordsMatch
         btnSignUp.isEnabled = enable
         btnSignUp.alpha = if (enable) 1f else 0.5f
@@ -204,21 +211,47 @@ class SecondPageFragment : Fragment(R.layout.signup) {
     }
 
     private fun validateInputsAndProceed() {
-        val bundle = Bundle().apply {
-            putString("role", arguments?.getString("role"))
-            putString("name", editName.text.toString().trim())
-            putString("email", editEmail.text.toString().trim())
-            putString("password", editPassword.text.toString())
-        }
+        val email = editEmail.text?.toString()?.trim() ?: ""
 
-        val fragment = TnCFragment()
-        fragment.arguments = bundle
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainerView, fragment)
-            .addToBackStack(null)
-            .commit()
+        // Check Firebase only here
+        firebaseAuth.fetchSignInMethodsForEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val signInMethods = task.result?.signInMethods ?: emptyList<String>()
+                    if (signInMethods.isNotEmpty()) {
+                        layoutEmail.error = "Email already in use"
+                        disableNextButton()
+                    } else {
+                        layoutEmail.error = null
 
-        (activity as? SignupActivity)?.nextStep()
+                        // Continue only if everything else is valid
+                        if (layoutName.error == null &&
+                            editName.text?.isNotEmpty() == true &&
+                            isStrongPassword(editPassword.text?.toString() ?: "") &&
+                            editPassword.text.toString() == editConfirmPassword.text.toString()
+                        ) {
+                            val bundle = Bundle().apply {
+                                putString("role", arguments?.getString("role"))
+                                putString("name", editName.text.toString().trim())
+                                putString("email", email)
+                                putString("password", editPassword.text.toString())
+                            }
+
+                            val fragment = TnCFragment()
+                            fragment.arguments = bundle
+                            parentFragmentManager.beginTransaction()
+                                .replace(R.id.fragmentContainerView, fragment)
+                                .addToBackStack(null)
+                                .commit()
+
+                            (activity as? SignupActivity)?.nextStep()
+                        }
+                    }
+                } else {
+                    layoutEmail.error = "Could not verify email"
+                    disableNextButton()
+                }
+            }
     }
 
     private fun updatePasswordStrength(password: String) {
