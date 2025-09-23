@@ -100,8 +100,13 @@ class SecondPageFragment : Fragment(R.layout.signup) {
 
     private fun validateName() {
         val name = editName.text?.toString()?.trim() ?: ""
-        val nameValid = name.matches(Regex("^[A-Za-z]+(\\s[A-Z]\\.)?\\s[A-Za-z]+\$"))
-        layoutName.error = if (!nameValid && name.isNotEmpty()) "Name (F.N./M.I./Surname)" else null
+
+        // Reject if it contains any digit, allow everything else (including ñ, Ñ, and special chars)
+        val nameValid = !name.any { it.isDigit() }
+
+        layoutName.error = if (!nameValid && name.isNotEmpty()) {
+            "Name cannot contain numbers"
+        } else null
     }
 
     private fun checkEmailWithFirebase() {

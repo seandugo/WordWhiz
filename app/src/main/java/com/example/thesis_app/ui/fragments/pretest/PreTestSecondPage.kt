@@ -26,7 +26,7 @@ class PreTestSecondPage : Fragment(R.layout.pre_test_second_page) {
             })
 
         nextButton.setOnClickListener {
-            val secondPageFragment = GradeLevelPage()
+            val secondPageFragment = ClassCodePage()
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainerView2, secondPageFragment)
                 .addToBackStack(null)
