@@ -251,6 +251,7 @@ class TeacherFragment : Fragment(R.layout.teachers) {
 
     private fun showEditDialog(classItem: ClassItem) {
         val context = requireContext()
+
         val dialogLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(40, 30, 40, 10)
@@ -258,10 +259,9 @@ class TeacherFragment : Fragment(R.layout.teachers) {
 
         val classNameInput = EditText(context).apply {
             hint = "Class Name"
-            setText(classItem.className)
+            setText(classItem.className)  // shows current value
             inputType = InputType.TYPE_CLASS_TEXT
-            filters = arrayOf(InputFilter.LengthFilter(20))
-            // Removed the TextWatcher that forced uppercase
+            filters = arrayOf(InputFilter.LengthFilter(20)) // keep as typed
         }
 
         val roomInput = EditText(context).apply {
@@ -305,6 +305,7 @@ class TeacherFragment : Fragment(R.layout.teachers) {
                     classItem.roomNo = roomNo
                     classItem.order = newOrder
 
+                    // Update database
                     database.getReference("users")
                         .child(auth.currentUser!!.uid)
                         .child("classes")
