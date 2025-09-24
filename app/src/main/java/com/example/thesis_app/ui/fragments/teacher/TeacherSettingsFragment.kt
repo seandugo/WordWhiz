@@ -1,4 +1,4 @@
-package com.example.thesis_app.ui.fragments.student
+package com.example.thesis_app.ui.fragments.teacher
 
 import android.os.Bundle
 import android.view.LayoutInflater

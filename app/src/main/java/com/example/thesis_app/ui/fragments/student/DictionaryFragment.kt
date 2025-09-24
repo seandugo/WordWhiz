@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.Exception
-import com.example.thesis_app.MeaningAdapter
 import com.example.thesis_app.R
 import com.example.thesis_app.models.RetrofitInstance
 import com.example.thesis_app.models.WordResult
@@ -30,7 +29,6 @@ class DictionaryFragment : Fragment() {
     private lateinit var meaningRecyclerView: RecyclerView
     private lateinit var statusTextview: TextView
     private lateinit var searchIcon: ImageView
-    private lateinit var adapter: MeaningAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,10 +50,6 @@ class DictionaryFragment : Fragment() {
         phoneticTextview = view.findViewById(R.id.phonetic_textview)
         meaningRecyclerView = view.findViewById(R.id.meaning_recycler_view)
         statusTextview = view.findViewById(R.id.status_textview)
-
-        adapter = MeaningAdapter(emptyList())
-        meaningRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        meaningRecyclerView.adapter = adapter
 
         // 👇 Show default message at first load
         searchIcon.visibility = View.VISIBLE
@@ -88,7 +82,6 @@ class DictionaryFragment : Fragment() {
                         // ✅ No results found
                         wordTextview.text = word
                         phoneticTextview.text = ""
-                        adapter.updateNewData(emptyList())
                         searchIcon.visibility = View.VISIBLE
                         statusTextview.text = "0 search results for \"$word\""
                         statusTextview.visibility = View.VISIBLE
@@ -113,8 +106,6 @@ class DictionaryFragment : Fragment() {
 
     private fun setUI(response: WordResult) {
         wordTextview.text = response.word
-        phoneticTextview.text = response.phonetic
-        adapter.updateNewData(response.meanings)
     }
 
     private fun setInProgress(inProgress: Boolean) {

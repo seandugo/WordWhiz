@@ -23,8 +23,6 @@ class StudentActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student)
-        // Setup bottom navigation
-        toolbarTitle = findViewById(R.id.toolbar_title)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         if (savedInstanceState == null) {
             replaceFragment(LecturesFragment()) // change to your default fragment
@@ -35,19 +33,15 @@ class StudentActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_lectures -> {
                     replaceFragment(LecturesFragment())
-                    toolbarTitle.text = "Lectures"
                 }
                 R.id.action_dictionary -> {
                     replaceFragment(DictionaryFragment())
-                    toolbarTitle.text = "Dictionary"
                 }
                 R.id.action_profile -> {
                     replaceFragment(ProfileFragment())
-                    toolbarTitle.text = "Profile"
                 }
                 R.id.action_settings -> {
                     replaceFragment(SettingsFragment())
-                    toolbarTitle.text = "Settings"
                 }
             }
             true

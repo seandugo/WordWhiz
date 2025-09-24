@@ -27,7 +27,6 @@
         </activity>
 
         <!-- Other activities -->
-        <activity android:name=".ProfileActivity" />
         <activity android:name=".TeacherActivity" />
         <activity android:name=".QuizActivity" android:exported="true" />
         <activity android:name=".LoginActivity" android:exported="true" />
@@ -36,6 +35,7 @@
         <activity android:name=".SignupActivity" android:exported="true" />
         <activity android:name=".ClassDetailActivity" android:exported="true" />
         <activity android:name=".PreAssessmentActivity" android:exported="true" />
+        <activity android:name=".SpellingGameActivity" android:exported="true" />
 
     </application>
 

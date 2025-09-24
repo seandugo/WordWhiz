@@ -33,8 +33,6 @@
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="3"/>
-
-
     </LinearLayout>
 
     <TextView

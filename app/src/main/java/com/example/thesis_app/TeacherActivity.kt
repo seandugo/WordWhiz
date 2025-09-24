@@ -12,9 +12,8 @@ import androidx.activity.OnBackPressedCallback
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
-import com.example.thesis_app.ui.fragments.profile.TeacherProfileFragment
-import com.example.thesis_app.ui.fragments.student.SettingsFragment
-import com.example.thesis_app.ui.fragments.student.TeacherSettingsFragment
+import com.example.thesis_app.ui.fragments.teacher.TeacherProfileFragment
+import com.example.thesis_app.ui.fragments.teacher.TeacherSettingsFragment
 import com.example.thesis_app.ui.fragments.teacher.TeacherFragment
 import com.google.firebase.auth.FirebaseAuth
 
