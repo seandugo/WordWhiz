@@ -9,7 +9,6 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -19,7 +18,7 @@ import com.example.thesis_app.models.RetrofitInstance
 import com.example.thesis_app.models.WordResult
 import android.widget.ImageView
 
-class DictionaryFragment : Fragment() {
+class DailySpellingFragment : Fragment() {
 
     private lateinit var searchBtn: Button
     private lateinit var searchInput: EditText
@@ -35,7 +34,7 @@ class DictionaryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.dictionary, container, false)
+        return inflater.inflate(R.layout.daily_spelling, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -52,14 +52,6 @@ class ClassDetailActivity : AppCompatActivity() {
             // ✅ When a student is clicked → open StudentProgressActivity
             val classCode = intent.getStringExtra("CLASS_CODE") ?: "N/A"
 
-            val intent = Intent(this, StudentProgressActivity::class.java).apply {
-                putExtra("extra_name", student.name ?: "Unknown")
-                putExtra("extra_class", className)
-                putExtra("extra_code", classCode)
-                putExtra("extra_progress", calculateProgress(student))
-                putExtra("extra_achievement", formatAchievements(student.achievements))
-            }
-
             startActivity(intent) // ✅ safe, no crash from transitions
         }
         recyclerView.adapter = adapter

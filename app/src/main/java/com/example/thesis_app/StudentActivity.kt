@@ -1,18 +1,16 @@
 package com.example.thesis_app
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.example.thesis_app.ui.fragments.student.DictionaryFragment
+import com.example.thesis_app.ui.fragments.student.DailySpellingFragment
 import com.example.thesis_app.ui.fragments.student.LecturesFragment
 import com.example.thesis_app.ui.fragments.student.ProfileFragment
 import com.example.thesis_app.ui.fragments.student.SettingsFragment
-import com.google.firebase.auth.FirebaseAuth
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class StudentActivity : AppCompatActivity() {
@@ -35,7 +33,7 @@ class StudentActivity : AppCompatActivity() {
                     replaceFragment(LecturesFragment())
                 }
                 R.id.action_dictionary -> {
-                    replaceFragment(DictionaryFragment())
+                    replaceFragment(DailySpellingFragment())
                 }
                 R.id.action_profile -> {
                     replaceFragment(ProfileFragment())
