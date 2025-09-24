@@ -1,74 +1,197 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Speak button -->
-    <Button
-        android:id="@+id/btnSpeak"
-        android:text="🔊 Hear Word"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <!-- User's current guess -->
-    <TextView
-        android:id="@+id/textGuess"
-        android:text="Tap letters..."
-        android:textSize="24sp"
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <!-- Letters Grid -->
-    <LinearLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/gameLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent">
+
+        <!-- AppBar with Toolbar -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- Main Content -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="?attr/actionBarSize">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/btnSpeakSlow"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_margin="10dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/slow_speaker"
+                    android:background="@drawable/rounded_button"/>
+
+                <ImageView
+                    android:id="@+id/btnSpeakNormal"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:src="@drawable/volume"
+                    android:layout_margin="10dp"
+                    android:padding="20dp"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/rounded_button"/>
+            </LinearLayout>
+
+            <!-- User's current guess -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:paddingLeft="30dp">
+
+                <TextView
+                    android:id="@+id/textGuess"
+                    android:text="Tap letters..."
+                    android:textSize="32sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <ImageView
+                    android:id="@+id/backspace"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:src="@drawable/backspace"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"/>
+
+            </LinearLayout>
+
+            <!-- Meaning -->
+            <TextView
+                android:id="@+id/textMeaning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textSize="18sp"
+                android:gravity="center"/>
+
+            <!-- Letters Grid -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginTop="20dp">
+
+                <LinearLayout
+                    android:id="@+id/row1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"/>
+
+                <LinearLayout
+                    android:id="@+id/row2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"/>
+            </LinearLayout>
+
+            <!-- Check Button -->
+            <Button
+                android:id="@+id/btnCheck"
+                android:text="Check"
+                android:layout_marginTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_anchor="@+id/appBarLayout"
+            app:layout_anchorGravity="center"
+            app:titleTextColor="@android:color/white">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/back"
+                android:contentDescription="Back" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_margin="20dp"
+                android:background="@drawable/rounded_button">
+
+                <TextView
+                    android:id="@+id/totalHints"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:padding="10dp"
+                    android:text="3"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="24sp" />
+
+                <ImageView
+                    android:id="@+id/btnHint"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:contentDescription="Hint"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/hints" />
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- Loading overlay -->
+    <LinearLayout
+        android:id="@+id/loadingLayout"
         android:orientation="vertical"
         android:gravity="center"
-        android:layout_marginTop="20dp">
+        android:background="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <!-- Row 1 -->
-        <LinearLayout
-            android:id="@+id/row1"
+        <com.github.ybq.android.spinkit.SpinKitView
+            android:id="@+id/progress"
+            android:layout_width="165dp"
+            android:layout_height="179dp"
+            app:SpinKit_Color="#FFC007"
+            app:SpinKit_Style="CubeGrid" />
+
+        <TextView
+            android:id="@+id/loadingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Loading..."
+            android:fontFamily="@font/pixel"
             android:gravity="center"
-            android:orientation="horizontal"
-            android:layout_marginBottom="10dp"/>
+            android:textSize="18sp" />
 
-        <!-- Row 2 -->
-        <LinearLayout
-            android:id="@+id/row2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal"/>
     </LinearLayout>
 
-    <!-- Check Button -->
-    <Button
-        android:id="@+id/btnCheck"
-        android:text="Check"
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <!-- Result -->
-    <TextView
-        android:id="@+id/textResult"
-        android:textSize="18sp"
-        android:layout_marginTop="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <!-- Meaning -->
-    <TextView
-        android:id="@+id/textMeaning"
-        android:textSize="16sp"
-        android:layout_marginTop="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+</FrameLayout>
