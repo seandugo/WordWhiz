@@ -26,6 +26,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".StudentProgressActivity"
+            android:exported="false"
+            android:label="Student Progress"/>
+
         <!-- Other activities -->
         <activity android:name=".TeacherActivity" />
         <activity android:name=".QuizActivity" android:exported="true" />

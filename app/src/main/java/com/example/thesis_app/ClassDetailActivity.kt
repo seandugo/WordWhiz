@@ -1,5 +1,6 @@
 package com.example.thesis_app
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -48,7 +49,18 @@ class ClassDetailActivity : AppCompatActivity() {
         // RecyclerView setup
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = StudentAdapter(studentList) { student ->
-            Toast.makeText(this, "Clicked: ${student.name}", Toast.LENGTH_SHORT).show()
+            // ✅ When a student is clicked → open StudentProgressActivity
+            val classCode = intent.getStringExtra("CLASS_CODE") ?: "N/A"
+
+            val intent = Intent(this, StudentProgressActivity::class.java).apply {
+                putExtra("extra_name", student.name ?: "Unknown")
+                putExtra("extra_class", className)
+                putExtra("extra_code", classCode)
+                putExtra("extra_progress", calculateProgress(student))
+                putExtra("extra_achievement", formatAchievements(student.achievements))
+            }
+
+            startActivity(intent) // ✅ safe, no crash from transitions
         }
         recyclerView.adapter = adapter
 
@@ -102,20 +114,18 @@ class ClassDetailActivity : AppCompatActivity() {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
             val id = idInput.text.toString().trim()
 
-            // ✅ Basic validation: not empty, optionally numeric only
             if (id.isEmpty()) {
                 Toast.makeText(this, "Please enter a student ID", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (!id.matches(Regex("^\\d+\$"))) {
+            if (!id.matches(Regex("^\\d+$"))) {
                 Toast.makeText(this, "Student ID must be numeric", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val classCode = intent.getStringExtra("CLASS_CODE") ?: return@setOnClickListener
 
-            // 🔹 Validate student exists in "users" and role = student
             val studentRef = database.child("users").child(id)
             studentRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -145,14 +155,12 @@ class ClassDetailActivity : AppCompatActivity() {
                         achievements = achievementsList
                     )
 
-                    // 🔹 Save student into class
                     database.child("classes")
                         .child(classCode)
                         .child("students")
                         .child(id)
                         .setValue(newStudent)
                         .addOnSuccessListener {
-                            // 🔹 Also add pointer in student -> classes
                             database.child("users")
                                 .child(id)
                                 .child("classes")
@@ -169,6 +177,21 @@ class ClassDetailActivity : AppCompatActivity() {
 
                 override fun onCancelled(error: DatabaseError) {}
             })
+        }
+    }
+
+    // Helper: calculate progress based on achievements
+    private fun calculateProgress(student: StudentItem): String {
+        val total = student.achievements?.size ?: 0
+        return if (total > 0) "${(total * 10).coerceAtMost(100)}%" else "0%"
+    }
+
+    // Helper: format achievements into a readable string
+    private fun formatAchievements(achievements: List<Achievement>?): String {
+        return if (achievements.isNullOrEmpty()) {
+            "None yet"
+        } else {
+            achievements.joinToString { it.title ?: "Achievement" }
         }
     }
 
