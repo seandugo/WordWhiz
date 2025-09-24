@@ -89,9 +89,9 @@ class StudentProgressActivity : AppCompatActivity() {
         }
     }
 
-    override fun finish() {
-        super.finish()
-        // ✅ Reverse slide transition when going back
-        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-    }
+//    override fun finish() {
+//        super.finish()
+//        // ✅ Reverse slide transition when going back
+//        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+//    }
 }
