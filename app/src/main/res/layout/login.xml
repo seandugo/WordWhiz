@@ -34,8 +34,6 @@
         android:shadowDy="2"
         android:shadowRadius="3" />
 
-
-
         <!-- Teacher Login -->
     <LinearLayout
         android:layout_width="match_parent"

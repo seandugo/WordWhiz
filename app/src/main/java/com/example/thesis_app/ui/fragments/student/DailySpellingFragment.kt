@@ -30,7 +30,7 @@ class DailySpellingFragment : Fragment() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             when (position) {
                 0 -> tab.text = "Spelling"
-                1 -> tab.text = "Saved"
+                1 -> tab.text = "Words"
             }
         }.attach()
 

@@ -55,6 +55,7 @@
 
             <!-- User's current guess -->
             <LinearLayout
+                android:id="@+id/guessLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -83,7 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:gravity="center"/>
 
             <!-- Letters Grid -->
@@ -109,34 +110,13 @@
                     android:gravity="center"
                     android:orientation="horizontal"/>
             </LinearLayout>
-
-            <!-- Check Button -->
-            <Button
-                android:id="@+id/btnCheck"
-                android:text="Check"
-                android:layout_marginTop="20dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
         </LinearLayout>
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_anchor="@+id/appBarLayout"
-            app:layout_anchorGravity="center"
-            app:titleTextColor="@android:color/white">
-
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="12dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/back"
-                android:contentDescription="Back" />
+            android:titleTextAppearance="@style/ToolbarTitleText">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -190,7 +170,8 @@
             android:text="Loading..."
             android:fontFamily="@font/pixel"
             android:gravity="center"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:layout_marginTop="20dp"/>
 
     </LinearLayout>
 
