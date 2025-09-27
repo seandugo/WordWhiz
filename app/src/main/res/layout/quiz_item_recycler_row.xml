@@ -27,7 +27,8 @@
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                tools:text="Android" />
+                tools:text="Android"
+                android:fontFamily="@font/pixel"/>
 
             <TextView
                 android:id="@+id/quiz_subtitle_text"

@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,10 +18,12 @@ class LecturesFragment : Fragment() {
 
     private lateinit var quizModelList: MutableList<QuizModel>
     private lateinit var adapter: QuizListAdapter
-
-    // Views
+    private lateinit var topAppBar: com.google.android.material.appbar.MaterialToolbar
     private lateinit var progressBar: View
     private lateinit var recyclerView: RecyclerView
+    private lateinit var headerLayout: View
+    private lateinit var headerTitle: TextView
+    private lateinit var headerSubtitle: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,9 +31,15 @@ class LecturesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.courses, container, false)
-
+        topAppBar = view.findViewById(R.id.topAppBar)
         progressBar = view.findViewById(R.id.progress_bar)
         recyclerView = view.findViewById(R.id.recycler_view)
+        headerLayout = view.findViewById(R.id.headerLayout)
+        headerTitle = view.findViewById(R.id.headerTitle)
+        headerSubtitle = view.findViewById(R.id.headerSubtitle)
+
+        topAppBar.title = "Welcome Student!"
+        topAppBar.setTitleTextAppearance(requireContext(), R.style.ToolbarTitleText)
 
         quizModelList = mutableListOf()
         getDataFromFirebase()
@@ -46,13 +55,26 @@ class LecturesFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
         val studentId = prefs.getString("studentId", null)
 
-        Log.d("LecturesFragment", "Setting up RecyclerView")
-        Log.d("LecturesFragment", "studentId = $studentId")
-        Log.d("LecturesFragment", "quizModelList size = ${quizModelList.size}")
-
         adapter = QuizListAdapter(quizModelList, studentId ?: "", requireActivity())
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        val layoutManager = LinearLayoutManager(context)
+        recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val firstVisiblePos = layoutManager.findFirstVisibleItemPosition()
+                if (firstVisiblePos != RecyclerView.NO_POSITION && firstVisiblePos < quizModelList.size) {
+                    val currentQuiz = quizModelList[firstVisiblePos]
+
+                    // Update header
+                    headerTitle.text = currentQuiz.title
+                    headerSubtitle.text = currentQuiz.subtitle
+                }
+            }
+        })
+
     }
 
     private fun getDataFromFirebase() {

@@ -2,44 +2,38 @@ package com.example.thesis_app
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.thesis_app.ui.fragments.bottomsheets.SettingsBottomSheet
 import com.example.thesis_app.ui.fragments.student.DailySpellingFragment
 import com.example.thesis_app.ui.fragments.student.LecturesFragment
 import com.example.thesis_app.ui.fragments.student.ProfileFragment
-import com.example.thesis_app.ui.fragments.student.SettingsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class StudentActivity : AppCompatActivity() {
-
-    private lateinit var toolbarTitle: TextView
+    private var currentIndex = 0 // track current tab index
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
         if (savedInstanceState == null) {
-            replaceFragment(LecturesFragment()) // change to your default fragment
+            replaceFragment(LecturesFragment(), 0) // default = Lectures
+            bottomNav.selectedItemId = R.id.action_lectures
         }
 
-        // Handle bottom nav item clicks
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.action_lectures -> {
-                    replaceFragment(LecturesFragment())
-                }
-                R.id.action_dictionary -> {
-                    replaceFragment(DailySpellingFragment())
-                }
-                R.id.action_profile -> {
-                    replaceFragment(ProfileFragment())
-                }
+                R.id.action_lectures -> replaceFragment(LecturesFragment(), 0)
+                R.id.action_dictionary -> replaceFragment(DailySpellingFragment(), 1)
+                R.id.action_profile -> replaceFragment(ProfileFragment(), 2)
                 R.id.action_settings -> {
-                    replaceFragment(SettingsFragment())
+                    val bottomSheet = SettingsBottomSheet()
+                    bottomSheet.show(supportFragmentManager, "SettingsBottomSheet")
                 }
             }
             true
@@ -54,19 +48,34 @@ class StudentActivity : AppCompatActivity() {
             })
     }
 
-    private fun replaceFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainerView, fragment)
-            .commit()
+    private fun replaceFragment(fragment: Fragment, newIndex: Int) {
+        if (newIndex == currentIndex) return // prevent reloading same fragment
+
+        val transaction = supportFragmentManager.beginTransaction()
+
+        if (newIndex > currentIndex) {
+            transaction.setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left
+            )
+        } else {
+            transaction.setCustomAnimations(
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+        }
+
+        transaction.replace(R.id.fragmentContainerView, fragment)
+        transaction.commit()
+
+        currentIndex = newIndex
     }
 
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Exit App")
             .setMessage("Are you sure you want to exit?")
-            .setPositiveButton("Yes") { _, _ ->
-                finish()
-            }
+            .setPositiveButton("Yes") { _, _ -> finish() }
             .setNegativeButton("No", null)
             .show()
     }

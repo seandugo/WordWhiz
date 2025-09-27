@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    android:background="@android:color/white">
+
+    <!-- Illustration -->
+    <ImageView
+        android:id="@+id/dayImage"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:contentDescription="Daily spelling image"
+        android:src="@drawable/saved_words" />
+
+
+    <!-- Description -->
+    <TextView
+        android:id="@+id/dayDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enhance your vocabulary by saving words here"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:fontFamily="@font/pixel"
+        android:textColor="#333333"
+        android:layout_marginBottom="32dp"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"/>
+</LinearLayout>

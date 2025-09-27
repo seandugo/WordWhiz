@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class LoadingActivity : ComponentActivity() {
@@ -31,8 +32,15 @@ class LoadingActivity : ComponentActivity() {
             when (mode) {
                 "login" -> {
                     if (role == "teacher") {
-                        startActivity(Intent(this, TeacherActivity::class.java))
-                        finish()
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val uid = currentUser?.uid
+
+                        if (uid.isNullOrEmpty()) {
+                            startActivity(Intent(this, LoginActivity::class.java))
+                            finish()
+                        } else {
+                            checkIntroStatus(uid)
+                        }
                     } else {
                         val studentId = intent.getStringExtra("studentId")
                             ?: prefs.getString("studentId", null)
@@ -80,6 +88,30 @@ class LoadingActivity : ComponentActivity() {
 
                 override fun onCancelled(error: DatabaseError) {
                     startActivity(Intent(this@LoadingActivity, PreAssessmentActivity::class.java))
+                    finish()
+                }
+            })
+    }
+
+    private fun checkIntroStatus(teacherId: String) {
+        database.child("users").child(teacherId).child("introCompleted")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val completed: Boolean = when (val value = snapshot.value) {
+                        is Boolean -> value
+                        is String -> value.equals("true", ignoreCase = true)
+                        else -> false
+                    }
+
+                    val nextActivity = if (completed) TeacherActivity::class.java
+                    else TeacherIntroActivity::class.java
+
+                    startActivity(Intent(this@LoadingActivity, nextActivity))
+                    finish()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    startActivity(Intent(this@LoadingActivity, TeacherIntroActivity::class.java))
                     finish()
                 }
             })

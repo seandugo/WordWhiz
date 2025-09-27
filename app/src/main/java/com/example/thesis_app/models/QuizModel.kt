@@ -3,12 +3,11 @@ data class QuizModel(
     val id : String,
     val title : String,
     val subtitle : String,
-    val time : String,
     val questionList : List<QuestionModel>,
     val progress: Int,
     val totalQuestions: Int = 0
 ){
-    constructor() : this("","","","", emptyList(),0)
+    constructor() : this("","","", emptyList(),0)
 }
 
 data class QuestionModel(

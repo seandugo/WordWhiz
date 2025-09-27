@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
+import android.view.animation.AnimationUtils
 import org.json.JSONArray
 import java.net.URL
 import java.util.*
@@ -140,6 +141,13 @@ class SpellingGameActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
                     textMeaning.text = currentMeaning
                     setupLetterButtons()
+
+                    // Apply animations here
+                    val slideIn = AnimationUtils.loadAnimation(this@SpellingGameActivity, R.anim.slide_in_left)
+                    val slideOut = AnimationUtils.loadAnimation(this@SpellingGameActivity, R.anim.slide_out_right)
+
+                    loadingLayout.startAnimation(slideOut)
+                    gameLayout.startAnimation(slideIn)
 
                     loadingLayout.visibility = View.GONE
                     gameLayout.visibility = View.VISIBLE

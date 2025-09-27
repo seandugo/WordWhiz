@@ -2,87 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp"
-    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Search word here"
-            android:layout_toLeftOf="@id/search_btn"
-            android:id="@+id/search_input"
-            android:background="@drawable/rounded_corner"
-            android:padding="12dp"/>
-        <Button
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/search_btn"
-            android:text="Search"
-            android:layout_alignParentEnd="true"
-            android:fontFamily="@font/pixel"
-            android:layout_marginStart="8dp"
-            android:textColor="@android:color/white"
-            android:backgroundTint="#FFC007"/>
-        <com.github.ybq.android.spinkit.SpinKitView
-            android:id="@+id/progress_bar"
-            android:layout_width="100dp"
-            android:layout_height="24dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerInParent="true"
-            app:SpinKit_Color="#FFC007"
-            app:SpinKit_Style="CubeGrid"
-            android:visibility="gone"/>
-    </RelativeLayout>
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="word"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:layout_marginTop="8dp"
-        android:textColor="#1565C0"
-        android:id="@+id/word_textview" />
-
-    <TextView
-        android:id="@+id/phonetic_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#929292"
-        tools:text="/t e s t/" />
-
-    <ImageView
-        android:id="@+id/search"
-        android:layout_width="match_parent"
-        android:layout_height="260dp"
-        android:src="@drawable/search"
-        android:visibility="gone"
-        android:layout_weight="0"/>
-
-    <TextView
-        android:id="@+id/status_textview"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/pixel"
-        android:gravity="center"
-        android:text=""
-        android:visibility="gone"
-        android:textColor="#000000"
-        android:textSize="16sp" />
+        app:tabIndicatorColor="@android:color/white"
+        app:tabTextColor="@android:color/black"
+        app:tabSelectedTextColor="@android:color/white"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabTextAppearance="@style/PixelTabText"
+        android:backgroundTint="#FFC007"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/meaning_recycler_view"
+    <!-- ViewPager2 for fragments -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
-
+        android:layout_weight="1" />
 </LinearLayout>

@@ -46,7 +46,6 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
 
                             val intent = Intent(requireContext(), QuizActivity::class.java)
                             QuizActivity.questionModelList = fixedQuiz.questionList
-                            QuizActivity.time = fixedQuiz.time
                             intent.putExtra("QUIZ_ID", fixedQuiz.id)
                             intent.putExtra("studentId", studentId)
                             startActivity(intent)

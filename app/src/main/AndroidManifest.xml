@@ -39,6 +39,7 @@
         <activity android:name=".SignupActivity" android:exported="true" />
         <activity android:name=".ClassDetailActivity" android:exported="true" />
         <activity android:name=".PreAssessmentActivity" android:exported="true" />
+        <activity android:name=".TeacherIntroActivity" android:exported="true" />
         <activity android:name=".SpellingGameActivity" android:exported="true" />
 
     </application>

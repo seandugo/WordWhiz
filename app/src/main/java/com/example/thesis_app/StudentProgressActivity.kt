@@ -84,14 +84,26 @@ class StudentProgressActivity : AppCompatActivity() {
                 putExtra(EXTRA_PROGRESS, progress)
                 putExtra(EXTRA_ACHIEVEMENT, achievement)
             }
-            val options = ActivityOptionsCompat.makeSceneTransitionAnimation(context as AppCompatActivity)
-            context.startActivity(intent, options.toBundle())
+
+            context.startActivity(intent)
+
+            if (context is AppCompatActivity) {
+                // ✅ iOS-style: new screen slides in from right
+                context.overridePendingTransition(
+                    R.anim.slide_in_right,  // you’ll add this
+                    R.anim.slide_out_left   // you’ll add this
+                )
+            }
         }
     }
 
-//    override fun finish() {
-//        super.finish()
-//        // ✅ Reverse slide transition when going back
-//        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-//    }
+    override fun finish() {
+        super.finish()
+        // ✅ iOS-style: back slides out to the right
+        overridePendingTransition(
+            R.anim.slide_in_left,   // old screen comes back from left
+            R.anim.slide_out_right  // current screen exits to right
+        )
+    }
+
 }

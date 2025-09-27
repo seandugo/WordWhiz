@@ -38,7 +38,6 @@ class QuizListAdapter(
             itemView.setOnClickListener {
                 val intent = Intent(itemView.context, QuizActivity::class.java)
                 QuizActivity.questionModelList = model.questionList
-                QuizActivity.time = model.time
                 intent.putExtra("QUIZ_ID", model.id)
                 intent.putExtra("STUDENT_ID", studentId)
 

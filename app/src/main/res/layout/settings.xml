@@ -17,15 +17,18 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="16dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/frosted_background"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="About Us"
-                android:textSize="18sp"/>
+                android:textSize="18sp"
+                android:fontFamily="@font/pixel"/>
         </LinearLayout>
 
         <!-- Terms and Conditions -->
@@ -38,13 +41,15 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/frosted_background"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Terms and Conditions"
-                android:textSize="18sp"/>
+                android:textSize="18sp"
+                android:fontFamily="@font/pixel"/>
         </LinearLayout>
 
         <!-- Version -->
@@ -62,14 +67,17 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Version"
-                android:textSize="18sp"/>
+                android:textSize="18sp"
+                android:fontFamily="@font/pixel"/>
+
             <TextView
                 android:id="@+id/versionText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="1.0.0"
                 android:textSize="16sp"
-                android:textColor="@android:color/darker_gray"/>
+                android:textColor="@android:color/darker_gray"
+                android:fontFamily="@font/pixel"/>
         </LinearLayout>
 
         <!-- Logout -->
@@ -82,14 +90,16 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/frosted_background"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Logout"
                 android:textSize="18sp"
-                android:textColor="@android:color/holo_red_dark"/>
+                android:textColor="@android:color/holo_red_dark"
+                android:fontFamily="@font/pixel"/>
         </LinearLayout>
 
     </LinearLayout>

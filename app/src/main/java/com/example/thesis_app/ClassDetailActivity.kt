@@ -49,10 +49,16 @@ class ClassDetailActivity : AppCompatActivity() {
         // RecyclerView setup
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = StudentAdapter(studentList) { student ->
-            // ✅ When a student is clicked → open StudentProgressActivity
             val classCode = intent.getStringExtra("CLASS_CODE") ?: "N/A"
 
-            startActivity(intent) // ✅ safe, no crash from transitions
+            StudentProgressActivity.start(
+                context = this,
+                name = student.name ?: "Unknown",
+                className = className, // from your intent earlier
+                code = classCode,
+                progress = calculateProgress(student),
+                achievement = formatAchievements(student.achievements)
+            )
         }
         recyclerView.adapter = adapter
 
