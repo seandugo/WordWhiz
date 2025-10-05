@@ -2,18 +2,17 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/profileLayout"
+    android:id="@+id/resultLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
-    <!-- AppBar with Collapsing Toolbar -->
+    <!-- Collapsing Header -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="220dp"
-        android:fitsSystemWindows="true"
-        android:background="@color/primaryColor">
+        android:fitsSystemWindows="true">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/collapsingToolbar"
@@ -23,15 +22,14 @@
             app:contentScrim="@color/primaryColor"
             app:titleEnabled="false">
 
-            <!-- Dark overlay -->
+            <!-- Primary color overlay -->
             <View
-                android:id="@+id/overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/primaryColor"
                 app:layout_collapseMode="parallax"/>
 
-            <!-- Header text -->
+            <!-- Header Text -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -54,7 +52,7 @@
                     android:id="@+id/subtitleQuiz"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Quiz Subtitle"
+                    android:text="Your result is in!"
                     android:fontFamily="@font/pixel"
                     android:background="@drawable/rounded_button"
                     android:paddingHorizontal="16dp"
@@ -64,7 +62,7 @@
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
 
-            <!-- Collapsed Toolbar -->
+            <!-- Toolbar -->
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -76,7 +74,7 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Scrollable content -->
+    <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
@@ -92,98 +90,74 @@
             android:gravity="center_horizontal"
             android:paddingTop="24dp">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                app:cardCornerRadius="100dp"
-                app:cardElevation="8dp"
-                android:padding="0dp">
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <!-- Circular Progress -->
-
-                    <!-- Progress Text -->
-                    <TextView
-                        android:id="@+id/progressText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0%"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="@android:color/black"
-                        android:layout_gravity="center"/>
-
-                    <com.google.android.material.progressindicator.CircularProgressIndicator
-                        android:id="@+id/quiz_progress_bar"
-                        style="@style/Widget.Material3.CircularProgressIndicator"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:max="100"
-                        android:progress="0"
-                        app:indicatorColor="@color/primaryColor"
-                        app:indicatorInset="0dp"
-                        app:indicatorSize="180dp"
-                        app:layout_constraintHorizontal_bias="0.2"
-                        app:layout_constraintVertical_bias="0.2"
-                        app:trackColor="#E0E0E0"
-                        app:trackThickness="14dp" />
-                </FrameLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Correct/Wrong Counts Card -->
-            <LinearLayout
+            <!-- PASS / FAIL Text -->
+            <TextView
+                android:id="@+id/resultStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:spacing="16dp"
-                android:padding="20dp">
+                android:text="PASS"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="@color/primaryColor"
+                android:layout_marginBottom="24dp"/>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="100dp"
-                    android:layout_height="60dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    android:layout_marginEnd="16dp">
+            <!-- Correct & Wrong Progress Bars -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingHorizontal="32dp">
 
-                    <TextView
-                        android:id="@+id/correctCount"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="5 ✅"
-                        android:textSize="20sp"
-                        android:background="@drawable/correct"
-                        android:textStyle="bold"/>
+                <!-- Correct Answer Progress -->
+                <TextView
+                    android:id="@+id/correctText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Correct: 8"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"
+                    android:layout_marginBottom="4dp"/>
 
-                </com.google.android.material.card.MaterialCardView>
+                <ProgressBar
+                    android:id="@+id/correctProgressBar"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="@color/green"
+                    android:backgroundTint="#E0E0E0"
+                    android:indeterminate="false"
+                    android:clipToOutline="true"
+                    android:layout_marginBottom="16dp"/>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="100dp"
-                    android:layout_height="60dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    android:padding="20dp">
+                <!-- Wrong Answer Progress -->
+                <TextView
+                    android:id="@+id/wrongText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wrong: 2"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"
+                    android:layout_marginBottom="4dp"/>
 
-                    <TextView
-                        android:id="@+id/wrongCount"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="5 ❌"
-                        android:textSize="20sp"
-                        android:background="@drawable/wrong"
-                        android:textStyle="bold"/>
-                </com.google.android.material.card.MaterialCardView>
-
+                <ProgressBar
+                    android:id="@+id/wrongProgressBar"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="@color/red"
+                    android:backgroundTint="#E0E0E0"
+                    android:indeterminate="false"
+                    android:clipToOutline="true"/>
             </LinearLayout>
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
