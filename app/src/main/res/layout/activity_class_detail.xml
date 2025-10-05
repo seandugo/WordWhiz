@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Toolbar with dynamic class name -->
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -22,7 +22,6 @@
             android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
             app:navigationIcon="@drawable/back"
             app:title="">
-
         </androidx.appcompat.widget.Toolbar>
 
         <!-- Header Section -->
@@ -34,6 +33,7 @@
             android:padding="16dp"
             android:background="@color/my_nav_color">
 
+            <!-- Class Name -->
             <TextView
                 android:id="@+id/headerClassName"
                 android:layout_width="wrap_content"
@@ -41,26 +41,33 @@
                 android:text="Class Name"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/white"/>
+                android:textColor="@android:color/white"
+                tools:ignore="MissingPrefix" />
 
+            <!-- Room Number -->
             <TextView
                 android:id="@+id/headerRoomNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Room Number"
+                android:text="Room: -"
                 android:textSize="18sp"
-                android:textColor="@android:color/white"/>
+                android:layout_marginTop="4dp"
+                android:textColor="@android:color/white"
+                tools:ignore="MissingPrefix" />
 
+            <!-- Class Code -->
             <TextView
                 android:id="@+id/headerClassCode"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Class Code"
+                android:text="Code: -"
                 android:textSize="18sp"
-                android:textColor="@android:color/white"/>
+                android:layout_marginTop="2dp"
+                android:textColor="@android:color/white"
+                tools:ignore="MissingPrefix" />
         </LinearLayout>
 
-        <!-- CardView: Add Student -->
+        <!-- Add Student Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/addStudentCard"
             android:layout_width="match_parent"
@@ -84,6 +91,8 @@
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="#FFC107"
+                    android:fontFamily="@font/pixel"
+                    tools:ignore="MissingPrefix"
                     android:layout_centerInParent="true"/>
 
                 <Button
@@ -96,13 +105,15 @@
                     android:text="+"
                     android:textColor="@android:color/white"
                     android:textSize="28sp"
+                    android:fontFamily="@font/pixel"
+                    tools:ignore="MissingPrefix"
                     android:padding="0dp"
                     android:clickable="false"
                     android:focusable="false"/>
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- RecyclerView for students -->
+        <!-- Student RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/studentRecyclerView"
             android:layout_width="match_parent"
@@ -112,7 +123,7 @@
             android:padding="8dp"/>
     </LinearLayout>
 
-    <!-- Navigation drawer -->
+    <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"

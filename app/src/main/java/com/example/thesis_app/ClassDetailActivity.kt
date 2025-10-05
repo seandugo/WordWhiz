@@ -1,6 +1,5 @@
 package com.example.thesis_app
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -9,9 +8,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.cardview.widget.CardView
 import com.example.thesis_app.models.Achievement
 import com.example.thesis_app.models.StudentItem
 import com.google.firebase.database.*
@@ -20,9 +19,15 @@ class ClassDetailActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var classNameText: TextView
+    private lateinit var roomNumberText: TextView
+    private lateinit var classCodeText: TextView
     private lateinit var adapter: StudentAdapter
     private val studentList = mutableListOf<StudentItem>()
+
     private var className: String = "Unknown Class"
+    private var classCode: String = "Unknown Code"
+    private var roomNumber: String = "N/A"
+
     private lateinit var database: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,11 +39,18 @@ class ClassDetailActivity : AppCompatActivity() {
 
         // Get class info from Intent
         className = intent.getStringExtra("CLASS_NAME") ?: "Unknown Class"
+        classCode = intent.getStringExtra("CLASS_CODE") ?: "Unknown Code"
+        roomNumber = intent.getStringExtra("ROOM_NO") ?: "N/A"
 
         // Find views
         recyclerView = findViewById(R.id.studentRecyclerView)
         classNameText = findViewById(R.id.headerClassName)
+        roomNumberText = findViewById(R.id.headerRoomNumber)
+        classCodeText = findViewById(R.id.headerClassCode)
+
         classNameText.text = className
+        roomNumberText.text = "Room Number: $roomNumber"
+        classCodeText.text = "Class Code: $classCode"
 
         // Toolbar setup
         val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
@@ -49,13 +61,11 @@ class ClassDetailActivity : AppCompatActivity() {
         // RecyclerView setup
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = StudentAdapter(studentList) { student ->
-            val classCode = intent.getStringExtra("CLASS_CODE") ?: "N/A"
-
             StudentProgressActivity.start(
                 context = this,
                 name = student.name ?: "Unknown",
-                className = className, // from your intent earlier
-                code = classCode,
+                className = className,
+                studentId = student.studentId ?: "N/A",
                 progress = calculateProgress(student),
                 achievement = formatAchievements(student.achievements)
             )
@@ -71,8 +81,12 @@ class ClassDetailActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Load students under this class
+     */
     private fun loadStudentsFromFirebase() {
-        val classCode = intent.getStringExtra("CLASS_CODE") ?: return
+        if (classCode == "Unknown Code") return
+
         val studentsRef = database.child("classes")
             .child(classCode)
             .child("students")
@@ -92,10 +106,15 @@ class ClassDetailActivity : AppCompatActivity() {
                 adapter.notifyDataSetChanged()
             }
 
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@ClassDetailActivity, "Failed to load students", Toast.LENGTH_SHORT).show()
+            }
         })
     }
 
+    /**
+     * Add student dialog
+     */
     private fun showAddStudentDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_student, null)
         val idInput = dialogView.findViewById<EditText>(R.id.editStudentId)
@@ -122,7 +141,10 @@ class ClassDetailActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val classCode = intent.getStringExtra("CLASS_CODE") ?: return@setOnClickListener
+            if (classCode == "Unknown Code") {
+                Toast.makeText(this, "Class code missing", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             val studentRef = database.child("users").child(id)
             studentRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -173,18 +195,18 @@ class ClassDetailActivity : AppCompatActivity() {
                         }
                 }
 
-                override fun onCancelled(error: DatabaseError) {}
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@ClassDetailActivity, "Database error", Toast.LENGTH_SHORT).show()
+                }
             })
         }
     }
 
-    // Helper: calculate progress based on achievements
     private fun calculateProgress(student: StudentItem): String {
         val total = student.achievements?.size ?: 0
         return if (total > 0) "${(total * 10).coerceAtMost(100)}%" else "0%"
     }
 
-    // Helper: format achievements into a readable string
     private fun formatAchievements(achievements: List<Achievement>?): String {
         return if (achievements.isNullOrEmpty()) {
             "None yet"
@@ -193,7 +215,6 @@ class ClassDetailActivity : AppCompatActivity() {
         }
     }
 
-    // Toolbar back button
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {

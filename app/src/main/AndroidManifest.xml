@@ -43,6 +43,6 @@
         <activity android:name=".TeacherIntroActivity" android:exported="true" />
         <activity android:name=".QuizDetailActivity" android:exported="true" />
         <activity android:name=".SpellingAchievementsActivity" android:exported="true" />
+        <activity android:name=".AboutUsActivity" android:exported="true" />
     </application>
-
 </manifest>

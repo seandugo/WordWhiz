@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityOptionsCompat
 import androidx.appcompat.widget.Toolbar
 
 class StudentProgressActivity : AppCompatActivity() {
@@ -21,37 +20,32 @@ class StudentProgressActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student_progress)
 
-        // ✅ Setup Toolbar with back button
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true) // show back arrow
-            setDisplayShowTitleEnabled(false) // keep title from XML
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowTitleEnabled(false)
         }
 
-        // ✅ Initialize views
         studentName = findViewById(R.id.headerStudentName)
         studentClass = findViewById(R.id.headerStudentClass)
         studentCode = findViewById(R.id.headerStudentCode)
         progressText = findViewById(R.id.progressText)
         achievementText = findViewById(R.id.achievementText)
 
-        // ✅ Get intent extras safely
         val name = intent.getStringExtra(EXTRA_NAME) ?: "Unknown"
         val className = intent.getStringExtra(EXTRA_CLASS) ?: "N/A"
-        val code = intent.getStringExtra(EXTRA_CODE) ?: "N/A"
+        val code = intent.getStringExtra(EXTRA_CODE) ?: "N/A" // ✅ studentid now
         val progress = intent.getStringExtra(EXTRA_PROGRESS) ?: "0%"
         val achievement = intent.getStringExtra(EXTRA_ACHIEVEMENT) ?: "None yet"
 
-        // ✅ Bind data
         studentName.text = name
         studentClass.text = "Class: $className"
-        studentCode.text = "Code: $code"
+        studentCode.text = "Student ID: $code"
         progressText.text = "Progress: $progress"
         achievementText.text = "Achievement: $achievement"
     }
 
-    // ✅ Handle toolbar back button
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
@@ -73,37 +67,26 @@ class StudentProgressActivity : AppCompatActivity() {
             context: Context,
             name: String,
             className: String,
-            code: String,
+            studentId: String, // ✅ not random code, real studentid
             progress: String,
             achievement: String
         ) {
             val intent = Intent(context, StudentProgressActivity::class.java).apply {
                 putExtra(EXTRA_NAME, name)
                 putExtra(EXTRA_CLASS, className)
-                putExtra(EXTRA_CODE, code)
+                putExtra(EXTRA_CODE, studentId)
                 putExtra(EXTRA_PROGRESS, progress)
                 putExtra(EXTRA_ACHIEVEMENT, achievement)
             }
-
             context.startActivity(intent)
-
-            if (context is AppCompatActivity) {
-                // ✅ iOS-style: new screen slides in from right
-                context.overridePendingTransition(
-                    R.anim.slide_in_right,  // you’ll add this
-                    R.anim.slide_out_left   // you’ll add this
-                )
-            }
         }
     }
 
     override fun finish() {
         super.finish()
-        // ✅ iOS-style: back slides out to the right
         overridePendingTransition(
-            R.anim.slide_in_left,   // old screen comes back from left
-            R.anim.slide_out_right  // current screen exits to right
+            R.anim.slide_in_left,
+            R.anim.slide_out_right
         )
     }
-
 }
