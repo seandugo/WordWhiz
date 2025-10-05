@@ -20,66 +20,59 @@
         android:titleTextAppearance="@style/ToolbarTitleText"
         android:elevation="4dp">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_gravity="end"
-            android:padding="12dp"
-            android:background="@drawable/rounded_corner">
-
-            <!-- Streak icon -->
-            <ImageView
-                android:id="@+id/streakIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/book"
-                android:contentDescription="Streak Icon"/>
-
-            <!-- Streak number -->
-            <TextView
-                android:id="@+id/streakNumber"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginStart="4dp"/>
-        </LinearLayout>
-
     </com.google.android.material.appbar.MaterialToolbar>
 
     <!-- Existing content -->
     <LinearLayout
-        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/rounded_corner"
-        android:backgroundTint="#FFC007"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:orientation="horizontal"
+        android:weightSum="1">
 
-        <TextView
-            android:id="@+id/headerTitle"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="title"
-            android:fontFamily="@font/pixel"
-            android:textColor="#FFF"
-            android:textSize="34sp"
-            android:textStyle="bold"
-            android:shadowColor="#000000"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="3"/>
+            android:layout_weight="0.8"
+            android:background="@drawable/rounded_right"
+            android:backgroundTint="#FFC007"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginEnd="8dp">
 
-        <TextView
-            android:id="@+id/headerSubtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="subtitle" />
+            <TextView
+                android:id="@+id/headerTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pixel"
+                android:shadowColor="#000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="3"
+                android:text="title"
+                android:textColor="#FFF"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/headerSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="subtitle"
+                android:textColor="#000" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:background="@drawable/rounded_left"
+            android:backgroundTint="#FFC007"
+            android:src="@drawable/book"
+            android:padding="10dp" />
     </LinearLayout>
 
     <RelativeLayout

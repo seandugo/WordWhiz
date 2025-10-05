@@ -10,7 +10,9 @@ import androidx.fragment.app.Fragment
 import com.example.thesis_app.PreAssessmentActivity
 import com.example.thesis_app.QuizActivity
 import com.example.thesis_app.R
+import com.example.thesis_app.models.QuestionModel
 import com.example.thesis_app.models.QuizModel
+import com.example.thesis_app.models.QuizPartItem
 import com.google.firebase.database.FirebaseDatabase
 
 class QuizTimePage : Fragment(R.layout.pretest_last_page) {
@@ -34,28 +36,45 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
             val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
             val studentId = sharedPrefs.getString("studentId", "") ?: ""
 
-            FirebaseDatabase.getInstance().reference
+            val dbRef = FirebaseDatabase.getInstance().reference
                 .child("quizzes")
                 .child("quiz1")
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    if (snapshot.exists()) {
-                        val quizModel = snapshot.getValue(QuizModel::class.java)
-                        if (quizModel != null) {
-                            val fixedQuiz = quizModel.copy(id = snapshot.key ?: "")
 
-                            val intent = Intent(requireContext(), QuizActivity::class.java)
-                            QuizActivity.questionModelList = fixedQuiz.questionList
-                            intent.putExtra("QUIZ_ID", fixedQuiz.id)
-                            intent.putExtra("studentId", studentId)
-                            startActivity(intent)
-                            requireActivity().finish()
+            dbRef.get().addOnSuccessListener { quizSnapshot ->
+                if (quizSnapshot.exists()) {
+                    val title = quizSnapshot.child("title").getValue(String::class.java) ?: ""
+                    val subtitle = quizSnapshot.child("subtitle").getValue(String::class.java) ?: ""
+
+                    val partSnapshot = quizSnapshot.child("part1").child("questionList")
+                    val questions = mutableListOf<QuestionModel>()
+
+                    for (qSnap in partSnapshot.children) {
+                        val question = qSnap.getValue(QuestionModel::class.java)
+                        if (question != null) {
+                            questions.add(question)
                         }
                     }
+
+                    // Build QuizPartItem
+                    val partItem = QuizPartItem(
+                        quizId = quizSnapshot.key ?: "quiz1",
+                        quizTitle = title,
+                        quizSubtitle = subtitle,
+                        partId = "part1",
+                        questions = questions
+                    )
+
+                    // Send to QuizActivity
+                    val intent = Intent(requireContext(), QuizActivity::class.java)
+                    QuizActivity.questionModelList = partItem.questions
+                    intent.putExtra("QUIZ_ID", partItem.quizId)      // "quiz1"
+                    intent.putExtra("PART_ID", "part1")           // correct part name
+                    intent.putExtra("studentId", studentId)
+                    startActivity(intent)
                 }
-                .addOnFailureListener {
-                    Log.e("QuizTimePage", "Failed to fetch quiz: ${it.message}")
-                }
+            }.addOnFailureListener {
+                Log.e("QuizTimePage", "Failed to fetch pre-test quiz: ${it.message}")
+            }
         }
     }
 }

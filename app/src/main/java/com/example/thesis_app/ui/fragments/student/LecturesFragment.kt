@@ -9,14 +9,16 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.thesis_app.models.QuizModel
 import com.example.thesis_app.QuizListAdapter
 import com.example.thesis_app.R
+import com.example.thesis_app.models.QuestionModel
+import com.example.thesis_app.models.QuizDisplayItem
+import com.example.thesis_app.models.QuizPartItem
 import com.google.firebase.database.FirebaseDatabase
 
 class LecturesFragment : Fragment() {
 
-    private lateinit var quizModelList: MutableList<QuizModel>
+    private lateinit var quizPartList: MutableList<QuizDisplayItem>
     private lateinit var adapter: QuizListAdapter
     private lateinit var topAppBar: com.google.android.material.appbar.MaterialToolbar
     private lateinit var progressBar: View
@@ -24,6 +26,7 @@ class LecturesFragment : Fragment() {
     private lateinit var headerLayout: View
     private lateinit var headerTitle: TextView
     private lateinit var headerSubtitle: TextView
+    private lateinit var displayList: MutableList<QuizDisplayItem>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +44,7 @@ class LecturesFragment : Fragment() {
         topAppBar.title = "Welcome Student!"
         topAppBar.setTitleTextAppearance(requireContext(), R.style.ToolbarTitleText)
 
-        quizModelList = mutableListOf()
+        quizPartList = mutableListOf()
         getDataFromFirebase()
 
         return view
@@ -55,61 +58,126 @@ class LecturesFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
         val studentId = prefs.getString("studentId", null)
 
-        adapter = QuizListAdapter(quizModelList, studentId ?: "", requireActivity())
+        adapter = QuizListAdapter(displayList, studentId ?: "", requireActivity())
         val layoutManager = LinearLayoutManager(context)
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
+
+        // ✅ Initialize header at startup with first unlocked quiz part
+        val firstPart = displayList.firstOrNull { it is QuizDisplayItem.Part } as? QuizDisplayItem.Part
+        firstPart?.let {
+            headerTitle.text = it.item.quizTitle
+            headerSubtitle.text = it.item.quizSubtitle
+        }
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
                 val firstVisiblePos = layoutManager.findFirstVisibleItemPosition()
-                if (firstVisiblePos != RecyclerView.NO_POSITION && firstVisiblePos < quizModelList.size) {
-                    val currentQuiz = quizModelList[firstVisiblePos]
-
-                    // Update header
-                    headerTitle.text = currentQuiz.title
-                    headerSubtitle.text = currentQuiz.subtitle
+                if (firstVisiblePos != RecyclerView.NO_POSITION && firstVisiblePos < displayList.size) {
+                    val currentItem = displayList[firstVisiblePos]
+                    if (currentItem is QuizDisplayItem.Part) {
+                        headerTitle.text = currentItem.item.quizTitle
+                        headerSubtitle.text = currentItem.item.quizSubtitle
+                    }
                 }
             }
         })
-
     }
 
     private fun getDataFromFirebase() {
         progressBar.visibility = View.VISIBLE
+        displayList = mutableListOf()
 
         val prefs = requireContext().getSharedPreferences("USER_PREFS", 0)
-        val studentId = prefs.getString("studentId", "")
-        Log.d("LecturesFragment", "studentId = $studentId")
+        val studentId = prefs.getString("studentId", null) ?: ""
 
-        FirebaseDatabase.getInstance().reference
-            .child("quizzes")
-            .get()
-            .addOnSuccessListener { database ->
-                if (database.exists()) {
-                    for (quizSnapshot in database.children) {
-                        val quizModel = quizSnapshot.getValue(QuizModel::class.java)
-                        if (quizModel != null) {
-                            val fixedModel = quizModel.copy(id = quizSnapshot.key ?: "")
-                            quizModelList.add(fixedModel)
+        val dbRef = FirebaseDatabase.getInstance().reference.child("quizzes")
+
+        dbRef.get().addOnSuccessListener { database ->
+            if (!database.exists()) return@addOnSuccessListener
+
+            for (quizSnapshot in database.children) {
+                val quizId = quizSnapshot.key ?: ""
+
+                // Skip pretest Quiz1 entirely
+                if (quizId == "quiz1") continue
+
+                val title = quizSnapshot.child("title").getValue(String::class.java) ?: ""
+                val subtitle = quizSnapshot.child("subtitle").getValue(String::class.java) ?: ""
+
+                if (title.isNotEmpty()) {
+                    displayList.add(QuizDisplayItem.Divider(title))
+                }
+
+                var allPartsCompleted = true
+                var firstPartUnlocked = false
+
+                for (partSnapshot in quizSnapshot.children) {
+                    val rawPartId = partSnapshot.key ?: continue
+                    if (!rawPartId.startsWith("part")) continue  // skip title/subtitle
+
+                    val questions = mutableListOf<QuestionModel>()
+                    for (qSnap in partSnapshot.child("questionList").children) {
+                        qSnap.getValue(QuestionModel::class.java)?.let { questions.add(it) }
+                    }
+
+                    val partId = rawPartId
+                    val displayName = "Level " + partId.filter { it.isDigit() }
+
+                    // Check user progress for this part
+                    val progressSnapshot = FirebaseDatabase.getInstance().reference
+                        .child("users").child(studentId)
+                        .child("progress").child(quizId).child(partId)
+
+                    progressSnapshot.get().addOnSuccessListener { snap ->
+                        val answered = snap.child("answeredCount").getValue(Int::class.java) ?: 0
+                        val total = snap.child("totalQuestions").getValue(Int::class.java) ?: questions.size
+                        val isCompleted = total > 0 && answered >= total
+
+                        // Track if all parts are completed
+                        if (!isCompleted) allPartsCompleted = false
+
+                        // Unlock first part if this is the first quiz unlocked
+                        if (!firstPartUnlocked) {
+                            firstPartUnlocked = true
+                        }
+
+                        // After last part processed, update quiz-level completion
+                        if (partSnapshot == quizSnapshot.children.last { it.key?.startsWith("part") == true }) {
+                            FirebaseDatabase.getInstance().reference
+                                .child("users").child(studentId)
+                                .child("progress").child(quizId)
+                                .child("isCompleted")
+                                .setValue(allPartsCompleted)
                         }
                     }
-                    Log.d("LecturesFragment", "Quizzes found: ${quizModelList.size}")
-                } else {
-                    Log.d("LecturesFragment", "No quizzes found at this grade level")
+
+                    val isUnlocked = firstPartUnlocked || allPartsCompleted
+
+                    displayList.add(
+                        QuizDisplayItem.Part(
+                            QuizPartItem(
+                                quizId = quizId,
+                                quizTitle = title,
+                                quizSubtitle = subtitle,
+                                partId = partId,
+                                displayName = displayName,
+                                questions = questions,
+                                isUnlocked = isUnlocked
+                            )
+                        )
+                    )
                 }
-                setupRecyclerView()
             }
-            .addOnFailureListener {
-                progressBar.visibility = View.GONE
-                Log.e("LecturesFragment", "Failed to fetch quizzes: ${it.message}")
-            }
+
+            setupRecyclerView()
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        quizModelList.clear()
+        quizPartList.clear()
     }
 }

@@ -17,18 +17,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:orientation="vertical"
             android:layout_toStartOf="@+id/progress_container"
-            android:layout_toLeftOf="@+id/progress_container">
+            android:layout_toLeftOf="@+id/progress_container"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/quiz_title_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pixel"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                tools:text="Android"
-                android:fontFamily="@font/pixel"/>
+                tools:text="Android" />
 
             <TextView
                 android:id="@+id/quiz_subtitle_text"
@@ -51,17 +51,17 @@
             <!-- Material 3 Circular Progress -->
             <com.google.android.material.progressindicator.CircularProgressIndicator
                 android:id="@+id/quiz_progress_bar"
+                style="@style/Widget.Material3.CircularProgressIndicator"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                app:indicatorSize="48dp"
-                app:indicatorInset="0dp"
-                app:trackThickness="6dp"
-                app:indicatorDirectionCircular="clockwise"
-                app:trackColor="?attr/colorSurfaceVariant"
-                app:indicatorColor="?attr/colorPrimary"
-                android:progress="0"
                 android:max="100"
-                style="@style/Widget.Material3.CircularProgressIndicator" />
+                android:progress="0"
+                app:indicatorColor="?attr/colorPrimary"
+                app:indicatorDirectionCircular="clockwise"
+                app:indicatorInset="0dp"
+                app:indicatorSize="48dp"
+                app:trackColor="?attr/colorSurfaceVariant"
+                app:trackThickness="6dp" />
 
             <!-- Percentage text -->
             <TextView

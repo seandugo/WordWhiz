@@ -19,7 +19,6 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var aboutUsLayout: LinearLayout
     private lateinit var termsLayout: LinearLayout
-    private lateinit var logoutLayout: LinearLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,7 +29,6 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
         // Initialize layouts
         aboutUsLayout = view.findViewById(R.id.aboutUsLayout)
         termsLayout = view.findViewById(R.id.termsLayout)
-        logoutLayout = view.findViewById(R.id.logoutLayout)
 
         setupListeners()
 
@@ -47,31 +45,10 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
             Toast.makeText(requireContext(), "Terms and Conditions clicked", Toast.LENGTH_SHORT).show()
             openUrl("https://www.example.com/terms")
         }
-
-        logoutLayout.setOnClickListener {
-            showLogoutConfirmation()
-        }
     }
 
     private fun openUrl(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startActivity(intent)
-    }
-
-    private fun showLogoutConfirmation() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Log out")
-            .setMessage("Are you sure you want to log out?")
-            .setPositiveButton("Yes") { _, _ ->
-                FirebaseAuth.getInstance().signOut()
-                val prefs = requireContext().getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-                prefs.edit().clear().apply()
-                val intent = Intent(requireContext(), LoginActivity::class.java)
-                startActivity(intent)
-                requireActivity().finish()
-                dismiss() // close bottom sheet after logout
-            }
-            .setNegativeButton("No", null)
-            .show()
     }
 }

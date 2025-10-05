@@ -9,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textview.MaterialTextView
+import com.google.firebase.database.FirebaseDatabase
 
 class SignupActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar

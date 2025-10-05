@@ -1,9 +1,11 @@
 package com.example.thesis_app.ui.fragments.spelling
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.URL
 import java.util.Locale
 
@@ -55,7 +58,6 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
     private var cooldownTimer: CountDownTimer? = null
     private val COOLDOWN_HOURS = 3
     private val database = FirebaseDatabase.getInstance().reference
-    private val studentId: String? = "student123"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -128,23 +130,22 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
     }
 
     private fun saveSpellingProgress() {
-        if (studentId == null) return
+        val prefs = requireActivity().getSharedPreferences("USER_PREFS", Context.MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null) ?: return
 
         val updates = mapOf(
             "lastSpellingTime" to System.currentTimeMillis(),
             "lastWord" to currentWord,
             "lastMeaning" to currentMeaning
         )
-        database.child("users").child(studentId!!).child("spellingActivity").updateChildren(updates)
+        database.child("users").child(studentId).child("spellingActivity").updateChildren(updates)
     }
 
     private fun checkCooldown() {
-        if (studentId == null) {
-            Snackbar.make(requireView(), "No student ID found!", Snackbar.LENGTH_LONG).show()
-            return
-        }
+        val prefs = requireActivity().getSharedPreferences("USER_PREFS", Context.MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null) ?: return
 
-        database.child("users").child(studentId!!).child("spellingActivity")
+        database.child("users").child(studentId).child("spellingActivity")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val lastTime = snapshot.child("lastSpellingTime").getValue(Long::class.java) ?: 0L
@@ -171,9 +172,10 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
     }
 
     private fun saveWordToSavedWords(word: String, meaning: String) {
-        if (studentId == null) return
+        val prefs = requireActivity().getSharedPreferences("USER_PREFS", Context.MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null) ?: return
 
-        val newWordRef = database.child("users").child(studentId).child("savedWords").push()
+        val newWordRef = database.child("users").child(studentId).child("spellingActivity").child("savedWords").push()
         val data = mapOf(
             "word" to word,
             "partOfSpeech" to word, // store the actual word
@@ -228,10 +230,43 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
                 var word: String
                 var meaning: String = ""
 
+                // list of fallback APIs
+                val apis = listOf(
+                    "https://random-word-api.vercel.app/api?words=1",
+                    "https://random-word-form.herokuapp.com/random/noun",
+                    "https://api.api-ninjas.com/v1/randomword" // requires API key
+                )
+
                 do {
-                    val response = URL("https://random-word-api.herokuapp.com/word?number=1").readText()
-                    val jsonArray = JSONArray(response)
-                    word = jsonArray.getString(0)
+                    var response: String? = null
+
+                    // try each API until one works
+                    for (api in apis) {
+                        try {
+                            response = URL(api).readText()
+                            break
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            continue
+                        }
+                    }
+
+                    if (response == null) {
+                        throw Exception("All word APIs failed")
+                    }
+
+                    // normalize JSON format depending on API
+                    word = when {
+                        response.startsWith("[") -> {
+                            // API returns ["word"]
+                            JSONArray(response).getString(0)
+                        }
+                        response.startsWith("{") && response.contains("word") -> {
+                            // API returns { "word": "example" }
+                            JSONObject(response).getString("word")
+                        }
+                        else -> response.trim('"') // fallback
+                    }
 
                     if (word.length !in 3..8) continue
 
@@ -258,10 +293,8 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
                     textMeaning.text = currentMeaning
                     setupLetterButtons()
 
-                    val slideIn =
-                        AnimationUtils.loadAnimation(requireContext(), R.anim.slide_in_left)
-                    val slideOut =
-                        AnimationUtils.loadAnimation(requireContext(), R.anim.slide_out_right)
+                    val slideIn = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_in_left)
+                    val slideOut = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_out_right)
 
                     loadingLayout.startAnimation(slideOut)
                     gameLayout.startAnimation(slideIn)
@@ -273,7 +306,7 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    textMeaning.text = ""
+                    textMeaning.text = "Failed to load word."
                 }
             }
         }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/profileLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,7 +9,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="200dp"
         android:fitsSystemWindows="true"
         android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
 
@@ -54,19 +55,32 @@
                     android:id="@+id/nameTextExpanded"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Juan Dela Cruz"
+                    android:text="Loading..."
                     android:textColor="@android:color/white"
                     android:textSize="24sp"
                     android:textStyle="bold"
+                    android:fontFamily="@font/pixel"
                     android:layout_marginBottom="4dp" />
 
                 <TextView
                     android:id="@+id/classTextExpanded"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BSIT 3A"
+                    android:text="Loading..."
+                    android:fontFamily="@font/pixel"
                     android:textColor="@android:color/white"
+                    android:layout_marginBottom="5dp"
                     android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/studentIdExpanded"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="S00000"
+                    android:background="@drawable/rounded_button"
+                    android:padding="10dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Collapsed Toolbar -->
@@ -76,7 +90,8 @@
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:title=""
-                app:navigationIcon="@drawable/menu" />
+                app:navigationIconTint="@android:color/white"
+                app:navigationIcon="@drawable/settings" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -85,7 +100,9 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:clipToPadding="false"
+        android:fitsSystemWindows="true">
 
         <LinearLayout
             android:id="@+id/detailsContainer"
@@ -94,12 +111,189 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_gravity="center">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/rounded_right"
+                    android:backgroundTint="#FFC007"
+                    android:layout_weight="0.3"
+                    android:padding="12dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/book" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="8dp"
+                        android:text="1"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/box_background"
+                    android:backgroundTint="#FFC007"
+                    android:layout_weight="0.3"
+                    android:padding="12dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/fire"
+                        android:scaleType="fitCenter"
+                        android:adjustViewBounds="true"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="8dp"
+                        android:text="1"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/rounded_left"
+                    android:backgroundTint="#FFC007"
+                    android:layout_weight="0.3"
+                    android:padding="12dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/dict" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="8dp"
+                        android:text="1"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Progress Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Progress"
+                    android:textSize="16sp"
+                    android:layout_weight="0.8"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="8dp"
+                    android:fontFamily="@font/pixel"/>
+
+                <TextView
+                    android:id="@+id/seeAllProgress"
+                    android:layout_width="124dp"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pixel"
+                    android:paddingTop="16dp"
+                    android:layout_weight="0.2"
+                    android:paddingBottom="8dp"
+                    android:text="See All"
+                    android:textAlignment="textEnd"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/progressCarousel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Summary"
-                android:textSize="16sp"
-                android:paddingTop="8dp" />
+                android:padding="8dp"
+                android:overScrollMode="never"
+                android:scrollbars="vertical"
+                tools:listitem="@layout/item_quiz_progress" />
+
+            <!-- Spelling Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Spelling"
+                    android:textSize="16sp"
+                    android:layout_weight="0.8"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="8dp"
+                    android:fontFamily="@font/pixel"/>
+
+                <TextView
+                    android:id="@+id/seeAllSpelling"
+                    android:layout_width="124dp"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pixel"
+                    android:paddingTop="16dp"
+                    android:layout_weight="0.2"
+                    android:paddingBottom="8dp"
+                    android:text="See All"
+                    android:textAlignment="textEnd"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/spellingContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <!-- Placeholder Text -->
+                <TextView
+                    android:id="@+id/emptySpellingText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start Spelling More!"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/pixel"
+                    android:textColor="#333333"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Carousel RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/achievementsCarousel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"/>
+            </LinearLayout>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

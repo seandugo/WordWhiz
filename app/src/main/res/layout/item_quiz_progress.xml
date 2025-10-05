@@ -1,0 +1,65 @@
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Title + Subtitle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/quizTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Android"
+                android:fontFamily="@font/pixel" />
+
+            <TextView
+                android:id="@+id/quizSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                tools:text="Android"
+                android:fontFamily="@font/pixel"
+                android:layout_marginBottom="8dp" />
+
+        </LinearLayout>
+
+        <!-- Linear Progress below title -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            app:trackColor="?attr/colorSurfaceVariant"
+            app:indicatorColor="?attr/colorPrimary"
+            android:progress="0"
+            android:max="100"
+            style="@style/Widget.Material3.LinearProgressIndicator" />
+
+        <!-- Percentage text below the progress bar -->
+        <TextView
+            android:id="@+id/progressText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="0% completed"
+            android:textSize="12sp"
+            android:fontFamily="@font/pixel" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

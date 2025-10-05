@@ -45,6 +45,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     // ✅ Always keep the original total count
     private var originalTotalQuestions: Int = 0
     private var answeredCount: Int = 0  // ✅ Track across retries
+    private lateinit var partId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +64,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         quizId = intent.getStringExtra("QUIZ_ID") ?: ""
         val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
         studentId = prefs.getString("studentId", "") ?: ""
+        partId = intent.getStringExtra("PART_ID") ?: ""
 
         // Save the original total (before retries)
         originalTotalQuestions = questionModelList.size
@@ -84,12 +86,16 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             })
     }
 
-    private fun updateProgress(studentId: String, quizId: String, answeredCount: Int) {
+    private fun updateProgress(studentId: String, quizId: String, partId: String, answeredCount: Int) {
         val db = FirebaseDatabase.getInstance().reference
+
+        // Determine completion
+        val isCompleted = answeredCount >= originalTotalQuestions
 
         val progressData = mapOf(
             "answeredCount" to answeredCount,
-            "totalQuestions" to originalTotalQuestions, // ✅ Always use original
+            "totalQuestions" to originalTotalQuestions,
+            "isCompleted" to isCompleted,
             "lastUpdated" to System.currentTimeMillis()
         )
 
@@ -97,9 +103,13 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             .child(studentId)
             .child("progress")
             .child(quizId)
+            .child(partId)
             .setValue(progressData)
             .addOnSuccessListener {
-                Log.d("QuizActivity", "Progress updated: $answeredCount/$originalTotalQuestions")
+                Log.d(
+                    "QuizActivity",
+                    "Progress updated: $answeredCount/$originalTotalQuestions, isCompleted=$isCompleted"
+                )
             }
             .addOnFailureListener { e ->
                 Log.w("QuizActivity", "Error updating progress", e)
@@ -178,7 +188,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
                 if (answeredCount < originalTotalQuestions) {
                     answeredCount++
-                    updateProgress(studentId, quizId, answeredCount)
+                    updateProgress(studentId, quizId, partId, answeredCount)
+                    updateQuizCompletionStatus(studentId, quizId)
                 }
 
                 val explanation = questionModelList[currentQuestionIndex].explanation.ifBlank {
@@ -235,11 +246,35 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    fun updateQuizCompletionStatus(studentId: String, quizId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val quizRef = db.child("users").child(studentId).child("progress").child(quizId)
+
+        quizRef.get().addOnSuccessListener { snapshot ->
+            // Get all part nodes
+            val partNodes = snapshot.children.filter { it.key?.startsWith("part") == true }
+
+            // Check if all parts are completed
+            val allCompleted = partNodes.all { part ->
+                part.child("isCompleted").getValue(Boolean::class.java) ?: false
+            }
+
+            // Update quiz-level isCompleted
+            quizRef.child("isCompleted").setValue(allCompleted)
+                .addOnSuccessListener {
+                    if (allCompleted) {
+                        println("Quiz $quizId is now marked as completed for $studentId")
+                    }
+                }
+                .addOnFailureListener { e -> e.printStackTrace() }
+        }
+    }
+
     private fun finishQuiz() {
         val percentage = ((score.toFloat() / originalTotalQuestions.toFloat()) * 100).toInt()
 
         // ✅ Final progress
-        updateProgress(studentId, quizId, originalTotalQuestions)
+        updateProgress(studentId, quizId, partId,originalTotalQuestions)
 
         // Mark pretest as completed
         val db = FirebaseDatabase.getInstance().reference

@@ -54,11 +54,9 @@ class StudentActivity : AppCompatActivity() {
                                 }
                             }
                             .addOnFailureListener {
-                                // fallback if error
                                 replaceFragment(SpellingFragment(), 1)
                             }
                     } else {
-                        // no studentId saved → fallback
                         replaceFragment(SpellingFragment(), 1)
                     }
                 }

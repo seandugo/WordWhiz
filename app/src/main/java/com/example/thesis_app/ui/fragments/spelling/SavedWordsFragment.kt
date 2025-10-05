@@ -1,5 +1,6 @@
 package com.example.thesis_app.ui.fragments.spelling
 
+import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.view.LayoutInflater
@@ -20,7 +21,6 @@ class SavedWordsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val database = FirebaseDatabase.getInstance().reference
-    private val studentId = "student123" // replace with real studentId
     private lateinit var adapter: MeaningAdapter
     private lateinit var tts: TextToSpeech
 
@@ -49,7 +49,9 @@ class SavedWordsFragment : Fragment() {
     }
 
     private fun loadSavedWords() {
-        database.child("users").child(studentId).child("savedWords")
+        val prefs = requireActivity().getSharedPreferences("USER_PREFS", Context.MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null) ?: return
+        database.child("users").child(studentId).child("spellingActivity").child("savedWords")
             .orderByChild("savedAt") // 🔹 order by timestamp
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {

@@ -15,6 +15,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.database.DatabaseReference
 
 class LoginActivity : ComponentActivity() {
 
@@ -86,27 +87,49 @@ class LoginActivity : ComponentActivity() {
                     for (child in snapshot.children) {
                         val role = child.child("role").getValue(String::class.java)
                         val emailDb = child.child("email").getValue(String::class.java)
+                        val studentId = child.child("studentID").getValue(String::class.java)
+                        val studentName = child.child("name").getValue(String::class.java) ?: "Unknown"
 
-                        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE).edit()
-                        prefs.putString("role", role)
-                        prefs.putString("email", emailDb ?: email)
-
-                        if (role == "student") {
-                            val studentId = child.child("studentID").getValue(String::class.java)
-                            prefs.putString("studentId", studentId)
-                            prefs.apply()
+                        // ✅ Add newAccount = true if it doesn't exist
+                        val isNewAccount = if (!child.hasChild("newAccount")) {
+                            child.ref.child("newAccount").setValue(true)
+                            true
+                        } else {
+                            child.child("newAccount").getValue(Boolean::class.java) ?: false
                         }
 
-                        prefs.apply()
-
-                        val intent = Intent(this, LoadingActivity::class.java)
-                        intent.putExtra("mode", "login")
-                        intent.putExtra("role", role)
-                        if (role == "student") {
-                            intent.putExtra("studentId", child.child("studentID").getValue(String::class.java))
+                        // ✅ Initialize progress if newAccount is true and role is student
+                        if (role == "student" && studentId != null && isNewAccount) {
+                            initializeStudentProgress(studentId, child.ref)
                         }
-                        startActivity(intent)
-                        finish()
+
+                        if (role == "student" && studentId != null) {
+                            // ✅ Get first classCode under users -> studentId -> classes
+                            val classCode = child.child("classes").children.firstOrNull()?.key
+
+                            if (classCode != null) {
+                                // ✅ Fetch className from classes -> classCode -> className
+                                FirebaseDatabase.getInstance().getReference("classes")
+                                    .child(classCode)
+                                    .child("className")
+                                    .get()
+                                    .addOnSuccessListener { classSnap ->
+                                        val className = classSnap.getValue(String::class.java) ?: "No Class"
+
+                                        savePrefs(role, emailDb ?: email, studentId, studentName, className)
+
+                                        goToLoading(role, studentId)
+                                    }
+                            } else {
+                                // fallback if no class found
+                                savePrefs(role, emailDb ?: email, studentId, studentName, "No Class")
+                                goToLoading(role, studentId)
+                            }
+                        } else {
+                            // teacher or other roles
+                            savePrefs(role, emailDb ?: email, null, null, null)
+                            goToLoading(role, null)
+                        }
                         break
                     }
                 } else {
@@ -118,6 +141,67 @@ class LoginActivity : ComponentActivity() {
                 Log.e("FirebaseError", "Failed to fetch user data: ${it.message}")
                 enableButtons()
             }
+    }
+
+    private fun savePrefs(role: String?, email: String, studentId: String?, studentName: String?, studentClass: String?) {
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE).edit()
+        prefs.putString("role", role)
+        prefs.putString("email", email)
+        if (role == "student") {
+            prefs.putString("studentId", studentId)
+            prefs.putString("studentName", studentName)
+            prefs.putString("studentClass", studentClass)
+        }
+        prefs.apply()
+    }
+
+    private fun goToLoading(role: String?, studentId: String?) {
+        val intent = Intent(this, LoadingActivity::class.java)
+        intent.putExtra("mode", "login")
+        intent.putExtra("role", role)
+        if (role == "student" && studentId != null) {
+            intent.putExtra("studentId", studentId)
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    private fun initializeStudentProgress(studentId: String, userRef: DatabaseReference) {
+        val quizzesRef = FirebaseDatabase.getInstance().reference.child("quizzes")
+        val studentProgressRef = userRef.child("progress")
+
+        quizzesRef.get().addOnSuccessListener { snapshot ->
+            val progressData = mutableMapOf<String, Any>()
+
+            for (quizSnap in snapshot.children) {
+                val quizId = quizSnap.key ?: continue
+                val partsData = mutableMapOf<String, Any>()
+
+                // Only include nodes that are actual parts (skip title/subtitle)
+                quizSnap.children.forEach { partSnap ->
+                    val partId = partSnap.key ?: return@forEach
+                    if (!partId.startsWith("part")) return@forEach  // skip non-part nodes
+
+                    partsData[partId] = mapOf(
+                        "answeredCount" to 0,
+                        "isCompleted" to false
+                    )
+                }
+
+                // Add per-quiz isCompleted node
+                if (partsData.isNotEmpty()) {
+                    partsData["isCompleted"] = false
+                    progressData[quizId] = partsData
+                }
+            }
+
+            studentProgressRef.setValue(progressData)
+                .addOnSuccessListener {
+                    println("Student progress initialized successfully for $studentId")
+                    userRef.child("newAccount").setValue(false)
+                }
+                .addOnFailureListener { e -> e.printStackTrace() }
+        }.addOnFailureListener { e -> e.printStackTrace() }
     }
 
     override fun onStart() {
@@ -133,14 +217,11 @@ class LoginActivity : ComponentActivity() {
 
                 if (savedRole != null) {
                     // Fast auto-login with cached prefs
-                    val intent = Intent(this, LoadingActivity::class.java)
-                    intent.putExtra("mode", "login")
-                    intent.putExtra("role", savedRole)
-                    if (savedRole == "student") {
-                        intent.putExtra("studentId", savedStudentId)
+                    if (savedRole == "student" && savedStudentId != null) {
+                        checkAndInitializeProgress(savedStudentId)
                     }
-                    startActivity(intent)
-                    finish()
+
+                    goToLoading(savedRole, savedStudentId)
                 } else {
                     // Fetch fresh from DB
                     val dbRef = FirebaseDatabase.getInstance().getReference("users")
@@ -149,28 +230,38 @@ class LoginActivity : ComponentActivity() {
                             if (snapshot.exists()) {
                                 for (child in snapshot.children) {
                                     val role = child.child("role").getValue(String::class.java)
-                                    if (!role.isNullOrEmpty()) {
-                                        val editor = prefs.edit()
-                                        editor.putString("role", role)
-                                        editor.putString("email", email)
-                                        if (role == "student") {
-                                            val studentId = child.child("studentID")
-                                                .getValue(String::class.java)
-                                            editor.putString("studentId", studentId)
-                                        }
-                                        editor.apply()
+                                    val studentId = child.child("studentID").getValue(String::class.java)
+                                    val studentName = child.child("name").getValue(String::class.java) ?: "Unknown"
 
-                                        val intent = Intent(this, LoadingActivity::class.java)
-                                        intent.putExtra("mode", "login")
-                                        intent.putExtra("role", role)
-                                        if (role == "student") {
-                                            intent.putExtra("studentId",
-                                                child.child("studentID")
-                                                    .getValue(String::class.java)
-                                            )
+                                    if (!role.isNullOrEmpty()) {
+                                        if (role == "student" && studentId != null) {
+                                            val classCode = child.child("classes").children.firstOrNull()?.key
+                                            if (classCode != null) {
+                                                FirebaseDatabase.getInstance().getReference("classes")
+                                                    .child(classCode)
+                                                    .child("className")
+                                                    .get()
+                                                    .addOnSuccessListener { classSnap ->
+                                                        val className = classSnap.getValue(String::class.java) ?: "No Class"
+
+                                                        savePrefs(role, email, studentId, studentName, className)
+
+                                                        // ✅ Check and initialize progress if newAccount = true
+                                                        val isNewAccount = child.child("newAccount").getValue(Boolean::class.java) ?: false
+                                                        if (isNewAccount) {
+                                                            initializeStudentProgress(studentId, child.ref)
+                                                        }
+
+                                                        goToLoading(role, studentId)
+                                                    }
+                                            } else {
+                                                savePrefs(role, email, studentId, studentName, "No Class")
+                                                goToLoading(role, studentId)
+                                            }
+                                        } else {
+                                            savePrefs(role, email, null, null, null)
+                                            goToLoading(role, null)
                                         }
-                                        startActivity(intent)
-                                        finish()
                                     }
                                 }
                             } else {
@@ -181,6 +272,17 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    // Helper function for cached prefs fast-login
+    private fun checkAndInitializeProgress(studentId: String) {
+        val userRef = FirebaseDatabase.getInstance().reference.child("users").child(studentId)
+        userRef.get().addOnSuccessListener { snapshot ->
+            val isNewAccount = snapshot.child("newAccount").getValue(Boolean::class.java) ?: false
+            if (isNewAccount) {
+                initializeStudentProgress(studentId, userRef)
+            }
+        }.addOnFailureListener { it.printStackTrace() }
     }
 
     private fun disableButtons() {

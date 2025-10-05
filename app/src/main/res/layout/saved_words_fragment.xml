@@ -35,11 +35,30 @@
             android:paddingRight="40dp"/>
     </LinearLayout>
 
-    <!-- RecyclerView for saved words -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/savedWordsRecycler"
+    <!-- Header + RecyclerView container -->
+    <LinearLayout
+        android:id="@+id/wordsListLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        android:visibility="gone"/>
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/recallHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recall your words!"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/pixel"
+            android:textColor="#333333"
+            android:padding="16dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/savedWordsRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="16dp"/>
+    </LinearLayout>
+
 </FrameLayout>

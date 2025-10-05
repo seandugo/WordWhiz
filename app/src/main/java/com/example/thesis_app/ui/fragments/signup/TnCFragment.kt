@@ -124,8 +124,6 @@ class TnCFragment : Fragment(R.layout.tnc_page_signup) {
                 }
         }
     }
-
-    // ✅ Generate IDs (Sxxxxxx / Txxxxxx)
     private fun generateUserId(role: String): String {
         val number = Random.nextInt(100000, 999999) // 6-digit random
         return if (role == "student") {

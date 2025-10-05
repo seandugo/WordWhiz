@@ -7,80 +7,186 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.thesis_app.models.QuizModel
+import com.example.thesis_app.models.QuizDisplayItem
+import com.example.thesis_app.models.QuizPartItem
 import com.google.firebase.database.FirebaseDatabase
 
 class QuizListAdapter(
-    private val quizModelList: List<QuizModel>,
+    private val items: List<QuizDisplayItem>,
     private val studentId: String,
     private val activity: FragmentActivity
-) : RecyclerView.Adapter<QuizListAdapter.MyViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    class MyViewHolder(itemView: View, private val studentId: String, private val activity: FragmentActivity) : RecyclerView.ViewHolder(itemView) {
+    companion object {
+        private const val TYPE_PART = 0
+        private const val TYPE_DIVIDER = 1
+    }
+
+    private val externalProgressCache = mutableMapOf<String, Pair<Int, Boolean>>()
+
+    fun setPreloadedProgress(cache: Map<String, Pair<Int, Boolean>>) {
+        externalProgressCache.clear()
+        externalProgressCache.putAll(cache)
+        PartViewHolder.setExternalCache(externalProgressCache)
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return when (items[position]) {
+            is QuizDisplayItem.Part -> TYPE_PART
+            is QuizDisplayItem.Divider -> TYPE_DIVIDER
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            TYPE_PART -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.quiz_item_recycler_row, parent, false)
+                PartViewHolder(view, studentId, activity)
+            }
+            TYPE_DIVIDER -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_quiz_divider, parent, false)
+                DividerViewHolder(view)
+            }
+            else -> throw IllegalArgumentException("Unknown view type")
+        }
+    }
+
+    override fun getItemCount(): Int = items.size
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = items[position]) {
+            is QuizDisplayItem.Part -> (holder as PartViewHolder).bind(item.item, position)
+            is QuizDisplayItem.Divider -> (holder as DividerViewHolder).bind(item.title)
+        }
+    }
+
+    class PartViewHolder(
+        itemView: View,
+        private val studentId: String,
+        private val activity: FragmentActivity
+    ) : RecyclerView.ViewHolder(itemView) {
+
+        companion object {
+            private var externalCache: Map<String, Pair<Int, Boolean>>? = null
+            private val partStatusCache = mutableMapOf<String, Pair<Int, Boolean>>()
+
+            fun setExternalCache(cache: Map<String, Pair<Int, Boolean>>) {
+                externalCache = cache
+                partStatusCache.putAll(cache)
+            }
+        }
+
         private val quizTitleText: TextView = itemView.findViewById(R.id.quiz_title_text)
-        private val quizSubtitleText: TextView = itemView.findViewById(R.id.quiz_subtitle_text)
         private val progressBar: com.google.android.material.progressindicator.CircularProgressIndicator =
             itemView.findViewById(R.id.quiz_progress_bar)
         private val percentageText: TextView = itemView.findViewById(R.id.quiz_percentage_text)
 
-        fun bind(model: QuizModel) {
-            quizTitleText.text = model.title
-            quizSubtitleText.text = model.subtitle
+        fun bind(item: QuizPartItem, index: Int) {
+            quizTitleText.text = item.displayName
+            val partKey = "${item.quizId}_${item.partId}"
 
-            loadUserProgress(model.id) { answeredCount ->
-                val total = model.questionList.size
-                val progress = if (total > 0) (answeredCount * 100) / total else 0
+            // ✅ If cached, instantly update UI without re-fetching from Firebase
+            if (partStatusCache.containsKey(partKey)) {
+                val (answeredCount, isUnlocked) = partStatusCache[partKey]!!
+                updateUI(item, answeredCount, isUnlocked, animate = false)
+            } else {
+                // 🕓 Fetch only once from Firebase if not cached
+                checkPartUnlockStatus(item.quizId, item.partId, item.questions.size) { answeredCount, isUnlocked ->
+                    partStatusCache[partKey] = Pair(answeredCount, isUnlocked)
+                    updateUI(item, answeredCount, isUnlocked, animate = true)
+                }
+            }
+        }
 
-                progressBar.setProgress(progress, true)
+        private fun updateUI(
+            item: QuizPartItem,
+            answeredCount: Int,
+            isUnlocked: Boolean,
+            animate: Boolean
+        ) {
+            if (!isUnlocked) {
+                itemView.alpha = 0.5f
+                itemView.isClickable = false
+                progressBar.visibility = View.INVISIBLE
+                percentageText.text = "Locked"
+            } else {
+                itemView.alpha = 1f
+                itemView.isClickable = true
+                progressBar.visibility = View.VISIBLE
+
+                val progress = if (item.questions.isNotEmpty())
+                    (answeredCount * 100) / item.questions.size
+                else 0
+
+                // Disable animation if data is from cache
+                progressBar.setProgress(progress, animate)
                 percentageText.text = "$progress%"
             }
 
             itemView.setOnClickListener {
+                if (!isUnlocked) return@setOnClickListener
+
                 val intent = Intent(itemView.context, QuizActivity::class.java)
-                QuizActivity.questionModelList = model.questionList
-                intent.putExtra("QUIZ_ID", model.id)
+                QuizActivity.questionModelList = item.questions
+                intent.putExtra("QUIZ_ID", item.quizId)
+                intent.putExtra("PART_ID", item.partId)
                 intent.putExtra("STUDENT_ID", studentId)
-
-                // Start QuizActivity
                 itemView.context.startActivity(intent)
-
-                // Finish the parent activity so it reloads later
                 activity.finish()
             }
-
         }
 
-        private fun loadUserProgress(quizId: String, callback: (Int) -> Unit) {
+        private fun checkPartUnlockStatus(
+            quizId: String,
+            partId: String,
+            totalQuestions: Int,
+            callback: (answeredCount: Int, isUnlocked: Boolean) -> Unit
+        ) {
             val db = FirebaseDatabase.getInstance().reference
+            val userProgressRef = db.child("users").child(studentId).child("progress")
 
-            db.child("users")
-                .child(studentId)  // ✅ now works, studentId is available
-                .child("progress")
-                .child(quizId)
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    if (snapshot.exists()) {
-                        val answered = snapshot.child("answeredCount").getValue(Int::class.java) ?: 0
-                        callback(answered)
-                    } else {
-                        callback(0)
-                    }
+            userProgressRef.get().addOnSuccessListener { snapshot ->
+
+                val quizKeys = snapshot.children.map { it.key ?: "" }.sorted()
+                val quizIndex = quizKeys.indexOf(quizId)
+                val previousQuizCompleted = if (quizIndex == 0) true
+                else snapshot.child(quizKeys[quizIndex - 1]).child("isCompleted")
+                    .getValue(Boolean::class.java) ?: false
+
+                val answered = snapshot.child("$quizId/$partId/answeredCount")
+                    .getValue(Int::class.java) ?: 0
+                snapshot.child("$quizId/$partId/isCompleted")
+                    .getValue(Boolean::class.java) ?: false
+
+                val partsList = snapshot.child(quizId).children
+                    .filter { it.key?.startsWith("part") == true }
+                    .map { it.key!! }.sorted()
+                val partIndex = partsList.indexOf(partId)
+                val previousPartCompleted = if (partIndex == 0) true
+                else snapshot.child("$quizId/${partsList[partIndex - 1]}/isCompleted")
+                    .getValue(Boolean::class.java) ?: false
+
+                val isUnlocked = previousQuizCompleted && previousPartCompleted
+
+                val allPartsCompleted = partsList.all { pid ->
+                    snapshot.child("$quizId/$pid/isCompleted").getValue(Boolean::class.java) ?: false
                 }
-                .addOnFailureListener {
-                    callback(0)
-                }
+                userProgressRef.child(quizId).child("isCompleted").setValue(allPartsCompleted)
+
+                callback(answered, isUnlocked)
+
+            }.addOnFailureListener {
+                callback(0, partId == "part1")
+            }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.quiz_item_recycler_row, parent, false)
-        return MyViewHolder(view, studentId, activity) // ✅ pass studentId here
-    }
-
-    override fun getItemCount(): Int = quizModelList.size
-
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(quizModelList[position])
+    class DividerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val dividerTitle: TextView = itemView.findViewById(R.id.dividerTitle)
+        fun bind(title: String) {
+            dividerTitle.text = "$title"
+        }
     }
 }
