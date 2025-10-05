@@ -149,35 +149,48 @@ class QuizListAdapter(
 
             userProgressRef.get().addOnSuccessListener { snapshot ->
 
-                val quizKeys = snapshot.children.map { it.key ?: "" }.sorted()
+                // 🔹 All quiz keys (e.g. quiz1, quiz2)
+                val quizKeys = snapshot.children.mapNotNull { it.key }.sorted()
                 val quizIndex = quizKeys.indexOf(quizId)
-                val previousQuizCompleted = if (quizIndex == 0) true
-                else snapshot.child(quizKeys[quizIndex - 1]).child("isCompleted")
-                    .getValue(Boolean::class.java) ?: false
+                val previousQuizCompleted = if (quizIndex <= 0) true else
+                    snapshot.child(quizKeys[quizIndex - 1]).child("isCompleted")
+                        .getValue(Boolean::class.java) ?: false
 
-                val answered = snapshot.child("$quizId/$partId/answeredCount")
-                    .getValue(Int::class.java) ?: 0
-                snapshot.child("$quizId/$partId/isCompleted")
-                    .getValue(Boolean::class.java) ?: false
-
+                // 🔹 All parts and post-test keys
                 val partsList = snapshot.child(quizId).children
-                    .filter { it.key?.startsWith("part") == true }
-                    .map { it.key!! }.sorted()
+                    .filter { keyNode ->
+                        keyNode.key?.startsWith("part") == true ||
+                                keyNode.key == "postTest"
+                    }
+                    .mapNotNull { it.key }
+                    .sortedBy {
+                        // sort parts numerically, put postTest at the end
+                        if (it == "postTest") Int.MAX_VALUE else it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                    }
+
                 val partIndex = partsList.indexOf(partId)
-                val previousPartCompleted = if (partIndex == 0) true
-                else snapshot.child("$quizId/${partsList[partIndex - 1]}/isCompleted")
-                    .getValue(Boolean::class.java) ?: false
+
+                // 🔹 Determine unlock condition
+                val previousPartCompleted = if (partIndex <= 0) true else
+                    snapshot.child("$quizId/${partsList[partIndex - 1]}/isCompleted")
+                        .getValue(Boolean::class.java) ?: false
 
                 val isUnlocked = previousQuizCompleted && previousPartCompleted
 
-                val allPartsCompleted = partsList.all { pid ->
+                // 🔹 Get user’s answered progress for this part
+                val answered = snapshot.child("$quizId/$partId/answeredCount")
+                    .getValue(Int::class.java) ?: 0
+
+                // 🔹 Recalculate quiz completion (all parts + post-test done)
+                val allSectionsCompleted = partsList.all { pid ->
                     snapshot.child("$quizId/$pid/isCompleted").getValue(Boolean::class.java) ?: false
                 }
-                userProgressRef.child(quizId).child("isCompleted").setValue(allPartsCompleted)
+                userProgressRef.child(quizId).child("isCompleted").setValue(allSectionsCompleted)
 
                 callback(answered, isUnlocked)
 
             }.addOnFailureListener {
+                // Default unlock logic if DB fetch fails
                 callback(0, partId == "part1")
             }
         }

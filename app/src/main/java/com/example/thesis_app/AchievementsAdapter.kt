@@ -26,17 +26,20 @@ class AchievementsAdapter(
         holder.image.setImageResource(item.drawable)
         holder.label.text = item.label
 
-        // Unlock or lock
         if (userCount >= item.requiredCount) {
-            holder.itemView.alpha = 1f // unlocked
+            holder.itemView.alpha = 1f
+            holder.lockOverlay.visibility = View.GONE
         } else {
-            holder.itemView.alpha = 0.3f // locked
+            holder.itemView.alpha = 0.5f
+            holder.lockOverlay.visibility = View.VISIBLE
         }
     }
+
 
     class AchievementViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.achievementIcon)
         val label: TextView = view.findViewById(R.id.achievementTitle)
+        val lockOverlay: View = view.findViewById(R.id.lockOverlay)
     }
 }
 
