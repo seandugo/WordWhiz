@@ -128,8 +128,10 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn3.setBackgroundColor(getColor(R.color.gray))
 
         if (currentQuestionIndex == questionModelList.size) {
-            if (quizId != "quiz1" && wrongQuestions.isNotEmpty()) {
-                // 🔄 Retry only wrong questions for non-pretest quizzes
+            val isPreTest = quizId == "quiz1" || quizId == "835247"
+
+            if (!isPreTest && wrongQuestions.isNotEmpty()) {
+                // 🔄 Retry only for non-pretests
                 questionModelList = wrongQuestions.toList()
                 wrongQuestions.clear()
                 currentQuestionIndex = 0
@@ -137,8 +139,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 loadQuestions()
                 return
             } else {
-                // ✅ For quiz1 → no retry
-                // ✅ For others → finish if no wrong questions left
+                // ✅ No retry for pre-tests or when no wrong questions left
                 finishQuiz()
                 return
             }

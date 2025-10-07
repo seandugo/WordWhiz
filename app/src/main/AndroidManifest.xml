@@ -4,6 +4,8 @@
 
     <!-- Permissions (must be inside <manifest>, not <application>) -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -14,6 +16,16 @@
         android:roundIcon="@drawable/wordwhiz_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.THESIS_APP">
+
+        <receiver android:name=".notifications.DailySpellingReminderReceiver" />
+        <receiver
+            android:name=".notifications.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <!-- Main launcher activity -->
         <activity
@@ -44,5 +56,6 @@
         <activity android:name=".QuizDetailActivity" android:exported="true" />
         <activity android:name=".SpellingAchievementsActivity" android:exported="true" />
         <activity android:name=".AboutUsActivity" android:exported="true" />
+        <activity android:name=".TermsAndCActivity" android:exported="true" />
     </application>
 </manifest>

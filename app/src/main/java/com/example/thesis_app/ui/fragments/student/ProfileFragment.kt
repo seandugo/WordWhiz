@@ -70,6 +70,8 @@ class ProfileFragment : Fragment() {
         progressAdapter = ProgressListAdapter { part ->
             val intent = Intent(requireContext(), QuizDetailActivity::class.java)
             intent.putExtra("levelName", part.levelName)
+            intent.putExtra("studentId", studentId)
+            intent.putExtra("quizId","129503")
             startActivity(intent)
         }
         progressCarousel.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -93,37 +95,44 @@ class ProfileFragment : Fragment() {
     }
 
     private fun fetchProgressData(studentId: String) {
-        val quizId = "quiz2"
-        val quizRef = FirebaseDatabase.getInstance().getReference("quizzes/$quizId/title")
-        val progressRef = FirebaseDatabase.getInstance().getReference("users/$studentId/progress/$quizId")
+        val quizId = "129503" // Only this quiz
+        val quizzesRef = FirebaseDatabase.getInstance().getReference("quizzes/$quizId")
+        val userProgressRef = FirebaseDatabase.getInstance().getReference("users/$studentId/progress/$quizId")
 
-        quizRef.get().addOnSuccessListener { quizSnapshot ->
-            val quizTitle = quizSnapshot.getValue(String::class.java) ?: "Untitled Quiz"
+        quizzesRef.get().addOnSuccessListener { quizSnapshot ->
+            val quizTitle = quizSnapshot.child("title").getValue(String::class.java) ?: "Untitled Quiz"
 
-            progressRef.get().addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val newItems = mutableListOf<ProgressItem>()
+            userProgressRef.get().addOnSuccessListener { progressSnapshot ->
+                val newItems = mutableListOf<ProgressItem.Part>()
 
-                    // Add divider with the quiz title
-                    newItems.add(ProgressItem.Divider(quizTitle))
+                if (progressSnapshot.exists()) {
+                    // Calculate completed parts
+                    val partKeys = progressSnapshot.children.mapNotNull { it.key }
+                        .filter { it.startsWith("part") || it == "post-test" }
 
-                    // Loop through parts, skipping "isCompleted"
-                    snapshot.children.forEach { partSnapshot ->
-                        val partId = partSnapshot.key ?: return@forEach
-                        if (partId == "isCompleted") return@forEach
-                        val levelName = "Level ${partId.filter { it.isDigit() }}"
-                        newItems.add(ProgressItem.Part(levelName))
+                    val completedParts = progressSnapshot.children.count { partSnapshot ->
+                        partSnapshot.child("isCompleted").getValue(Boolean::class.java) == true
                     }
 
-                    progressAdapter.updateData(newItems)
-                } else {
-                    progressAdapter.updateData(emptyList())
+                    newItems.add(
+                        ProgressItem.Part(
+                            levelName = quizTitle,
+                            totalParts = partKeys.size,
+                            completedParts = completedParts,
+                            quizId = quizId
+                        )
+                    )
                 }
+
+                // Update the adapter
+                progressAdapter.updateData(newItems)
             }.addOnFailureListener {
                 it.printStackTrace()
+                progressAdapter.updateData(emptyList())
             }
         }.addOnFailureListener {
             it.printStackTrace()
+            progressAdapter.updateData(emptyList())
         }
     }
 
@@ -132,7 +141,12 @@ class ProfileFragment : Fragment() {
             .getReference("users/$studentId/spellingActivity/savedWords")
 
         progressRef.get().addOnSuccessListener { snapshot ->
-            val count = snapshot.childrenCount.toInt() // number of saved words
+            // Count only words where "skipped" == false
+            val count = snapshot.children.count { child ->
+                val skipped = child.child("skipped").getValue(Boolean::class.java) ?: false
+                !skipped
+            }
+
             val emptySpellingText = view?.findViewById<TextView>(R.id.emptySpellingText)
 
             if (count > 0) {
@@ -163,7 +177,7 @@ class ProfileFragment : Fragment() {
                     adapter = CarouselAdapter(spellingItems)
                 }
             } else {
-                // No saved words → show placeholder
+                // No saved (non-skipped) words → show placeholder
                 spellingCarousel.visibility = View.GONE
                 emptySpellingText?.visibility = View.VISIBLE
                 emptySpellingText?.text = "Start Spelling More!"
@@ -171,8 +185,10 @@ class ProfileFragment : Fragment() {
         }.addOnFailureListener {
             it.printStackTrace()
             spellingCarousel.visibility = View.GONE
-            emptySpellingText.visibility = View.VISIBLE
-            emptySpellingText.text = "Start Spelling More!"
+            view?.findViewById<TextView>(R.id.emptySpellingText)?.apply {
+                visibility = View.VISIBLE
+                text = "Start Spelling More!"
+            }
         }
     }
 

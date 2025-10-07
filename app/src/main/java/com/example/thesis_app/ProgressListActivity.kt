@@ -28,6 +28,7 @@ class ProgressListActivity : AppCompatActivity() {
         scrollView = findViewById(R.id.scrollView)
         studentIdProgress = findViewById(R.id.studentIdProgress)
         progressList = findViewById(R.id.progressList)
+        val studentId = intent.getStringExtra("studentId") ?: "Unknown"
         progressList.isNestedScrollingEnabled = false
 
         // Pass click listener to adapter
@@ -35,13 +36,14 @@ class ProgressListActivity : AppCompatActivity() {
             // Launch new activity on part click
             val intent = Intent(this, QuizDetailActivity::class.java)
             intent.putExtra("levelName", part.levelName)
+            intent.putExtra("quizId", part.quizId)
+            intent.putExtra("studentId", studentId)
             startActivity(intent)
         }
 
         progressList.layoutManager = LinearLayoutManager(this)
         progressList.adapter = progressAdapter
 
-        val studentId = intent.getStringExtra("studentId") ?: "Unknown"
         studentIdProgress.text = studentId
         fetchProgressData(studentId)
 
@@ -65,31 +67,54 @@ class ProgressListActivity : AppCompatActivity() {
         val quizzesRef = FirebaseDatabase.getInstance().getReference("users/$studentId/progress")
 
         quizzesRef.get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                val newItems = mutableListOf<ProgressItem>()
-
-                snapshot.children.forEach { quizSnapshot ->
-                    val quizId = quizSnapshot.key ?: return@forEach
-                    val quizTitleRef = FirebaseDatabase.getInstance()
-                        .getReference("quizzes/$quizId/title")
-
-                    quizTitleRef.get().addOnSuccessListener { titleSnapshot ->
-                        val quizTitle = titleSnapshot.getValue(String::class.java) ?: "Untitled Quiz"
-                        newItems.add(ProgressItem.Divider(quizTitle))
-
-                        quizSnapshot.children.forEach { partSnapshot ->
-                            val partId = partSnapshot.key ?: return@forEach
-                            if (partId == "isCompleted") return@forEach
-
-                            val levelName = "Level ${partId.filter { it.isDigit() }}"
-                            newItems.add(ProgressItem.Part(levelName))
-                        }
-
-                        progressAdapter.updateData(newItems)
-                    }
-                }
-            } else {
+            if (!snapshot.exists()) {
                 progressAdapter.updateData(emptyList())
+                return@addOnSuccessListener
+            }
+
+            val newItems = mutableListOf<ProgressItem.Part>()
+
+            // Get all quizzes with order, excluding pre-test or specific quiz ID
+            val quizList = snapshot.children.mapNotNull { quizSnapshot ->
+                val quizId = quizSnapshot.key ?: return@mapNotNull null
+
+                // Skip unwanted quizzes
+                if (quizId == "pre-test" || quizId == "835247") return@mapNotNull null
+
+                val order = quizSnapshot.child("order").getValue(Int::class.java) ?: Int.MAX_VALUE
+                quizSnapshot to order
+            }.sortedBy { it.second }
+
+            quizList.forEach { (quizSnapshot, _) ->
+                val quizId = quizSnapshot.key ?: return@forEach
+                val quizTitleRef = FirebaseDatabase.getInstance()
+                    .getReference("quizzes/$quizId/title")
+
+                quizTitleRef.get().addOnSuccessListener { titleSnapshot ->
+                    val quizTitle = titleSnapshot.getValue(String::class.java) ?: "Untitled Quiz"
+
+                    // Calculate completed parts
+                    val partsSnapshot = quizSnapshot
+                    val partKeys = partsSnapshot.children.mapNotNull { it.key }
+                        .filter { it.startsWith("part") || it == "post-test" }
+
+                    val completedParts = partsSnapshot.children.count { partSnapshot ->
+                        partSnapshot.child("isCompleted").getValue(Boolean::class.java) == true
+                    }
+
+                    newItems.add(
+                        ProgressItem.Part(
+                            levelName = quizTitle,
+                            totalParts = partKeys.size,
+                            completedParts = completedParts,
+                            quizId = quizId,
+                            isCompleted = quizSnapshot.child("isCompleted").getValue(Boolean::class.java) ?: false
+                        )
+                    )
+
+                    // Update adapter after each quiz
+                    progressAdapter.updateData(newItems)
+                }.addOnFailureListener { it.printStackTrace() }
             }
         }.addOnFailureListener { it.printStackTrace() }
     }

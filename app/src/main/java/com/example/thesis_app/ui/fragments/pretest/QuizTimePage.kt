@@ -38,7 +38,7 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
 
             val dbRef = FirebaseDatabase.getInstance().reference
                 .child("quizzes")
-                .child("quiz1")
+                .child("835247")
 
             dbRef.get().addOnSuccessListener { quizSnapshot ->
                 if (quizSnapshot.exists()) {

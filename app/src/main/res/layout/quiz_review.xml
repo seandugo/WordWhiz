@@ -44,7 +44,9 @@
                     android:layout_height="wrap_content"
                     android:text="Quiz Title"
                     android:textColor="@android:color/white"
-                    android:textSize="36sp"
+                    android:textSize="32sp"
+                    android:textAlignment="center"
+                    android:padding="12dp"
                     android:fontFamily="@font/pixel"
                     android:textStyle="bold"/>
 
@@ -74,90 +76,12 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Scrollable Content -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/resultRecycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:clipToPadding="false"
-        android:padding="16dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingTop="24dp">
-
-            <!-- PASS / FAIL Text -->
-            <TextView
-                android:id="@+id/resultStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PASS"
-                android:textSize="32sp"
-                android:textStyle="bold"
-                android:textColor="@color/primaryColor"
-                android:layout_marginBottom="24dp"/>
-
-            <!-- Correct & Wrong Progress Bars -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:paddingHorizontal="32dp">
-
-                <!-- Correct Answer Progress -->
-                <TextView
-                    android:id="@+id/correctText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Correct: 8"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/black"
-                    android:layout_marginBottom="4dp"/>
-
-                <ProgressBar
-                    android:id="@+id/correctProgressBar"
-                    style="@android:style/Widget.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:max="100"
-                    android:progress="0"
-                    android:progressTint="@color/green"
-                    android:backgroundTint="#E0E0E0"
-                    android:indeterminate="false"
-                    android:clipToOutline="true"
-                    android:layout_marginBottom="16dp"/>
-
-                <!-- Wrong Answer Progress -->
-                <TextView
-                    android:id="@+id/wrongText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Wrong: 2"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/black"
-                    android:layout_marginBottom="4dp"/>
-
-                <ProgressBar
-                    android:id="@+id/wrongProgressBar"
-                    style="@android:style/Widget.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:max="100"
-                    android:progress="0"
-                    android:progressTint="@color/red"
-                    android:backgroundTint="#E0E0E0"
-                    android:indeterminate="false"
-                    android:clipToOutline="true"/>
-            </LinearLayout>
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        android:padding="12dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

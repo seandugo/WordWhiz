@@ -51,14 +51,16 @@
             android:textStyle="bold"
             android:fontFamily="@font/pixel"
             android:textColor="#333333"
-            android:padding="16dp"/>
+            android:padding="16dp"
+            android:visibility="gone"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/savedWordsRecycler"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:padding="16dp"/>
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"/>
     </LinearLayout>
 
 </FrameLayout>

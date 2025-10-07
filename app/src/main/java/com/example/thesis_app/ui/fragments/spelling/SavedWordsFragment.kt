@@ -79,16 +79,17 @@ class SavedWordsFragment : Fragment() {
                         )
                     }
 
-                    // 🔹 Reverse the list so the most recent is at the top
                     meanings.reverse()
 
                     if (meanings.isEmpty()) {
                         binding.savedWordsRecycler.visibility = View.GONE
                         binding.emptyLayout.visibility = View.VISIBLE
+                        binding.recallHeader.visibility = View.GONE // 🔹 Hide header when no words
                     } else {
                         adapter.updateNewData(meanings)
                         binding.savedWordsRecycler.visibility = View.VISIBLE
                         binding.emptyLayout.visibility = View.GONE
+                        binding.recallHeader.visibility = View.VISIBLE // 🔹 Show header when words exist
                     }
                 }
 

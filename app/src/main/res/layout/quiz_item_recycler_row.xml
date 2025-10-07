@@ -10,7 +10,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="24dp">
 
         <!-- LEFT: Title + Subtitle -->
         <LinearLayout
@@ -48,20 +48,12 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <!-- Material 3 Circular Progress -->
-            <com.google.android.material.progressindicator.CircularProgressIndicator
-                android:id="@+id/quiz_progress_bar"
-                style="@style/Widget.Material3.CircularProgressIndicator"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:max="100"
-                android:progress="0"
-                app:indicatorColor="?attr/colorPrimary"
-                app:indicatorDirectionCircular="clockwise"
-                app:indicatorInset="0dp"
-                app:indicatorSize="48dp"
-                app:trackColor="?attr/colorSurfaceVariant"
-                app:trackThickness="6dp" />
+            <ImageView
+                android:id="@+id/checkImage"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/check"
+                android:visibility="gone"/>
 
             <!-- Percentage text -->
             <TextView

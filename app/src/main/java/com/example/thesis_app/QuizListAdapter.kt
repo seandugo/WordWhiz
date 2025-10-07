@@ -9,7 +9,10 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.QuizDisplayItem
 import com.example.thesis_app.models.QuizPartItem
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class QuizListAdapter(
     private val items: List<QuizDisplayItem>,
@@ -20,14 +23,6 @@ class QuizListAdapter(
     companion object {
         private const val TYPE_PART = 0
         private const val TYPE_DIVIDER = 1
-    }
-
-    private val externalProgressCache = mutableMapOf<String, Pair<Int, Boolean>>()
-
-    fun setPreloadedProgress(cache: Map<String, Pair<Int, Boolean>>) {
-        externalProgressCache.clear()
-        externalProgressCache.putAll(cache)
-        PartViewHolder.setExternalCache(externalProgressCache)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -57,7 +52,7 @@ class QuizListAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = items[position]) {
-            is QuizDisplayItem.Part -> (holder as PartViewHolder).bind(item.item, position)
+            is QuizDisplayItem.Part -> (holder as PartViewHolder).bind(item.item)
             is QuizDisplayItem.Divider -> (holder as DividerViewHolder).bind(item.title)
         }
     }
@@ -68,138 +63,100 @@ class QuizListAdapter(
         private val activity: FragmentActivity
     ) : RecyclerView.ViewHolder(itemView) {
 
-        companion object {
-            private var externalCache: Map<String, Pair<Int, Boolean>>? = null
-            private val partStatusCache = mutableMapOf<String, Pair<Int, Boolean>>()
-
-            fun setExternalCache(cache: Map<String, Pair<Int, Boolean>>) {
-                externalCache = cache
-                partStatusCache.putAll(cache)
-            }
-        }
-
         private val quizTitleText: TextView = itemView.findViewById(R.id.quiz_title_text)
-        private val progressBar: com.google.android.material.progressindicator.CircularProgressIndicator =
-            itemView.findViewById(R.id.quiz_progress_bar)
         private val percentageText: TextView = itemView.findViewById(R.id.quiz_percentage_text)
+        private val checkImage: View = itemView.findViewById(R.id.checkImage)
 
-        fun bind(item: QuizPartItem, index: Int) {
+        fun bind(item: QuizPartItem) {
             quizTitleText.text = item.displayName
-            val partKey = "${item.quizId}_${item.partId}"
 
-            // ✅ If cached, instantly update UI without re-fetching from Firebase
-            if (partStatusCache.containsKey(partKey)) {
-                val (answeredCount, isUnlocked) = partStatusCache[partKey]!!
-                updateUI(item, answeredCount, isUnlocked, animate = false)
-            } else {
-                // 🕓 Fetch only once from Firebase if not cached
-                checkPartUnlockStatus(item.quizId, item.partId, item.questions.size) { answeredCount, isUnlocked ->
-                    partStatusCache[partKey] = Pair(answeredCount, isUnlocked)
-                    updateUI(item, answeredCount, isUnlocked, animate = true)
-                }
-            }
-        }
-
-        private fun updateUI(
-            item: QuizPartItem,
-            answeredCount: Int,
-            isUnlocked: Boolean,
-            animate: Boolean
-        ) {
-            if (!isUnlocked) {
-                itemView.alpha = 0.5f
-                itemView.isClickable = false
-                progressBar.visibility = View.INVISIBLE
-                percentageText.text = "Locked"
-            } else {
-                itemView.alpha = 1f
-                itemView.isClickable = true
-                progressBar.visibility = View.VISIBLE
-
-                val progress = if (item.questions.isNotEmpty())
-                    (answeredCount * 100) / item.questions.size
-                else 0
-
-                // Disable animation if data is from cache
-                progressBar.setProgress(progress, animate)
-                percentageText.text = "$progress%"
-            }
-
-            itemView.setOnClickListener {
-                if (!isUnlocked) return@setOnClickListener
-
-                val intent = Intent(itemView.context, QuizActivity::class.java)
-                QuizActivity.questionModelList = item.questions
-                intent.putExtra("QUIZ_ID", item.quizId)
-                intent.putExtra("PART_ID", item.partId)
-                intent.putExtra("STUDENT_ID", studentId)
-                itemView.context.startActivity(intent)
-                activity.finish()
-            }
-        }
-
-        private fun checkPartUnlockStatus(
-            quizId: String,
-            partId: String,
-            totalQuestions: Int,
-            callback: (answeredCount: Int, isUnlocked: Boolean) -> Unit
-        ) {
             val db = FirebaseDatabase.getInstance().reference
             val userProgressRef = db.child("users").child(studentId).child("progress")
 
-            userProgressRef.get().addOnSuccessListener { snapshot ->
+            userProgressRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // ✅ Get quizzes sorted by order
+                    val quizList = snapshot.children.mapNotNull { quizSnap ->
+                        val quizKey = quizSnap.key ?: return@mapNotNull null
+                        val order = quizSnap.child("order").getValue(Int::class.java) ?: 0
+                        quizKey to order
+                    }.sortedBy { it.second }
 
-                // 🔹 All quiz keys (e.g. quiz1, quiz2)
-                val quizKeys = snapshot.children.mapNotNull { it.key }.sorted()
-                val quizIndex = quizKeys.indexOf(quizId)
-                val previousQuizCompleted = if (quizIndex <= 0) true else
-                    snapshot.child(quizKeys[quizIndex - 1]).child("isCompleted")
-                        .getValue(Boolean::class.java) ?: false
+                    val quizKeys = quizList.map { it.first }
+                    val quizIndex = quizKeys.indexOf(item.quizId)
 
-                // 🔹 All parts and post-test keys
-                val partsList = snapshot.child(quizId).children
-                    .filter { keyNode ->
-                        keyNode.key?.startsWith("part") == true ||
-                                keyNode.key == "postTest"
+                    // ✅ Sort parts (part1, part2, ..., post-test)
+                    val partsList = snapshot.child(item.quizId).children
+                        .filter { it.key?.startsWith("part") == true || it.key == "post-test" }
+                        .mapNotNull { it.key }
+                        .sortedBy {
+                            if (it == "post-test") Int.MAX_VALUE
+                            else it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                        }
+
+                    val partIndex = partsList.indexOf(item.partId)
+
+                    // ✅ Determine if all parts including post-test are completed
+                    val allPartsCompleted = partsList.all { key ->
+                        snapshot.child("${item.quizId}/$key").child("isCompleted").getValue(Boolean::class.java) ?: false
                     }
-                    .mapNotNull { it.key }
-                    .sortedBy {
-                        // sort parts numerically, put postTest at the end
-                        if (it == "postTest") Int.MAX_VALUE else it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+
+                    // ✅ Update quiz-level isCompleted
+                    snapshot.ref.child(item.quizId).child("isCompleted").setValue(allPartsCompleted)
+
+                    // ✅ Lock/unlock logic
+                    val previousQuizCompleted = if (quizIndex <= 0) true
+                    else snapshot.child(quizKeys[quizIndex - 1]).child("isCompleted").getValue(Boolean::class.java) ?: false
+
+                    val previousPartCompleted = if (partIndex <= 0) true
+                    else snapshot.child("${item.quizId}/${partsList[partIndex - 1]}").child("isCompleted").getValue(Boolean::class.java) ?: false
+
+                    val isUnlocked = if (item.partId == "post-test") {
+                        partsList.filter { it != "post-test" }.all { key ->
+                            snapshot.child("${item.quizId}/$key").child("isCompleted").getValue(Boolean::class.java) ?: false
+                        }
+                    } else previousQuizCompleted && previousPartCompleted
+
+                    val isCompleted = snapshot.child("${item.quizId}/${item.partId}/isCompleted").getValue(Boolean::class.java) ?: false
+
+                    // ✅ UI updates
+                    if (!isUnlocked) {
+                        itemView.alpha = 0.5f
+                        itemView.isClickable = false
+                        percentageText.text = "Locked"
+                        checkImage.visibility = View.GONE
+                    } else {
+                        itemView.alpha = 1f
+                        itemView.isClickable = true
+                        percentageText.text = ""
+
+                        // ✅ Show or hide check icon based on completion
+                        checkImage.visibility = if (isCompleted) View.VISIBLE else View.GONE
                     }
 
-                val partIndex = partsList.indexOf(partId)
+                    // ✅ Click listener
+                    itemView.setOnClickListener {
+                        if (!isUnlocked) return@setOnClickListener
 
-                // 🔹 Determine unlock condition
-                val previousPartCompleted = if (partIndex <= 0) true else
-                    snapshot.child("$quizId/${partsList[partIndex - 1]}/isCompleted")
-                        .getValue(Boolean::class.java) ?: false
-
-                val isUnlocked = previousQuizCompleted && previousPartCompleted
-
-                // 🔹 Get user’s answered progress for this part
-                val answered = snapshot.child("$quizId/$partId/answeredCount")
-                    .getValue(Int::class.java) ?: 0
-
-                // 🔹 Recalculate quiz completion (all parts + post-test done)
-                val allSectionsCompleted = partsList.all { pid ->
-                    snapshot.child("$quizId/$pid/isCompleted").getValue(Boolean::class.java) ?: false
+                        val intent = Intent(itemView.context, QuizActivity::class.java)
+                        QuizActivity.questionModelList = item.questions
+                        intent.putExtra("QUIZ_ID", item.quizId)
+                        intent.putExtra("PART_ID", item.partId)
+                        intent.putExtra("STUDENT_ID", studentId)
+                        itemView.context.startActivity(intent)
+                        activity.finish()
+                    }
                 }
-                userProgressRef.child(quizId).child("isCompleted").setValue(allSectionsCompleted)
 
-                callback(answered, isUnlocked)
-
-            }.addOnFailureListener {
-                // Default unlock logic if DB fetch fails
-                callback(0, partId == "part1")
-            }
+                override fun onCancelled(error: DatabaseError) {}
+            })
         }
     }
 
     class DividerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val dividerTitle: TextView = itemView.findViewById(R.id.dividerTitle)
         fun bind(title: String) {
-            dividerTitle.text = "$title"
+            dividerTitle.text = title
         }
     }
 }

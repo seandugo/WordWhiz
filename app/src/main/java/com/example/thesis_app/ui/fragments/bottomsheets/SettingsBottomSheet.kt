@@ -1,6 +1,5 @@
 package com.example.thesis_app.ui.fragments.bottomsheets
 
-import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,12 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import com.example.thesis_app.LoginActivity
+import com.example.thesis_app.AboutUsActivity
 import com.example.thesis_app.R
+import com.example.thesis_app.TermsAndCActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.firebase.auth.FirebaseAuth
 
 class SettingsBottomSheet : BottomSheetDialogFragment() {
 
@@ -37,13 +34,13 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
 
     private fun setupListeners() {
         aboutUsLayout.setOnClickListener {
-            Toast.makeText(requireContext(), "About Us clicked", Toast.LENGTH_SHORT).show()
-            openUrl("https://www.example.com/about")
+            val intent = Intent(requireContext(), AboutUsActivity::class.java)
+            startActivity(intent)
         }
 
         termsLayout.setOnClickListener {
-            Toast.makeText(requireContext(), "Terms and Conditions clicked", Toast.LENGTH_SHORT).show()
-            openUrl("https://www.example.com/terms")
+            val intent = Intent(requireContext(), TermsAndCActivity::class.java)
+            startActivity(intent)
         }
     }
 

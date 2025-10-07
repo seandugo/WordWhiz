@@ -6,66 +6,64 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.ProgressItem
+import com.google.android.material.progressindicator.LinearProgressIndicator
 
 class ProgressListAdapter(
     private val onItemClick: (ProgressItem.Part) -> Unit
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+) : RecyclerView.Adapter<ProgressListAdapter.PartViewHolder>() {
 
-    private val items = mutableListOf<ProgressItem>()
+    private val items = mutableListOf<ProgressItem.Part>()
 
-    companion object {
-        private const val TYPE_DIVIDER = 0
-        private const val TYPE_PART = 1
-    }
-
-    override fun getItemViewType(position: Int) = when (items[position]) {
-        is ProgressItem.Divider -> TYPE_DIVIDER
-        is ProgressItem.Part -> TYPE_PART
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (viewType) {
-            TYPE_DIVIDER -> {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_quiz_divider, parent, false)
-                DividerViewHolder(view)
-            }
-            else -> {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_quiz_progress, parent, false)
-                PartViewHolder(view, onItemClick)
-            }
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PartViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_quiz_progress, parent, false)
+        return PartViewHolder(view, onItemClick)
     }
 
     override fun getItemCount() = items.size
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = items[position]) {
-            is ProgressItem.Divider -> (holder as DividerViewHolder).bind(item.title)
-            is ProgressItem.Part -> (holder as PartViewHolder).bind(item)
-        }
-    }
-
-    class DividerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val dividerTitle: TextView = itemView.findViewById(R.id.dividerTitle)
-        fun bind(title: String) {
-            dividerTitle.text = title
-        }
+    override fun onBindViewHolder(holder: PartViewHolder, position: Int) {
+        // Pass previous item's isCompleted to determine if current should be locked
+        val previousCompleted = if (position == 0) true else items[position - 1].isCompleted
+        holder.bind(items[position], previousCompleted)
     }
 
     class PartViewHolder(
         itemView: View,
         private val onItemClick: (ProgressItem.Part) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
+
         private val partTitle: TextView = itemView.findViewById(R.id.quizTitle)
-        fun bind(item: ProgressItem.Part) {
+        private val progressBar: LinearProgressIndicator = itemView.findViewById(R.id.progressBar)
+        private val progressText: TextView = itemView.findViewById(R.id.progressText)
+
+        fun bind(item: ProgressItem.Part, previousCompleted: Boolean) {
             partTitle.text = item.levelName
-            itemView.setOnClickListener { onItemClick(item) }
+
+            val percentage = if (item.totalParts == 0) 0
+            else (item.completedParts * 100 / item.totalParts)
+
+            progressBar.progress = percentage
+
+            // Determine if current quiz is unlocked
+            val isUnlocked = previousCompleted
+
+            if (!isUnlocked) {
+                itemView.alpha = 0.5f
+                itemView.isClickable = false
+                progressText.text = "Locked"
+            } else {
+                itemView.alpha = 1f
+                itemView.isClickable = true
+                progressText.text = "$percentage% completed"
+
+                // Only allow click if unlocked
+                itemView.setOnClickListener { onItemClick(item) }
+            }
         }
     }
 
-    fun updateData(newItems: List<ProgressItem>) {
+    fun updateData(newItems: List<ProgressItem.Part>) {
         items.clear()
         items.addAll(newItems)
         notifyDataSetChanged()

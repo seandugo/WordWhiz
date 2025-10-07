@@ -118,6 +118,16 @@
             android:layout_height="wrap_content"
             android:titleTextAppearance="@style/ToolbarTitleText">
 
+            <TextView
+                android:id="@+id/passNextWord"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pass?"
+                android:fontFamily="@font/pixel"
+                android:textColor="@android:color/white"
+                android:background="@drawable/rounded_cancel"
+                android:padding="10dp"/>
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -167,7 +177,7 @@
             android:id="@+id/loadingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Loading..."
+            android:text="Finding word for you..."
             android:fontFamily="@font/pixel"
             android:gravity="center"
             android:textSize="18sp"

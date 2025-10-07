@@ -18,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:fontFamily="@font/pixel"
         android:paddingTop="8dp"
         android:text="Next Quiz Title"
         android:textSize="12sp"
