@@ -31,7 +31,8 @@ data class QuizPartItem(
     val partId: String,
     val questions: List<QuestionModel>,
     val isUnlocked: Boolean = false,
-    val displayName: String = ""
+    val displayName: String = "",
+    val order: Int
 )
 
 sealed class QuizDisplayItem {

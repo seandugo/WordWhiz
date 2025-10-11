@@ -1,0 +1,69 @@
+{
+  "topic": "English - G9 | Quarter 1 - Module 1: Modal Verbs",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Understanding Modal Verbs",
+      "emoji": "🗣️",
+      "definition": "Modal verbs are helping verbs that show the mood or attitude of the speaker. They express ability, necessity, obligation, or permission.",
+      "example": "Examples: must, should, can, may, ought to, have to",
+      "explanation": "They modify the main verb to express how certain, possible, or necessary an action is."
+    },
+    {
+      "number": 2,
+      "title": "Using 'Must'",
+      "emoji": "✅",
+      "definition": "‘Must’ is used to express strong obligation or necessity.",
+      "example": "Example: You must complete your homework before playing.",
+      "explanation": "It means something is required or very important."
+    },
+    {
+      "number": 3,
+      "title": "Using 'Should'",
+      "emoji": "💭",
+      "definition": "‘Should’ expresses advice, recommendation, or something expected.",
+      "example": "Example: You should study for your exams.",
+      "explanation": "It’s used when something is the right or wise thing to do, but not compulsory."
+    },
+    {
+      "number": 4,
+      "title": "Using 'Ought To'",
+      "emoji": "🎯",
+      "definition": "‘Ought to’ has a similar meaning to ‘should’. It expresses moral duty or correctness.",
+      "example": "Example: You ought to respect your parents.",
+      "explanation": "It is often used when giving advice or stating what is morally right."
+    },
+    {
+      "number": 5,
+      "title": "Using 'Have To'",
+      "emoji": "📚",
+      "definition": "‘Have to’ shows obligation or necessity that comes from outside forces or rules.",
+      "example": "Example: You have to wear your uniform to school.",
+      "explanation": "It means there’s an external rule or situation requiring you to do something."
+    },
+    {
+      "number": 6,
+      "title": "Using 'Need To'",
+      "emoji": "🔑",
+      "definition": "‘Need to’ expresses necessity or importance.",
+      "example": "Example: You need to eat healthy food.",
+      "explanation": "It’s used when something is essential for a goal or result."
+    },
+    {
+      "number": 7,
+      "title": "Using 'Had To'",
+      "emoji": "🕒",
+      "definition": "‘Had to’ is the past form of ‘have to’, expressing past obligation or necessity.",
+      "example": "Example: I had to finish my project last night.",
+      "explanation": "It means something was required or necessary in the past."
+    },
+    {
+      "number": 8,
+      "title": "Practice: Modal Verbs in Context",
+      "emoji": "✏️",
+      "definition": "Let’s apply what you learned! Choose the correct modal verb to complete each sentence.",
+      "example": "Example: You ____ follow the teacher’s instructions carefully.",
+      "explanation": "Choices: A. must  B. should  C. ought to  D. have to"
+    }
+  ]
+}

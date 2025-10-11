@@ -1,0 +1,85 @@
+{
+  "topic": "Getting to Know Active and Passive Voice",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Active Voice",
+      "emoji": "💪",
+      "definition": "In the active voice, the subject of the sentence performs the action.",
+      "example": "Example: The teacher explains the lesson.",
+      "explanation": "Here, 'the teacher' (subject) is doing the action 'explains'."
+    },
+    {
+      "number": 2,
+      "title": "Passive Voice",
+      "emoji": "🎯",
+      "definition": "In the passive voice, the subject of the sentence receives the action.",
+      "example": "Example: The lesson is explained by the teacher.",
+      "explanation": "The focus shifts from who is doing the action to what is being done."
+    },
+    {
+      "number": 3,
+      "title": "Subject",
+      "emoji": "👤",
+      "definition": "The person or thing that performs or receives the action in a sentence.",
+      "example": "Example: 'People need support.' → Subject: People",
+      "explanation": "In active voice, the subject does the action; in passive, it receives it."
+    },
+    {
+      "number": 4,
+      "title": "Verb",
+      "emoji": "⚡",
+      "definition": "A word that expresses action or state of being.",
+      "example": "Example: 'People need support.' → Verb: need",
+      "explanation": "Verbs show what the subject does or what happens to it."
+    },
+    {
+      "number": 5,
+      "title": "Direct Object",
+      "emoji": "🎁",
+      "definition": "The receiver of the action in an active sentence.",
+      "example": "Example: 'People need support.' → Direct Object: support",
+      "explanation": "It answers the question 'What?' or 'Whom?' after the verb."
+    },
+    {
+      "number": 6,
+      "title": "Active Voice Sentence Pattern",
+      "emoji": "🧱",
+      "definition": "Follows the pattern Subject + Verb + Direct Object (S-V-DO).",
+      "example": "Example: DBM releases financial aid.",
+      "explanation": "Subject (DBM) performs the action (releases) to the object (financial aid)."
+    },
+    {
+      "number": 7,
+      "title": "Passive Voice Sentence Pattern",
+      "emoji": "🔄",
+      "definition": "Follows the pattern Object + Form of 'be' + Past Participle + by + Subject.",
+      "example": "Example: Financial aid is released by DBM.",
+      "explanation": "The focus is on the object (financial aid), not on the doer."
+    },
+    {
+      "number": 8,
+      "title": "Verb Forms in Passive Voice",
+      "emoji": "📘",
+      "definition": "Passive voice uses forms of 'be' + past participle.",
+      "example": "Example: 'is implemented', 'was released', 'has been reached'",
+      "explanation": "Choose the correct 'be' form based on the tense of the active sentence."
+    },
+    {
+      "number": 9,
+      "title": "Identifying Passive Voice",
+      "emoji": "🔍",
+      "definition": "Look for the pattern: form of 'be' + past participle + by...",
+      "example": "Example: 'was denied by PNP' or 'is prepared for planting season'",
+      "explanation": "These clues show the action is being received, not performed."
+    },
+    {
+      "number": 10,
+      "title": "Common Sentence Patterns",
+      "emoji": "🧩",
+      "definition": "1️⃣ S-IV (Subject + Intransitive Verb) → No object. \n2️⃣ S-TV-DO (Subject + Transitive Verb + Direct Object) → Has object.",
+      "example": "Example: 'You look familiar.' (S-IV) | 'Cebu suspends travels.' (S-TV-DO)",
+      "explanation": "Recognizing patterns helps you identify the active or passive structure."
+    }
+  ]
+}

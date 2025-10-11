@@ -8,6 +8,7 @@
         <color name="background">#F5F5F5</color> <!-- Light gray background -->
 
         <!-- Progress bar colors -->
-        <color name="green">#4CAF50</color> <!-- Green for correct -->
-        <color name="red">#F44336</color>   <!-- Red for wrong -->
+        <color name="green">#8BC34A</color> <!-- Green for correct -->
+        <color name="red">#EE8B8B</color>   <!-- Red for wrong -->
+        <color name="yellow">#FFDA07</color>
 </resources>

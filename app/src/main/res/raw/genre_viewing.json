@@ -1,0 +1,45 @@
+{
+  "topic": "Getting to Know Genre of Viewing Materials!",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Documentary",
+      "emoji": "🎬",
+      "definition": "A factual and research-based film that presents real-life events, people, or issues in depth.",
+      "example": "Example: A film exploring the life of sea turtles and their migration journey.",
+      "explanation": "Documentaries aim to inform or educate the audience about reality."
+    },
+    {
+      "number": 2,
+      "title": "Movie Trailer",
+      "emoji": "🎞️",
+      "definition": "A short promotional video that teases the story, characters, and excitement of an upcoming movie.",
+      "example": "Example: The trailer for a superhero movie showing highlights and key scenes.",
+      "explanation": "Trailers are designed to attract viewers to watch the full film."
+    },
+    {
+      "number": 3,
+      "title": "Weather Report",
+      "emoji": "🌦️",
+      "definition": "A segment that provides updates about temperature, rainfall, and other weather conditions.",
+      "example": "Example: PAGASA announces heavy rains expected in Metro Manila.",
+      "explanation": "Weather reports help people prepare for daily or upcoming weather events."
+    },
+    {
+      "number": 4,
+      "title": "News Flash",
+      "emoji": "📰",
+      "definition": "A brief and urgent report that interrupts regular programming to deliver important news.",
+      "example": "Example: Breaking news about an earthquake interrupting a live TV show.",
+      "explanation": "News flashes deliver time-sensitive updates immediately as they happen."
+    },
+    {
+      "number": 5,
+      "title": "Internet-Based Program",
+      "emoji": "💻",
+      "definition": "An informative or entertaining program that can be streamed or accessed online.",
+      "example": "Example: A YouTube video series about science experiments or travel.",
+      "explanation": "Internet-based programs allow audiences to learn and be entertained anywhere using the web."
+    }
+  ]
+}

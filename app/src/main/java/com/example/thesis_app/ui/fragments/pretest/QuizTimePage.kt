@@ -61,7 +61,8 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                         quizTitle = title,
                         quizSubtitle = subtitle,
                         partId = "part1",
-                        questions = questions
+                        questions = questions,
+                        order = 2
                     )
 
                     // Send to QuizActivity

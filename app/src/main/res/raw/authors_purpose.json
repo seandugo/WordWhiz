@@ -1,0 +1,85 @@
+{
+  "topic": "Author’s Purpose and Style in Writing",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Author",
+      "emoji": "✍️",
+      "definition": "An author is a person who writes a book, article, poem, or any literary work.",
+      "example": "Example: J.K. Rowling is the author of the Harry Potter series.",
+      "explanation": "The author is the creator of written content whose ideas, tone, and style shape how the reader understands the message."
+    },
+    {
+      "number": 2,
+      "title": "Author’s Purpose",
+      "emoji": "🎯",
+      "definition": "The author’s purpose is the reason why the author writes — to inform, entertain, or persuade.",
+      "example": "Example: A news article aims to inform the reader about recent events.",
+      "explanation": "Identifying the author’s purpose helps readers understand the main intent behind a text."
+    },
+    {
+      "number": 3,
+      "title": "Tone",
+      "emoji": "🎵",
+      "definition": "Tone refers to the author’s attitude or feeling toward the subject of the writing.",
+      "example": "Example: 'I can’t believe you did that!' — expresses a tone of disbelief or anger.",
+      "explanation": "Tone can be joyful, serious, sarcastic, critical, or hopeful depending on the author’s word choice and phrasing."
+    },
+    {
+      "number": 4,
+      "title": "Mood",
+      "emoji": "🌈",
+      "definition": "Mood is the overall emotional feeling or atmosphere that the author creates for the reader.",
+      "example": "Example: A dark and stormy night can create a suspenseful or fearful mood.",
+      "explanation": "Mood affects how the reader feels while reading and is shaped by imagery, setting, and tone."
+    },
+    {
+      "number": 5,
+      "title": "Diction",
+      "emoji": "🗣️",
+      "definition": "Diction refers to the author’s choice and use of words and phrases in writing.",
+      "example": "Example: Using words like 'melancholy' instead of 'sad' creates a more formal tone.",
+      "explanation": "Through diction, authors set the tone, mood, and level of formality in their writing."
+    },
+    {
+      "number": 6,
+      "title": "Writing Techniques",
+      "emoji": "📚",
+      "definition": "Writing techniques are methods an author uses to communicate ideas effectively, such as descriptive, narrative, expository, and persuasive writing.",
+      "example": "Example: A persuasive essay encourages readers to take action on climate change.",
+      "explanation": "Different techniques serve different purposes — some explain facts, others tell stories, or influence readers’ opinions."
+    },
+    {
+      "number": 7,
+      "title": "Descriptive Writing",
+      "emoji": "🎨",
+      "definition": "Descriptive writing focuses on describing people, places, events, or things in detail.",
+      "example": "Example: The golden sunset bathed the ocean in warm light.",
+      "explanation": "This technique helps readers visualize scenes vividly using sensory language and imagery."
+    },
+    {
+      "number": 8,
+      "title": "Narrative Writing",
+      "emoji": "📖",
+      "definition": "Narrative writing tells a story with a clear beginning, middle, and end.",
+      "example": "Example: A short story about a boy overcoming his fear of the dark.",
+      "explanation": "It includes characters, setting, conflict, and plot to engage readers emotionally."
+    },
+    {
+      "number": 9,
+      "title": "Expository Writing",
+      "emoji": "💡",
+      "definition": "Expository writing is used to explain or inform readers about a topic using facts and logical organization.",
+      "example": "Example: An article explaining how volcanoes erupt.",
+      "explanation": "This type of writing avoids opinions and focuses on presenting information clearly."
+    },
+    {
+      "number": 10,
+      "title": "Persuasive Writing",
+      "emoji": "🗳️",
+      "definition": "Persuasive writing aims to convince readers to accept a belief or take a specific action.",
+      "example": "Example: A campaign encouraging people to get vaccinated.",
+      "explanation": "It uses logical arguments, emotional appeals, and strong evidence to influence readers’ opinions or behaviors."
+    }
+  ]
+}

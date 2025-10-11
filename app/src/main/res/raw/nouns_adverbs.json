@@ -1,0 +1,125 @@
+{
+  "topic": "Nouns and Adverbs",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Use of Nouns",
+      "emoji": "📘",
+      "definition": "Identify the use of the underlined noun in each sentence.",
+      "example": "Example: This city is a mighty big place.",
+      "explanation": "The noun 'city' is the subject of the sentence."
+    },
+    {
+      "number": 2,
+      "title": "Indirect Object",
+      "emoji": "🎯",
+      "definition": "Recognize nouns used as indirect objects in sentences.",
+      "example": "Example: Please hand me that book.",
+      "explanation": "‘Me’ is the indirect object receiving the direct object ‘book’."
+    },
+    {
+      "number": 3,
+      "title": "Direct Object",
+      "emoji": "📗",
+      "definition": "Determine when a noun acts as a direct object.",
+      "example": "Example: Grandma made my sister a beautiful dress.",
+      "explanation": "‘Dress’ is the direct object, receiving the action of the verb ‘made’."
+    },
+    {
+      "number": 4,
+      "title": "Appositive and Object of Preposition",
+      "emoji": "🧩",
+      "definition": "Identify appositives and nouns used as objects of prepositions.",
+      "example": "Example: My mother, Benny, prides herself on her collection.",
+      "explanation": "‘Benny’ is an appositive, renaming ‘mother’; ‘collection’ is the object of preposition ‘on’."
+    },
+    {
+      "number": 5,
+      "title": "Predicate and Object of Preposition",
+      "emoji": "🔤",
+      "definition": "Recognize nouns used in predicate and prepositional phrases.",
+      "example": "Example: I excitedly handed my grades to my father.",
+      "explanation": "‘Father’ is the object of the preposition ‘to’."
+    },
+    {
+      "number": 6,
+      "title": "Adverbs of Place",
+      "emoji": "📍",
+      "definition": "Adverbs of place tell where the action happens.",
+      "example": "Example: Keep the plants outside.",
+      "explanation": "‘Outside’ shows the place where the action happens."
+    },
+    {
+      "number": 7,
+      "title": "Adverbs of Frequency",
+      "emoji": "⏰",
+      "definition": "Adverbs of frequency tell how often something happens.",
+      "example": "Example: Rex always waits for Philame.",
+      "explanation": "‘Always’ shows how often the action happens."
+    },
+    {
+      "number": 8,
+      "title": "Adverbs of Manner",
+      "emoji": "🚶‍♂️",
+      "definition": "Adverbs of manner describe how an action is performed.",
+      "example": "Example: Marky ate the food hungrily.",
+      "explanation": "‘Hungrily’ describes how Marky ate the food."
+    },
+    {
+      "number": 9,
+      "title": "Adverbs of Time",
+      "emoji": "🕐",
+      "definition": "Adverbs of time tell when an action happens.",
+      "example": "Example: The game will start early.",
+      "explanation": "‘Early’ shows the time when the game will start."
+    },
+    {
+      "number": 10,
+      "title": "Adverbs of Place (Again)",
+      "emoji": "📍",
+      "definition": "Another example of adverbs of place.",
+      "example": "Example: I’m sure I have seen this car somewhere.",
+      "explanation": "‘Somewhere’ shows the place where the action may have occurred."
+    },
+    {
+      "number": 11,
+      "title": "Modals of Promise",
+      "emoji": "📞",
+      "definition": "Use modals to show future actions or intentions.",
+      "example": "Example: I will call you when dinner is ready.",
+      "explanation": "‘Will’ expresses future intent or promise."
+    },
+    {
+      "number": 12,
+      "title": "Modals of Possibility",
+      "emoji": "🕵️‍♀️",
+      "definition": "Use modals to show what is possible or likely.",
+      "example": "Example: The shops are closed. I must be very late.",
+      "explanation": "‘Must’ expresses logical conclusion or certainty."
+    },
+    {
+      "number": 13,
+      "title": "Modals of Ability",
+      "emoji": "💪",
+      "definition": "Use modals to express ability or potential.",
+      "example": "Example: Spain can be very hot during summer.",
+      "explanation": "‘Can’ shows that something is possible or likely."
+    },
+    {
+      "number": 14,
+      "title": "Modals of Obligation",
+      "emoji": "📜",
+      "definition": "Use modals to express duty or necessity.",
+      "example": "Example: Everybody should eat less fatty food to be fit.",
+      "explanation": "‘Should’ expresses advice or obligation."
+    },
+    {
+      "number": 15,
+      "title": "Modals of Uncertainty",
+      "emoji": "🤔",
+      "definition": "Use modals to express doubt or possibility.",
+      "example": "Example: It might be the postman.",
+      "explanation": "‘Might’ shows uncertainty or possibility."
+    }
+  ]
+}

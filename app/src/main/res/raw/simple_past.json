@@ -1,0 +1,69 @@
+{
+  "topic": "Simple Past Tense and Past Perfect Tense",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Simple Past Tense",
+      "emoji": "⏳",
+      "definition": "The simple past tense describes an action that started and finished at a specific time in the past.",
+      "example": "Example: She visited her grandmother yesterday.",
+      "explanation": "This tense is formed by using the past form of the verb (e.g., walked, played, studied). It is used for completed actions or events that happened once or repeatedly in the past."
+    },
+    {
+      "number": 2,
+      "title": "Past Perfect Tense",
+      "emoji": "🕰️",
+      "definition": "The past perfect tense expresses an action that was completed before another action in the past.",
+      "example": "Example: She had eaten dinner before he arrived.",
+      "explanation": "This tense is formed using ‘had’ + the past participle of the verb. It shows the order of past events — the earlier action uses past perfect."
+    },
+    {
+      "number": 3,
+      "title": "Verb Forms",
+      "emoji": "📘",
+      "definition": "Verbs can change their form depending on tense — base form, past form, and past participle.",
+      "example": "Example: speak → spoke → spoken",
+      "explanation": "The base form is the present tense, the simple past form shows completed past actions, and the past participle is used with ‘had’ in the past perfect tense."
+    },
+    {
+      "number": 4,
+      "title": "Regular Verbs",
+      "emoji": "📝",
+      "definition": "Regular verbs form their past tense by adding ‘-ed’ or ‘-d’ to the base form.",
+      "example": "Example: walk → walked, clean → cleaned",
+      "explanation": "These verbs follow a predictable pattern, making them easy to identify and use in both simple past and past perfect tenses."
+    },
+    {
+      "number": 5,
+      "title": "Irregular Verbs",
+      "emoji": "📚",
+      "definition": "Irregular verbs do not follow the ‘-ed’ rule when forming the past or past participle.",
+      "example": "Example: go → went → gone, see → saw → seen",
+      "explanation": "Irregular verbs must be memorized because their past and past participle forms vary greatly."
+    },
+    {
+      "number": 6,
+      "title": "Simple Past vs. Past Perfect",
+      "emoji": "⚖️",
+      "definition": "Simple past refers to a completed action in the past, while past perfect shows an action completed before another past action.",
+      "example": "Example: I ate breakfast. (simple past) / I had eaten breakfast before I left. (past perfect)",
+      "explanation": "Use simple past for one completed event. Use past perfect when emphasizing which of two past actions happened first."
+    },
+    {
+      "number": 7,
+      "title": "Time Expressions for Simple Past",
+      "emoji": "🗓️",
+      "definition": "Common time expressions include ‘yesterday,’ ‘last night,’ ‘ago,’ and ‘in 2005.’",
+      "example": "Example: They visited Baguio last summer.",
+      "explanation": "These expressions clearly indicate a specific time when an action occurred in the past."
+    },
+    {
+      "number": 8,
+      "title": "Time Expressions for Past Perfect",
+      "emoji": "⌛",
+      "definition": "Common time expressions include ‘before,’ ‘after,’ ‘when,’ and ‘by the time.’",
+      "example": "Example: By the time we arrived, the show had started.",
+      "explanation": "These words signal a sequence of events and help show that one action happened earlier than another."
+    }
+  ]
+}

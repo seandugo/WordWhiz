@@ -101,10 +101,11 @@ class QuizDetailActivity : AppCompatActivity() {
                             val correctAnswers = partSnapshot.child("correctAnswers")
                                 .getValue(Int::class.java) ?: 0
 
-                            val retryAnswers = partSnapshot.child("retryAnswers")
+                            val retryAnswers = partSnapshot.child("retries")
                                 .getValue(Int::class.java) ?: 0
 
-                            val wrongAnswers = totalQuestions - correctAnswers
+                            val wrongAnswers = partSnapshot.child("wrongAnswers")
+                                .getValue(Int::class.java) ?: 0
 
                             // Add a separate card for this part
                             progressList.add(
@@ -113,7 +114,8 @@ class QuizDetailActivity : AppCompatActivity() {
                                     totalParts = totalQuestions,
                                     correctParts = correctAnswers,
                                     wrongParts = wrongAnswers,
-                                    retryParts = retryAnswers
+                                    retryParts = retryAnswers,
+                                    isCompleted = isCompleted
                                 )
                             )
                         }

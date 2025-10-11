@@ -5,5 +5,6 @@ data class QuizDetailProgress(
     val totalParts: Int,
     val correctParts: Int,
     val wrongParts: Int,
-    val retryParts: Int
+    val retryParts: Int,
+    val isCompleted: Boolean
 )

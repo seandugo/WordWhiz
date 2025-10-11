@@ -23,8 +23,12 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.thesis_app.MainActivity
 import com.example.thesis_app.R
+import com.example.thesis_app.notifications.CooldownWorker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.*
@@ -107,11 +111,12 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
 
         btnHint.setOnClickListener {
             if (remainingHints > 0) {
+                btnHint.isEnabled = false
                 revealRandomLetter()
-                remainingHints--
-                totalHints.text = remainingHints.toString()
-                if (remainingHints == 0) btnHint.isEnabled = false
-            } else Snackbar.make(requireView(), "No hints left!", Snackbar.LENGTH_SHORT).show()
+                btnHint.postDelayed({ btnHint.isEnabled = remainingHints > 0 }, 300)
+            } else {
+                Snackbar.make(requireView(), "No hints left!", Snackbar.LENGTH_SHORT).show()
+            }
         }
 
         passNextWord.setOnClickListener {
@@ -133,20 +138,33 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
         if (status == TextToSpeech.SUCCESS) tts.language = Locale.US
     }
 
-    // 🔹 Load existing unfinished word or fetch new one if eligible
-    private fun handleNextWord() {
-        // Save the skipped word to the saved words list (optional)
-        saveWordToSavedWords(currentWord, currentMeaning, true)
+    private fun scheduleCooldownNotification(cooldownMillis: Long) {
+        val workRequest = OneTimeWorkRequestBuilder<com.example.thesis_app.notifications.CooldownWorker>()
+            .setInitialDelay(cooldownMillis, java.util.concurrent.TimeUnit.MILLISECONDS)
+            .addTag("spelling_cooldown")
+            .build()
 
-        // Mark the current word as completed to start cooldown
+        WorkManager.getInstance(requireContext()).enqueueUniqueWork(
+            "spelling_cooldown_work",
+            ExistingWorkPolicy.REPLACE, // replaces old cooldown if any
+            workRequest
+        )
+    }
+
+    private fun handleNextWord() {
+        saveWordToSavedWords(currentWord, currentMeaning, true)
         saveSpellingProgress()
 
-        // Notify the user
         Snackbar.make(requireView(), "⏭️ Word skipped. Starting cooldown...", Snackbar.LENGTH_SHORT).show()
 
-        // Start cooldown immediately
         val cooldownMillis = COOLDOWN_HOURS * 60 * 60 * 1000L
+        val cooldownEnd = System.currentTimeMillis() + cooldownMillis
+
+        val prefs = requireActivity().getSharedPreferences("USER_PREFS", Context.MODE_PRIVATE)
+        prefs.edit().putLong("cooldownEndTime", cooldownEnd).apply()
+
         showCooldown(currentWord, currentMeaning, cooldownMillis)
+        scheduleCooldownNotification(cooldownMillis)
     }
 
     private fun loadOrFetchWord() {
@@ -208,18 +226,18 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
         toolBar.visibility = View.VISIBLE
 
         cooldownTimer?.cancel()
+
         cooldownTimer = object : CountDownTimer(remainingMillis, 1000) {
-            override fun onTick(millis: Long) {
-                val h = (millis / (1000 * 60 * 60)) % 24
-                val m = (millis / (1000 * 60)) % 60
-                val s = (millis / 1000) % 60
+            override fun onTick(millisUntilFinished: Long) {
+                val h = (millisUntilFinished / (1000 * 60 * 60)) % 24
+                val m = (millisUntilFinished / (1000 * 60)) % 60
+                val s = (millisUntilFinished / 1000) % 60
                 toolBar.title = String.format("%02d:%02d:%02d", h, m, s)
             }
 
             override fun onFinish() {
                 toolBar.visibility = View.GONE
                 fetchRandomWord()
-                showCooldownFinishedNotification()
             }
         }.start()
     }
@@ -390,7 +408,12 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
             saveSpellingProgress()
             saveWordToSavedWords(currentWord, currentMeaning, false)
             val cooldownMillis = COOLDOWN_HOURS * 60 * 60 * 1000L
+            val cooldownEnd = System.currentTimeMillis() + cooldownMillis
+            val prefs = requireActivity().getSharedPreferences("USER_PREFS", Context.MODE_PRIVATE)
+            prefs.edit().putLong("cooldownEndTime", cooldownEnd).apply()
+
             showCooldown(currentWord, currentMeaning, cooldownMillis)
+            scheduleCooldownNotification(cooldownMillis)
         } else {
             blinkRedTwice { resetWrongAnswer() }
             Snackbar.make(requireView(), "❌ Wrong, try again!", Snackbar.LENGTH_SHORT).show()
@@ -443,20 +466,41 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
     }
 
     private fun revealRandomLetter() {
-        val hidden = currentGuess.indices.filter { currentGuess[it] == '_' }
-        if (hidden.isNotEmpty()) {
-            val i = hidden.random()
-            currentGuess[i] = currentWord[i]
-            revealedByHint.add(i)
-            updateWordDisplay()
-            val rows = listOf(row1, row2)
-            for (r in rows) for (j in 0 until r.childCount) {
-                val btn = r.getChildAt(j) as? Button ?: continue
-                if (btn.text.toString().equals(currentWord[i].toString(), ignoreCase = true)) {
-                    btn.isEnabled = false
-                    break
+        if (remainingHints <= 0) {
+            remainingHints = 0
+            totalHints.text = remainingHints.toString()
+            Snackbar.make(requireView(), "No hints left!", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        val hiddenIndices = currentGuess.indices.filter { currentGuess[it] == '_' }
+        if (hiddenIndices.isNotEmpty()) {
+            val i = hiddenIndices.random()
+            val charToReveal = currentWord[i]
+
+            // Reveal all occurrences of this character
+            for (index in currentWord.indices) {
+                if (currentWord[index] == charToReveal) {
+                    currentGuess[index] = charToReveal
+                    revealedByHint.add(index)
                 }
             }
+
+            updateWordDisplay()
+
+            // Disable all buttons for this character
+            val rows = listOf(row1, row2)
+            for (r in rows) {
+                for (j in 0 until r.childCount) {
+                    val btn = r.getChildAt(j) as? Button ?: continue
+                    if (btn.text.toString().equals(charToReveal.toString(), ignoreCase = true)) {
+                        btn.isEnabled = false
+                    }
+                }
+            }
+            remainingHints--
+            totalHints.text = remainingHints.toString()
+            if (remainingHints == 0) btnHint.isEnabled = false
         }
     }
 

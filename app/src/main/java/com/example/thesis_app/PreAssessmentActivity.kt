@@ -9,7 +9,7 @@ import com.google.firebase.database.FirebaseDatabase
 class PreAssessmentActivity : AppCompatActivity() {
     private lateinit var progressBar: LinearProgressIndicator
     private var currentStep = 1
-    private val totalSteps = 4
+    private val totalSteps = 5
     private var studentId: String? = null  // ✅ store studentId
 
     override fun onCreate(savedInstanceState: Bundle?) {

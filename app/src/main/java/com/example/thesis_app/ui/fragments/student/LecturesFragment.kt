@@ -1,14 +1,18 @@
 package com.example.thesis_app.ui.fragments.student
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.thesis_app.LectureReviewActivity
+import com.example.thesis_app.LoginActivity
 import com.example.thesis_app.QuizListAdapter
 import com.example.thesis_app.R
 import com.example.thesis_app.models.QuizDisplayItem
@@ -26,6 +30,7 @@ class LecturesFragment : Fragment() {
     private lateinit var displayList: MutableList<QuizDisplayItem>
 
     private lateinit var quizzesRef: DatabaseReference
+    private lateinit var reviewLectures: ImageView
     private lateinit var progressRef: DatabaseReference
     private lateinit var studentId: String
 
@@ -61,6 +66,7 @@ class LecturesFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_view)
         headerTitle = view.findViewById(R.id.headerTitle)
         headerSubtitle = view.findViewById(R.id.headerSubtitle)
+        reviewLectures = view.findViewById(R.id.reviewLectures)
 
         topAppBar.title = "Welcome Student!"
         topAppBar.setTitleTextAppearance(requireContext(), R.style.ToolbarTitleText)
@@ -78,6 +84,20 @@ class LecturesFragment : Fragment() {
         quizzesRef.addValueEventListener(quizzesListener)
         progressRef.addValueEventListener(progressListener)
 
+        reviewLectures.setOnClickListener {
+            val currentTitle = headerTitle.text.toString()
+            val currentQuiz = displayList
+                .filterIsInstance<QuizDisplayItem.Part>()
+                .firstOrNull { it.item.quizTitle == currentTitle }
+
+            currentQuiz?.let {
+                val intent = Intent(requireContext(), LectureReviewActivity::class.java)
+                intent.putExtra("quiz_part", it.item.quizTitle)
+                intent.putExtra("quiz_order", (it.item.order - 1).toString())
+                startActivity(intent)
+            }
+        }
+
         return view
     }
 
@@ -93,11 +113,24 @@ class LecturesFragment : Fragment() {
                 super.onScrolled(rv, dx, dy)
                 val layoutManager = rv.layoutManager as LinearLayoutManager
                 val firstVisible = layoutManager.findFirstVisibleItemPosition()
+                val lastVisible = layoutManager.findLastVisibleItemPosition()
+
+                // ✅ Update header based on first visible quiz part
                 if (firstVisible != RecyclerView.NO_POSITION && firstVisible < displayList.size) {
                     val currentItem = displayList[firstVisible]
                     if (currentItem is QuizDisplayItem.Part) {
                         headerTitle.text = currentItem.item.quizTitle
                         headerSubtitle.text = currentItem.item.quizSubtitle
+                    }
+                }
+
+                // ✅ Detect if we are at the end of the list
+                if (lastVisible == displayList.size - 1) {
+                    val lastItem = displayList[lastVisible]
+                    if (lastItem is QuizDisplayItem.Part) {
+                        Log.d("LecturesFragment", "Reached last part: ${lastItem.item.quizTitle}")
+                        headerTitle.text = lastItem.item.quizTitle
+                        headerSubtitle.text = lastItem.item.quizSubtitle
                     }
                 }
             }
@@ -153,7 +186,8 @@ class LecturesFragment : Fragment() {
                             partId = partId,
                             displayName = if (partId == "post-test") "Post-Test" else "Level ${partId.filter { it.isDigit() }}",
                             questions = questions,
-                            isUnlocked = true // actual lock/unlock handled in adapter dynamically
+                            isUnlocked = true,
+                            order = quiz.order
                         )
                     )
                 )

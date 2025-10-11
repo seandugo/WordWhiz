@@ -1,0 +1,85 @@
+{
+  "topic": "Modal Verbs Part II",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Understanding Modal Verbs",
+      "emoji": "🗣️",
+      "definition": "Modal verbs are special verbs that express ability, permission, necessity, or obligation.",
+      "example": "Examples: can, can’t, must, mustn’t, have to, don’t have to",
+      "explanation": "They show how certain, possible, or necessary an action is. For example, 'can' means able to, and 'must' means required."
+    },
+    {
+      "number": 2,
+      "title": "Using 'Can' – Expressing Ability or Permission",
+      "emoji": "💪",
+      "definition": "‘Can’ is used to show that someone has the ability or is allowed to do something.",
+      "example": "Example: 'You can join the online meeting if you want.'",
+      "explanation": "It means you are able or permitted to do it. It’s positive and encouraging!"
+    },
+    {
+      "number": 3,
+      "title": "Using 'Can’t' – Expressing Impossibility or Prohibition",
+      "emoji": "🚫",
+      "definition": "‘Can’t’ means you are not allowed to or not able to do something.",
+      "example": "Example: 'You can’t go online yet; it’s not your turn.'",
+      "explanation": "It tells someone that something is not possible or not permitted."
+    },
+    {
+      "number": 4,
+      "title": "Using 'Must' – Expressing Strong Obligation or Necessity",
+      "emoji": "⚠️",
+      "definition": "‘Must’ shows that something is very important or required.",
+      "example": "Example: 'Everyone must consult a doctor if they feel sick.'",
+      "explanation": "It means the action is necessary — you have no choice but to do it."
+    },
+    {
+      "number": 5,
+      "title": "Using 'Mustn’t' – Expressing Strong Prohibition",
+      "emoji": "⛔",
+      "definition": "‘Mustn’t’ means something is not allowed or forbidden.",
+      "example": "Example: 'You mustn’t visit restricted websites during class.'",
+      "explanation": "It warns the listener that the action is not permitted and should be avoided."
+    },
+    {
+      "number": 6,
+      "title": "Using 'Have To' – Expressing External Obligation",
+      "emoji": "📋",
+      "definition": "‘Have to’ shows that something is necessary because of rules or situations.",
+      "example": "Example: 'You have to submit your project tomorrow.'",
+      "explanation": "It’s used when the necessity comes from outside — like rules, teachers, or schedules."
+    },
+    {
+      "number": 7,
+      "title": "Using 'Don’t Have To' – Expressing Lack of Necessity",
+      "emoji": "😌",
+      "definition": "‘Don’t have to’ means there is no need or obligation to do something.",
+      "example": "Example: 'You don’t have to attend class today; it’s a holiday!'",
+      "explanation": "It means it’s optional — you can do it, but it’s not required."
+    },
+    {
+      "number": 8,
+      "title": "Using 'Should' – Expressing Advice or Expectation",
+      "emoji": "💡",
+      "definition": "‘Should’ is used to give advice or talk about what is right to do.",
+      "example": "Example: 'You should study before the quiz tomorrow.'",
+      "explanation": "It’s softer than ‘must’. It suggests the best or most responsible action."
+    },
+    {
+      "number": 9,
+      "title": "Using 'Need To' – Expressing Requirement or Necessity",
+      "emoji": "📘",
+      "definition": "‘Need to’ means something is important and required to be done.",
+      "example": "Example: 'We need to be quiet during the test.'",
+      "explanation": "It shows that something is essential for success or respect of rules."
+    },
+    {
+      "number": 10,
+      "title": "Using 'Can I' – Asking for Permission Politely",
+      "emoji": "🙋‍♀️",
+      "definition": "‘Can I’ is a polite way to ask if you are allowed to do something.",
+      "example": "Example: 'Can I log in now, Mama? It’s almost class time.'",
+      "explanation": "It’s a friendly way to ask for permission from someone in charge."
+    }
+  ]
+}

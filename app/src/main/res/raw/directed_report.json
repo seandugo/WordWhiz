@@ -1,0 +1,85 @@
+{
+  "topic": "Getting to Know Direct and Reported Speech!",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Direct Speech",
+      "emoji": "💬",
+      "definition": "Direct speech tells exactly what someone said, using quotation marks.",
+      "example": "Example: Jane said, “It is my car.”",
+      "explanation": "It shows the speaker’s exact words, enclosed in quotation marks."
+    },
+    {
+      "number": 2,
+      "title": "Reported Speech (Indirect Speech)",
+      "emoji": "🗣️",
+      "definition": "Reported speech tells what someone said without using their exact words.",
+      "example": "Example: Jane said that it was her car.",
+      "explanation": "When reporting, we remove quotation marks and usually change the tense and pronouns."
+    },
+    {
+      "number": 3,
+      "title": "Tense Change Rule (Backshifting)",
+      "emoji": "⏳",
+      "definition": "When the reporting verb is in the past (like 'said'), the tense of the original sentence usually shifts one step back.",
+      "example": "Example: 'I work hard.' → He said he worked hard.",
+      "explanation": "Present → Past | Past → Past Perfect | Will → Would | Can → Could"
+    },
+    {
+      "number": 4,
+      "title": "No Change in Tense",
+      "emoji": "🕰️",
+      "definition": "If the reporting verb is in the present (like 'says'), the tense of the reported speech usually does not change.",
+      "example": "Example: The teacher explains, “Days are longer in summer.” → The teacher explains that days are longer in summer.",
+      "explanation": "The meaning is still current or always true, so no backshifting happens."
+    },
+    {
+      "number": 5,
+      "title": "Pronoun Change Rule",
+      "emoji": "👤",
+      "definition": "Pronouns change based on the speaker and listener in the reported sentence.",
+      "example": "Example: She said, “I am tired.” → She said that she was tired.",
+      "explanation": "‘I’ changes to ‘she’; adjust all pronouns to fit the new point of view."
+    },
+    {
+      "number": 6,
+      "title": "Time Expression Change",
+      "emoji": "🕓",
+      "definition": "Time words also change in reported speech to fit the past context.",
+      "example": "Example: today → that day | tomorrow → the next day | yesterday → the day before",
+      "explanation": "Adjust time words to reflect when the action happened relative to the new sentence."
+    },
+    {
+      "number": 7,
+      "title": "Modal Verb Changes",
+      "emoji": "🔁",
+      "definition": "Modal verbs like ‘can’, ‘will’, ‘may’, and ‘must’ often change in reported speech.",
+      "example": "Example: can → could | will → would | may → might | must → had to",
+      "explanation": "Some modal verbs stay the same if their meaning doesn’t change."
+    },
+    {
+      "number": 8,
+      "title": "That-Clause in Reported Speech",
+      "emoji": "🧩",
+      "definition": "Reported speech often uses the word 'that' to connect the reporting verb and the reported clause.",
+      "example": "Example: He said that he was ready.",
+      "explanation": "Using 'that' makes the sentence smoother and grammatically correct, though it’s optional in conversation."
+    },
+    {
+      "number": 9,
+      "title": "Reporting Statements",
+      "emoji": "📣",
+      "definition": "We report statements using the reporting verbs like said, told, or explained.",
+      "example": "Example: Peter said, “John can do it.” → Peter said that John could do it.",
+      "explanation": "Always shift tense if the reporting verb is in past tense."
+    },
+    {
+      "number": 10,
+      "title": "Reporting Questions and Commands",
+      "emoji": "❓",
+      "definition": "When reporting questions, change the word order and remove question marks. For commands, use 'told' or 'asked' + infinitive.",
+      "example": "Example: She said, “Close the door.” → She told me to close the door.",
+      "explanation": "Reported questions and commands focus on meaning, not the exact wording."
+    }
+  ]
+}

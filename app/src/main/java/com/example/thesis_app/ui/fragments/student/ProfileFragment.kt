@@ -1,11 +1,13 @@
 package com.example.thesis_app.ui.fragments.student
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -29,7 +31,6 @@ class ProfileFragment : Fragment() {
     private lateinit var progressCarousel: RecyclerView
     private lateinit var spellingCarousel: RecyclerView
     private lateinit var progressAdapter: ProgressListAdapter
-    private lateinit var emptySpellingText : TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +40,7 @@ class ProfileFragment : Fragment() {
         return inflater.inflate(R.layout.profile, container, false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -53,6 +55,9 @@ class ProfileFragment : Fragment() {
         val nameExpanded = view.findViewById<TextView>(R.id.nameTextExpanded)
         val classExpanded = view.findViewById<TextView>(R.id.classTextExpanded)
         val studentIdExpanded = view.findViewById<TextView>(R.id.studentIdExpanded)
+        val lecturesCount = view.findViewById<TextView>(R.id.lecturesCount)
+        val daysStreak = view.findViewById<TextView>(R.id.daysStreak)
+        val spellingCount = view.findViewById<TextView>(R.id.spellingCount)
 
         progressCarousel = view.findViewById(R.id.progressCarousel)
         spellingCarousel = view.findViewById(R.id.achievementsCarousel)
@@ -91,8 +96,85 @@ class ProfileFragment : Fragment() {
             startActivity(intent)
         }
 
+        fetchLecturesCount(studentId)
+        fetchDaysStreak(studentId)
+        fetchSpellingCount(studentId)
         fetchProgressData(studentId)
     }
+
+    private fun fetchLecturesCount(studentId: String) {
+        val progressRef = FirebaseDatabase.getInstance()
+            .getReference("users/$studentId/progress")
+
+        progressRef.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                view?.findViewById<TextView>(R.id.lecturesCount)?.text = "0"
+                return@addOnSuccessListener
+            }
+
+            var completedCount = 0
+
+            snapshot.children.forEach { quizSnapshot ->
+                val quizId = quizSnapshot.key ?: return@forEach
+                if (quizId == "835247") return@forEach // 🚫 Skip this quiz
+
+                val isCompleted = quizSnapshot.child("isCompleted").getValue(Boolean::class.java) ?: false
+                if (isCompleted) completedCount++
+            }
+
+            view?.findViewById<TextView>(R.id.lecturesCount)?.text = completedCount.toString()
+        }.addOnFailureListener {
+            view?.findViewById<TextView>(R.id.lecturesCount)?.text = "0"
+        }
+    }
+
+    private fun fetchSpellingCount(studentId: String) {
+        val progressRef = FirebaseDatabase.getInstance()
+            .getReference("users/$studentId/spellingActivity/savedWords")
+
+        progressRef.get().addOnSuccessListener { snapshot ->
+            val count = snapshot.children.count {
+                val skipped = it.child("skipped").getValue(Boolean::class.java) ?: false
+                !skipped
+            }
+            view?.findViewById<TextView>(R.id.spellingCount)?.text = "$count"
+        }.addOnFailureListener {
+            view?.findViewById<TextView>(R.id.spellingCount)?.text = "0"
+        }
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun fetchDaysStreak(studentId: String) {
+        val userRef = FirebaseDatabase.getInstance().getReference("users/$studentId/activityStreak")
+        val today = java.time.LocalDate.now().toString()
+
+        userRef.get().addOnSuccessListener { snapshot ->
+            var streakCount = snapshot.child("streakCount").getValue(Int::class.java) ?: 0
+            val lastActiveDate = snapshot.child("lastActiveDate").getValue(String::class.java)
+
+            val yesterday = java.time.LocalDate.now().minusDays(1).toString()
+
+            if (lastActiveDate == today) {
+                // Already active today → do nothing
+            } else if (lastActiveDate == yesterday) {
+                // Continued streak
+                streakCount += 1
+                userRef.child("streakCount").setValue(streakCount)
+                userRef.child("lastActiveDate").setValue(today)
+            } else {
+                // Reset streak
+                streakCount = 1
+                userRef.child("streakCount").setValue(1)
+                userRef.child("lastActiveDate").setValue(today)
+            }
+
+            view?.findViewById<TextView>(R.id.daysStreak)?.text = "$streakCount"
+        }.addOnFailureListener {
+            view?.findViewById<TextView>(R.id.daysStreak)?.text = "0"
+        }
+    }
+
 
     private fun fetchProgressData(studentId: String) {
         val quizId = "129503" // Only this quiz

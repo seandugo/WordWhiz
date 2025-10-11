@@ -1,0 +1,85 @@
+{
+  "topic": "Analysis and Comparison",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Frankness",
+      "emoji": "🗣️",
+      "definition": "Frankness means being open, honest, and direct in speech or expression.",
+      "example": "Example: He spoke with frankness about the team’s weaknesses.",
+      "explanation": "When someone shows frankness, they communicate truthfully without hiding their real thoughts or feelings."
+    },
+    {
+      "number": 2,
+      "title": "Postscript (P.S.)",
+      "emoji": "✉️",
+      "definition": "A postscript is a short message added at the end of a letter after the main body has been completed.",
+      "example": "Example: P.S. Don’t forget to bring your umbrella tomorrow!",
+      "explanation": "A postscript allows the writer to include an extra thought or reminder after signing off."
+    },
+    {
+      "number": 3,
+      "title": "Infatuated",
+      "emoji": "💘",
+      "definition": "Infatuated means having an intense but short-lived passion or admiration for someone.",
+      "example": "Example: He was infatuated with her beauty and charm.",
+      "explanation": "Infatuation often involves strong romantic feelings that are emotional rather than logical."
+    },
+    {
+      "number": 4,
+      "title": "Lace",
+      "emoji": "🧵",
+      "definition": "Lace is a delicate fabric made of fine threads with open patterns of holes.",
+      "example": "Example: The bride’s dress was adorned with white lace.",
+      "explanation": "Lace is often used for decoration in clothing and accessories because of its elegant and intricate design."
+    },
+    {
+      "number": 5,
+      "title": "Sphinx",
+      "emoji": "🦁",
+      "definition": "The Sphinx is a mythical creature with the body of a lion and the head of a human, found in Egypt and Greek mythology.",
+      "example": "Example: The Great Sphinx of Giza is one of Egypt’s most famous monuments.",
+      "explanation": "In mythology, the Sphinx symbolizes mystery, strength, and wisdom, often posing riddles to travelers."
+    },
+    {
+      "number": 6,
+      "title": "Oedipus and the Sphinx",
+      "emoji": "📜",
+      "definition": "A Greek myth in which the hero Oedipus answers the Sphinx’s riddle and frees Thebes from her curse.",
+      "example": "Example: Oedipus solved the Sphinx’s riddle by answering 'Man.'",
+      "explanation": "This myth highlights human intelligence and destiny — central themes in Greek mythology."
+    },
+    {
+      "number": 7,
+      "title": "Compare",
+      "emoji": "⚖️",
+      "definition": "To compare means to examine two or more things to find their similarities.",
+      "example": "Example: When you compare cats and dogs, both are common household pets.",
+      "explanation": "Comparison helps identify what makes things alike or related in purpose, feature, or meaning."
+    },
+    {
+      "number": 8,
+      "title": "Contrast",
+      "emoji": "🔍",
+      "definition": "To contrast means to examine two or more things to find their differences.",
+      "example": "Example: When you contrast day and night, one is bright while the other is dark.",
+      "explanation": "Contrasting allows readers to see distinctions or opposing qualities between concepts."
+    },
+    {
+      "number": 9,
+      "title": "Protagonist",
+      "emoji": "🦸‍♂️",
+      "definition": "The protagonist is the main character in a story who faces the main conflict.",
+      "example": "Example: Harry Potter is the protagonist in the Harry Potter series.",
+      "explanation": "The protagonist drives the plot and often undergoes personal growth throughout the story."
+    },
+    {
+      "number": 10,
+      "title": "Antagonist",
+      "emoji": "😈",
+      "definition": "The antagonist is the character who opposes the main character or creates conflict.",
+      "example": "Example: Voldemort is the antagonist in the Harry Potter series.",
+      "explanation": "The antagonist’s actions challenge the protagonist and create the central tension in the story."
+    }
+  ]
+}

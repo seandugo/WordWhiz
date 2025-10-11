@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.DatabaseReference
 
@@ -23,6 +24,9 @@ class LoginActivity : ComponentActivity() {
     private lateinit var signup: TextView
     private lateinit var teacherEmail: TextInputEditText
     private lateinit var teacherPassword: TextInputEditText
+    private lateinit var swipeRefresh: SwipeRefreshLayout
+    private var snackbar: Snackbar? = null
+    private var hasAutoLoggedIn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +36,14 @@ class LoginActivity : ComponentActivity() {
         signup = findViewById(R.id.textView9)
         teacherEmail = findViewById(R.id.editEmail)
         teacherPassword = findViewById(R.id.Password)
+        swipeRefresh = findViewById(R.id.swipeRefresh)
+
+        checkInternetAndSetUI()
+
+        swipeRefresh.setOnRefreshListener {
+            checkInternetAndSetUI(autoLogin = true)
+            swipeRefresh.isRefreshing = false
+        }
 
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
@@ -49,6 +61,51 @@ class LoginActivity : ComponentActivity() {
             handleSignup()
         }
 
+    }
+
+    private fun checkInternetAndSetUI(autoLogin: Boolean = false) {
+        swipeRefresh.isRefreshing = true
+
+        if (!isInternetAvailable()) {
+            login.isEnabled = false
+            signup.isEnabled = false
+            swipeRefresh.isRefreshing = false
+
+            snackbar = Snackbar.make(
+                findViewById(android.R.id.content),
+                "No internet connection",
+                Snackbar.LENGTH_INDEFINITE
+            ).setAction("Retry") {
+                checkInternetAndSetUI(autoLogin)
+            }
+            snackbar?.show()
+        } else {
+            login.isEnabled = true
+            signup.isEnabled = true
+            snackbar?.dismiss()
+            swipeRefresh.isRefreshing = false
+
+            if (autoLogin) {
+                attemptAutoLogin()
+            }
+        }
+    }
+
+    private fun attemptAutoLogin() {
+        if (hasAutoLoggedIn) return
+
+        disableButtons()
+
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val email = prefs.getString("email", null) ?: return
+        val studentId = prefs.getString("studentId", null) ?: return
+        val role = prefs.getString("role", null) ?: return
+
+        FirebaseAuth.getInstance().currentUser?.let { user ->
+            goToLoading(role, studentId)
+        } ?: run {
+            enableButtons()
+        }
     }
 
     private fun handleLogin() {
@@ -119,6 +176,15 @@ class LoginActivity : ComponentActivity() {
                 val studentName = child.child("name").getValue(String::class.java) ?: "Unknown"
 
                 if (role == "student" && studentId != null) {
+                    val userRef = dbRef.child(studentId)
+
+                    val isNewAccount = child.child("newAccount").getValue(Boolean::class.java) ?: true
+                    if (isNewAccount) {
+                        // ✅ Mark new account and initialize full progress
+                        userRef.child("newAccount").setValue(true)
+                        initializeStudentProgress(studentId, userRef)
+                    }
+
                     val classCode = child.child("classes").children.firstOrNull()?.key
                     if (classCode != null) {
                         FirebaseDatabase.getInstance().getReference("classes/$classCode/className")
@@ -165,7 +231,11 @@ class LoginActivity : ComponentActivity() {
         prefs.apply()
     }
 
+    private var isNavigatingToLoading = false
+
     private fun goToLoading(role: String?, studentId: String?) {
+        if (isNavigatingToLoading) return
+        isNavigatingToLoading = true
         val intent = Intent(this, LoadingActivity::class.java)
         intent.putExtra("mode", "login")
         intent.putExtra("role", role)
@@ -173,6 +243,7 @@ class LoginActivity : ComponentActivity() {
         startActivity(intent)
         finish()
     }
+
 
     private fun initializeStudentProgress(studentId: String, userRef: DatabaseReference) {
         val quizzesRef = FirebaseDatabase.getInstance().getReference("quizzes")
@@ -250,6 +321,10 @@ class LoginActivity : ComponentActivity() {
     // ✅ Updated onStart
     override fun onStart() {
         super.onStart()
+
+        if (hasAutoLoggedIn) return
+        hasAutoLoggedIn = true
+
         if (!isInternetAvailable()) {
             Snackbar.make(findViewById(android.R.id.content), "No internet connection. Please connect and try again.", Snackbar.LENGTH_LONG).show()
             return
@@ -263,6 +338,7 @@ class LoginActivity : ComponentActivity() {
 
         if (savedRole != null) {
             if (savedRole == "student" && savedStudentId != null) {
+                checkInternetAndSetUI(autoLogin = true)
                 val userRef = FirebaseDatabase.getInstance().getReference("users").child(savedStudentId)
                 userRef.get().addOnSuccessListener { snapshot ->
                     val isNewAccount = snapshot.child("newAccount").getValue(Boolean::class.java) ?: true
@@ -293,6 +369,7 @@ class LoginActivity : ComponentActivity() {
                     goToLoading(savedRole, savedStudentId)
                 }
             } else {
+                checkInternetAndSetUI(autoLogin = false)
                 goToLoading(savedRole, savedStudentId)
             }
         } else {

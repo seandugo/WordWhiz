@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.thesis_app">
 
-    <!-- Permissions (must be inside <manifest>, not <application>) -->
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.THESIS_APP">
 
-        <receiver android:name=".notifications.DailySpellingReminderReceiver" />
+        <!-- Boot receiver to re-schedule workers -->
         <receiver
             android:name=".notifications.BootReceiver"
             android:enabled="true"
@@ -31,7 +31,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.THESIS_APP">
+            android:theme="@style/Theme.THESIS_APP"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -40,22 +41,24 @@
 
         <activity android:name=".StudentProgressActivity"
             android:exported="false"
-            android:label="Student Progress"/>
+            android:screenOrientation="portrait"
+            android:label="Student Progress" />
 
         <!-- Other activities -->
         <activity android:name=".TeacherActivity" />
-        <activity android:name=".QuizActivity" android:exported="true" />
-        <activity android:name=".LoginActivity" android:exported="true" />
-        <activity android:name=".LoadingActivity" android:exported="true" />
-        <activity android:name=".StudentActivity" android:exported="true" />
-        <activity android:name=".SignupActivity" android:exported="true" />
-        <activity android:name=".ClassDetailActivity" android:exported="true" />
-        <activity android:name=".PreAssessmentActivity" android:exported="true" />
-        <activity android:name=".ProgressListActivity" android:exported="true" />
-        <activity android:name=".TeacherIntroActivity" android:exported="true" />
-        <activity android:name=".QuizDetailActivity" android:exported="true" />
-        <activity android:name=".SpellingAchievementsActivity" android:exported="true" />
-        <activity android:name=".AboutUsActivity" android:exported="true" />
-        <activity android:name=".TermsAndCActivity" android:exported="true" />
+        <activity android:name=".QuizActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".LoginActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".LoadingActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".StudentActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".SignupActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".ClassDetailActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".PreAssessmentActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".ProgressListActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".TeacherIntroActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".QuizDetailActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".SpellingAchievementsActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".AboutUsActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".TermsAndCActivity" android:exported="true" android:screenOrientation="portrait" />
+        <activity android:name=".LectureReviewActivity" android:exported="true" android:screenOrientation="portrait" />
     </application>
 </manifest>

@@ -1,0 +1,125 @@
+{
+  "topic": "Verbs, Adjectives & Adverbs",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Simple Present Tense",
+      "emoji": "🏓",
+      "definition": "Used for habitual or regular actions.",
+      "example": "Example: I play tennis every Sunday morning.",
+      "explanation": "‘Play’ is in the simple present tense because it shows a regular activity."
+    },
+    {
+      "number": 2,
+      "title": "Simple Present Tense (Plural Subject)",
+      "emoji": "⛪",
+      "definition": "Used when describing actions that happen regularly.",
+      "example": "Example: They go to church on Sundays.",
+      "explanation": "‘Go’ is in simple present tense, expressing a habitual action."
+    },
+    {
+      "number": 3,
+      "title": "Simple Past Tense",
+      "emoji": "👖",
+      "definition": "Used to describe actions that happened in the past.",
+      "example": "Example: Jane wore her blue jeans yesterday.",
+      "explanation": "‘Wore’ is the past tense of ‘wear’, showing an action already completed."
+    },
+    {
+      "number": 4,
+      "title": "Simple Future Tense",
+      "emoji": "⏰",
+      "definition": "Used to describe actions that will happen in the future.",
+      "example": "Example: The bell will ring 30 minutes from now.",
+      "explanation": "‘Will ring’ shows that the action has not yet occurred but will happen soon."
+    },
+    {
+      "number": 5,
+      "title": "Present Perfect Tense",
+      "emoji": "🌙",
+      "definition": "Used to describe actions that began in the past and continue to the present.",
+      "example": "Example: I have been awake for half an hour.",
+      "explanation": "‘Have been’ connects the past and present states of being awake."
+    },
+    {
+      "number": 6,
+      "title": "Present Perfect Tense (Experience)",
+      "emoji": "🚗",
+      "definition": "Describes an action that started in the past and is still true now.",
+      "example": "Example: My father has driven the same car for ten years.",
+      "explanation": "‘Has driven’ indicates an action that started ten years ago and continues today."
+    },
+    {
+      "number": 7,
+      "title": "Past Perfect Tense",
+      "emoji": "🗣️",
+      "definition": "Used to describe an action completed before another past action.",
+      "example": "Example: They had spoken to her before.",
+      "explanation": "‘Had spoken’ means the action was finished before another event."
+    },
+    {
+      "number": 8,
+      "title": "Future Perfect Tense",
+      "emoji": "🔑",
+      "definition": "Describes an action that will be completed before a future time or event.",
+      "example": "Example: I will have arrived with the keys by the time you come in.",
+      "explanation": "‘Will have arrived’ shows the action will be done before another future event."
+    },
+    {
+      "number": 9,
+      "title": "Adjectives",
+      "emoji": "📚",
+      "definition": "Describe nouns or pronouns to give more information about them.",
+      "example": "Example: Someone in my class lent me a wonderful story.",
+      "explanation": "‘Wonderful’ is an adjective describing the noun ‘story’."
+    },
+    {
+      "number": 10,
+      "title": "Adjective Clause",
+      "emoji": "🏠",
+      "definition": "A dependent clause that describes a noun.",
+      "example": "Example: The house that is so beautiful sits atop the hill.",
+      "explanation": "‘That is so beautiful’ is an adjective clause describing ‘house’."
+    },
+    {
+      "number": 11,
+      "title": "Adjective Phrase",
+      "emoji": "😠",
+      "definition": "A group of words that describe a noun or pronoun.",
+      "example": "Example: Sandra responded in a very rude way.",
+      "explanation": "‘In a very rude way’ is an adjective phrase describing how Sandra responded."
+    },
+    {
+      "number": 12,
+      "title": "Adjective Phrase (Prepositional)",
+      "emoji": "🏛️",
+      "definition": "Prepositional phrases can also act as adjectives.",
+      "example": "Example: The tour guide talked about the buildings of the 19th century.",
+      "explanation": "‘Of the 19th century’ modifies ‘buildings’, telling which ones."
+    },
+    {
+      "number": 13,
+      "title": "Adverb Clause (Concession)",
+      "emoji": "💼",
+      "definition": "Shows contrast or unexpected result.",
+      "example": "Example: Although Tricia works hard, she always welcomes extra projects.",
+      "explanation": "‘Although Tricia works hard’ is an adverb clause showing contrast."
+    },
+    {
+      "number": 14,
+      "title": "Adverb Clause (Comparison)",
+      "emoji": "⚖️",
+      "definition": "Used to compare two ideas or situations.",
+      "example": "Example: Andrew is thinner than he was the last time.",
+      "explanation": "‘Than he was the last time’ compares Andrew’s current and past state."
+    },
+    {
+      "number": 15,
+      "title": "Adverb Clause (Time)",
+      "emoji": "🍿",
+      "definition": "Describes when an action happens.",
+      "example": "Example: Should we go save seats after you buy some popcorn?",
+      "explanation": "‘After you buy some popcorn’ tells when the action will happen."
+    }
+  ]
+}

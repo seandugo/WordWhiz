@@ -51,6 +51,7 @@ android {
 
 dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

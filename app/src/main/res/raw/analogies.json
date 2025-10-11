@@ -1,0 +1,83 @@
+{
+  "topic": "Getting to Know Analogies!",
+  "definitions": [
+    {
+      "number": 1,
+      "title": "Analogy",
+      "emoji": "🎯",
+      "definition": "An analogy is like a fun word puzzle! It compares two pairs of words to show how they are related.",
+      "example": "cat : kitten :: dog : puppy",
+      "explanation": "A cat is related to a kitten the same way a dog is related to a puppy."
+    },
+    {
+      "number": 2,
+      "title": "Antonym",
+      "emoji": "🔁",
+      "definition": "These are pairs of words that mean the opposite of each other.",
+      "example": "hot : cold :: happy : sad",
+      "explanation": "Hot is the opposite of cold, just like happy is the opposite of sad."
+    },
+    {
+      "number": 3,
+      "title": "Synonym",
+      "emoji": "💬",
+      "definition": "These words mean the same or nearly the same thing.",
+      "example": "fast : quick :: small : tiny",
+      "explanation": "Fast means the same as quick, just like small means the same as tiny."
+    },
+    {
+      "number": 4,
+      "title": "Part-to-Whole",
+      "emoji": "🌳",
+      "definition": "This shows how one word is a part of something bigger.",
+      "example": "finger : hand :: branch : tree",
+      "explanation": "A finger is part of a hand, just like a branch is part of a tree."
+    },
+    {
+      "number": 5,
+      "title": "Cause-and-Effect",
+      "emoji": "⚡",
+      "definition": "One word is the reason, and the other is the result.",
+      "example": "study : learn :: rain : flood",
+      "explanation": "You study to learn, and rain can cause a flood."
+    },
+    {
+      "number": 6,
+      "title": "Person-to-Place/Role/Specialization",
+      "emoji": "🧑‍🏫",
+      "definition": "This shows a person and where they work or what they do.",
+      "example": "teacher : school :: doctor : hospital",
+      "explanation": "A teacher works in a school, and a doctor works in a hospital."
+    },
+    {
+      "number": 7,
+      "title": "Word Relationship",
+      "emoji": "🧩",
+      "definition": "This is the connection between the two words. Finding this link helps you solve the analogy!",
+      "example": "Ask yourself, “How are these two words related?”"
+    },
+    {
+      "number": 8,
+      "title": "Pair of Words",
+      "emoji": "💡",
+      "definition": "Two words that go together to make one side of the analogy.",
+      "example": "bird : wing",
+      "explanation": "The bird has a wing — that’s one pair!"
+    },
+    {
+      "number": 9,
+      "title": "Comparison Symbol (::)",
+      "emoji": "🔣",
+      "definition": "The double colon '::' means 'is to' or 'as.'",
+      "example": "sun : day :: moon : night",
+      "explanation": "The sun shines in the day, just as the moon shines at night."
+    },
+    {
+      "number": 10,
+      "title": "Reasoning through Relationships",
+      "emoji": "🧠",
+      "definition": "This is your thinking skill in action! It’s how you figure out what connects the words in each analogy.",
+      "example": "Think: 'If the first pair goes together this way, how does the second pair match?'"
+    }
+  ]
+}

@@ -31,7 +31,6 @@ class SettingsFragment : Fragment() {
         // Initialize layouts
         aboutUsLayout = view.findViewById(R.id.aboutUsLayout)
         termsLayout = view.findViewById(R.id.termsLayout)
-        logoutLayout = view.findViewById(R.id.logoutLayout)
 
         setupListeners()
 

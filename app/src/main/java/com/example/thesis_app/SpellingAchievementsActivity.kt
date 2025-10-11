@@ -23,6 +23,11 @@ class SpellingAchievementsActivity : AppCompatActivity() {
         recycler = findViewById(R.id.achievementsRecycler)
         studentIdProgress = findViewById(R.id.studentIdProgress)
 
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed() // Go back to previous screen
+        }
+
         // Fetch studentId from Intent or SharedPreferences
         val studentId = intent.getStringExtra("studentId")
             ?: getSharedPreferences("USER_PREFS", MODE_PRIVATE).getString("studentId", "Unknown")
@@ -30,15 +35,21 @@ class SpellingAchievementsActivity : AppCompatActivity() {
 
         Log.d(TAG, "Student ID: $studentId")
 
-        // Fetch saved words count from Firebase
+        // Fetch saved words count from Firebase (only where skipped = false)
         val ref = FirebaseDatabase.getInstance()
             .getReference("users/$studentId/spellingActivity/savedWords")
 
         ref.get().addOnSuccessListener { snapshot ->
-            Log.d(TAG, "Firebase snapshot children count: ${snapshot.childrenCount}")
+            var count = 0
+            for (child in snapshot.children) {
+                val skipped = child.child("skipped").getValue(Boolean::class.java) ?: false
+                if (!skipped) {
+                    count++
+                }
+            }
 
-            userCount = snapshot.childrenCount.toInt()
-            Log.d(TAG, "User saved words count: $userCount")
+            userCount = count
+            Log.d(TAG, "User non-skipped words count: $userCount")
 
             val achievements = listOf(
                 AchievementsAdapter.AchievementItem(R.drawable.five_spells, "5 Words", 5),
@@ -47,7 +58,7 @@ class SpellingAchievementsActivity : AppCompatActivity() {
                 AchievementsAdapter.AchievementItem(R.drawable.twenty_spells, "20 Words", 20),
                 AchievementsAdapter.AchievementItem(R.drawable.twenty_five_spells, "25 Words", 25),
                 AchievementsAdapter.AchievementItem(R.drawable.thirty_spells, "30 Words", 30),
-                AchievementsAdapter.AchievementItem(R.drawable.english_ex, "36 Words", 36),
+                AchievementsAdapter.AchievementItem(R.drawable.english_ex, "35 Words", 35),
                 AchievementsAdapter.AchievementItem(R.drawable.english_adventurer, "50+ Words", 50)
             )
 

@@ -26,7 +26,7 @@ class PreTestSecondPage : Fragment(R.layout.pre_test_second_page) {
             })
 
         nextButton.setOnClickListener {
-            val secondPageFragment = ClassCodePage()
+            val secondPageFragment = EnableNotifPage()
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainerView2, secondPageFragment)
                 .addToBackStack(null)
