@@ -7,6 +7,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import com.example.thesis_app.PreAssessmentActivity
 import com.example.thesis_app.R
+import com.example.thesis_app.TeacherIntroActivity
 
 class IntroThirdFragment : Fragment(R.layout.intro_teacher_third_page) {
     private lateinit var nextButton: Button
@@ -20,7 +21,7 @@ class IntroThirdFragment : Fragment(R.layout.intro_teacher_third_page) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    (activity as? PreAssessmentActivity)?.previousStep()
+                    (activity as? TeacherIntroActivity)?.previousStep()
                     parentFragmentManager.popBackStack()
                 }
             })
@@ -31,7 +32,7 @@ class IntroThirdFragment : Fragment(R.layout.intro_teacher_third_page) {
                 .replace(R.id.fragmentContainerView2, secondPageFragment)
                 .addToBackStack(null)
                 .commit()
-            (activity as? PreAssessmentActivity)?.nextStep()
+            (activity as? TeacherIntroActivity)?.nextStep()
         }
     }
 

@@ -14,6 +14,7 @@ import com.example.thesis_app.R
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -73,38 +74,58 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
     }
 
     private fun loadClassStatistics() {
-        database.get().addOnSuccessListener { classesSnapshot ->
+        val teacherUid = FirebaseAuth.getInstance().currentUser?.uid
+        if (teacherUid == null) {
+            recycler.visibility = View.GONE
+            emptyImage.visibility = View.VISIBLE
+            return
+        }
+
+        // Reference to the teacher's classes
+        val teacherClassesRef = FirebaseDatabase.getInstance().getReference("users/$teacherUid/classes")
+        teacherClassesRef.get().addOnSuccessListener { classesSnapshot ->
             val classStatsList = mutableListOf<ClassStats>()
             val currentDate = Calendar.getInstance().time
-            val totalClasses = classesSnapshot.childrenCount.toInt()
 
-            if (totalClasses == 0) {
+            if (!classesSnapshot.exists() || classesSnapshot.childrenCount == 0L) {
                 recycler.visibility = View.GONE
                 emptyImage.visibility = View.VISIBLE
                 return@addOnSuccessListener
-            } else {
-                recycler.visibility = View.VISIBLE
-                emptyImage.visibility = View.GONE
             }
 
+            recycler.visibility = View.VISIBLE
+            emptyImage.visibility = View.GONE
+
             var processedClasses = 0
+            val totalClasses = classesSnapshot.childrenCount.toInt()
 
-            for (classSnapshot in classesSnapshot.children) {
-                val className = classSnapshot.child("className").getValue(String::class.java) ?: "Unnamed Class"
-                val studentsSnapshot = classSnapshot.child("students")
-                val studentIds = studentsSnapshot.children.mapNotNull { it.key }
+            for (classSnap in classesSnapshot.children) {
+                val classCode = classSnap.key ?: continue
 
-                getClassStatsForStudents(studentIds, currentDate) { activeCount, inactiveCount ->
-                    classStatsList.add(
-                        ClassStats(
-                            className = className,
-                            activeCount = activeCount,
-                            inactiveCount = inactiveCount,
-                            totalStudents = activeCount + inactiveCount
+                // Now fetch the class data from "classes" node using classCode
+                val classRef = FirebaseDatabase.getInstance().getReference("classes/$classCode")
+                classRef.get().addOnSuccessListener { classDataSnap ->
+                    val className = classDataSnap.child("className").getValue(String::class.java) ?: "Unnamed Class"
+                    val studentsSnapshot = classDataSnap.child("students")
+                    val studentIds = studentsSnapshot.children.mapNotNull { it.key }
+
+                    getClassStatsForStudents(studentIds, currentDate) { activeCount, inactiveCount ->
+                        classStatsList.add(
+                            ClassStats(
+                                className = className,
+                                activeCount = activeCount,
+                                inactiveCount = inactiveCount,
+                                totalStudents = activeCount + inactiveCount
+                            )
                         )
-                    )
+                        processedClasses++
+                        if (processedClasses == totalClasses) {
+                            recycler.adapter = ClassStatsAdapter(classStatsList)
+                        }
+                    }
+                }.addOnFailureListener {
                     processedClasses++
-                    recycler.adapter = ClassStatsAdapter(classStatsList)
+                    if (processedClasses == totalClasses) recycler.adapter = ClassStatsAdapter(classStatsList)
                 }
             }
         }.addOnFailureListener {

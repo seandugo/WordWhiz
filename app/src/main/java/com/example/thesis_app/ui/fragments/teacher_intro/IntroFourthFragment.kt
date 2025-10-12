@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import com.example.thesis_app.PreAssessmentActivity
 import com.example.thesis_app.R
 import com.example.thesis_app.TeacherActivity
+import com.example.thesis_app.TeacherIntroActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
@@ -24,7 +25,7 @@ class IntroFourthFragment : Fragment(R.layout.intro_teacher_fourth_page) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    (activity as? PreAssessmentActivity)?.previousStep()
+                    (activity as? TeacherIntroActivity)?.previousStep()
                     parentFragmentManager.popBackStack()
                 }
             })

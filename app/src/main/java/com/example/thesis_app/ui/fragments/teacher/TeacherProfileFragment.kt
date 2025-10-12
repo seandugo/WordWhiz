@@ -16,6 +16,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.*
@@ -80,67 +81,92 @@ class TeacherProfileFragment : Fragment() {
 
     @SuppressLint("SimpleDateFormat")
     private fun loadClassStatistics() {
-        val dbClasses = FirebaseDatabase.getInstance().getReference("classes")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val teacherClassesRef = FirebaseDatabase.getInstance().getReference("users/$uid/classes")
         val dbUsers = FirebaseDatabase.getInstance().getReference("users")
-
-        var totalStudents = 0
-        var activeCount = 0
-        var inactiveCount = 0
+        val dbClasses = FirebaseDatabase.getInstance().getReference("classes")
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val now = Date()
 
-        dbClasses.get().addOnSuccessListener { classesSnapshot ->
-            val studentIds = mutableListOf<String>()
-
-            // Collect all student IDs from all classes
-            for (classSnap in classesSnapshot.children) {
-                val studentsSnap = classSnap.child("students")
-                for (studentSnap in studentsSnap.children) {
-                    studentSnap.key?.let { studentIds.add(it) }
-                }
-            }
-
-            totalStudents = studentIds.size
-            if (totalStudents == 0) {
-                // No students, update UI immediately
+        teacherClassesRef.get().addOnSuccessListener { classesSnapshot ->
+            if (!classesSnapshot.exists() || classesSnapshot.childrenCount == 0L) {
                 updateBarGraph(0, 0, 0)
                 return@addOnSuccessListener
             }
 
-            var processed = 0
-            for (studentId in studentIds) {
-                dbUsers.child(studentId).child("activityStreak").get()
-                    .addOnSuccessListener { activitySnap ->
-                        val lastActiveDateStr = activitySnap.child("lastActiveDate").getValue(String::class.java)
-                        if (lastActiveDateStr != null) {
-                            try {
-                                val lastActive = sdf.parse(lastActiveDateStr)
-                                val diffDays = ((now.time - lastActive.time) / (1000 * 60 * 60 * 24))
-                                if (diffDays <= 3) activeCount++ else inactiveCount++
-                            } catch (e: Exception) {
-                                inactiveCount++
-                            }
-                        } else {
-                            inactiveCount++
-                        }
+            val studentIds = mutableListOf<String>()
 
-                        processed++
-                        if (processed == totalStudents) {
-                            // All students processed, update UI
-                            updateBarGraph(activeCount, inactiveCount, totalStudents)
+            // Fetch students only from this teacher's classes
+            val classCodes = classesSnapshot.children.mapNotNull { it.key }
+            var processedClasses = 0
+
+            for (classCode in classCodes) {
+                dbClasses.child(classCode).child("students").get()
+                    .addOnSuccessListener { studentsSnap ->
+                        for (studentSnap in studentsSnap.children) {
+                            studentSnap.key?.let { studentIds.add(it) }
+                        }
+                        processedClasses++
+                        if (processedClasses == classCodes.size) {
+                            // All classes processed, now calculate active/inactive
+                            calculateActivityCounts(studentIds, dbUsers, sdf, now)
                         }
                     }
                     .addOnFailureListener {
-                        inactiveCount++
-                        processed++
-                        if (processed == totalStudents) {
-                            updateBarGraph(activeCount, inactiveCount, totalStudents)
+                        processedClasses++
+                        if (processedClasses == classCodes.size) {
+                            calculateActivityCounts(studentIds, dbUsers, sdf, now)
                         }
                     }
             }
         }.addOnFailureListener {
-            // Failed to get classes
             updateBarGraph(0, 0, 0)
+        }
+    }
+
+    private fun calculateActivityCounts(
+        studentIds: List<String>,
+        dbUsers: DatabaseReference,
+        sdf: SimpleDateFormat,
+        now: Date
+    ) {
+        var totalStudents = studentIds.size
+        var activeCount = 0
+        var inactiveCount = 0
+
+        if (totalStudents == 0) {
+            updateBarGraph(0, 0, 0)
+            return
+        }
+
+        var processed = 0
+        for (studentId in studentIds) {
+            dbUsers.child(studentId).child("activityStreak").get()
+                .addOnSuccessListener { activitySnap ->
+                    val lastActiveDateStr = activitySnap.child("lastActiveDate").getValue(String::class.java)
+                    if (lastActiveDateStr != null) {
+                        try {
+                            val lastActive = sdf.parse(lastActiveDateStr)
+                            val diffDays = ((now.time - lastActive.time) / (1000 * 60 * 60 * 24))
+                            if (diffDays <= 3) activeCount++ else inactiveCount++
+                        } catch (e: Exception) {
+                            inactiveCount++
+                        }
+                    } else {
+                        inactiveCount++
+                    }
+                    processed++
+                    if (processed == totalStudents) {
+                        updateBarGraph(activeCount, inactiveCount, totalStudents)
+                    }
+                }
+                .addOnFailureListener {
+                    inactiveCount++
+                    processed++
+                    if (processed == totalStudents) {
+                        updateBarGraph(activeCount, inactiveCount, totalStudents)
+                    }
+                }
         }
     }
 

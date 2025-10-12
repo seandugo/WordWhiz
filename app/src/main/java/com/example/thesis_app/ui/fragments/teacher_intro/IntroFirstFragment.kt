@@ -7,6 +7,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import com.example.thesis_app.PreAssessmentActivity
 import com.example.thesis_app.R
+import com.example.thesis_app.TeacherIntroActivity
 
 class IntroFirstFragment : Fragment(R.layout.pre_test_first_page) {
     private lateinit var nextButton: Button
@@ -20,7 +21,7 @@ class IntroFirstFragment : Fragment(R.layout.pre_test_first_page) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    (activity as? PreAssessmentActivity)?.showExitConfirmation()
+                    (activity as? TeacherIntroActivity)?.showExitConfirmation()
                 }
             })
 
@@ -30,7 +31,7 @@ class IntroFirstFragment : Fragment(R.layout.pre_test_first_page) {
                 .replace(R.id.fragmentContainerView2, secondPageFragment)
                 .addToBackStack(null)
                 .commit()
-            (activity as? PreAssessmentActivity)?.nextStep()
+            (activity as? TeacherIntroActivity)?.nextStep()
         }
     }
 }

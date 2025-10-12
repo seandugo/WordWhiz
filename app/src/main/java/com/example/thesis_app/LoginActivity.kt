@@ -196,17 +196,16 @@ class LoginActivity : ComponentActivity() {
             return
         }
 
-        disableButtons()
-        Snackbar.make(findViewById(android.R.id.content), "Logging in…", Snackbar.LENGTH_SHORT).show()
-
         val email = teacherEmail.text.toString().trim()
         val password = teacherPassword.text.toString().trim()
 
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please enter teacher email and password", Toast.LENGTH_SHORT).show()
-            enableButtons()
             return
         }
+
+        disableButtons()
+        Snackbar.make(findViewById(android.R.id.content), "Logging in…", Snackbar.LENGTH_SHORT).show()
 
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
