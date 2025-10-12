@@ -101,29 +101,39 @@ class ClassCodePage : Fragment(R.layout.class_code) {
                             )
 
                             // Add student under class
-                            db.child("classes")
-                                .child(classCode)
-                                .child("students")
+                            // Add class reference under user
+                            db.child("users")
                                 .child(studentId)
-                                .setValue(newStudent)
+                                .child("classes")
+                                .child(classCode)
+                                .setValue(true)
                                 .addOnSuccessListener {
-                                    // Add class reference under user
-                                    db.child("users")
-                                        .child(studentId)
-                                        .child("classes")
+
+                                    // Fetch className from classes node
+                                    db.child("classes")
                                         .child(classCode)
-                                        .setValue(true)
+                                        .child("className")
+                                        .get()
+                                        .addOnSuccessListener { classSnap ->
+                                            val className = classSnap.getValue(String::class.java) ?: "No Class"
 
-                                    // Initialize student progress
-                                    initializeStudentProgress(studentId, classCode)
+                                            // Save to SharedPreferences
+                                            val prefs = requireContext().getSharedPreferences("USER_PREFS", 0).edit()
+                                            prefs.putString("studentClass", className)
+                                            prefs.apply()
 
-                                    Toast.makeText(requireContext(), "Joined class successfully", Toast.LENGTH_SHORT).show()
+                                            // Initialize student progress
+                                            initializeStudentProgress(studentId, classCode)
 
-                                    // Navigate to QuizTimePage
-                                    navigateToQuizTimePage()
-                                }
-                                .addOnFailureListener { e ->
-                                    Toast.makeText(requireContext(), "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(requireContext(), "Joined class successfully", Toast.LENGTH_SHORT).show()
+
+                                            // Navigate to QuizTimePage
+                                            navigateToQuizTimePage()
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Toast.makeText(requireContext(), "Failed to fetch class name: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            navigateToQuizTimePage()
+                                        }
                                 }
                         }
                     }.addOnFailureListener { e ->
