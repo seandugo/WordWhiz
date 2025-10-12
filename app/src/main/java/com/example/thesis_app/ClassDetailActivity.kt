@@ -1,6 +1,7 @@
 package com.example.thesis_app
 
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.widget.EditText
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.Achievement
 import com.example.thesis_app.models.StudentItem
+import android.text.TextWatcher
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
@@ -155,6 +157,20 @@ class ClassDetailActivity : AppCompatActivity() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_student, null)
         val idInput = dialogView.findViewById<EditText>(R.id.editStudentId)
 
+        idInput.setText("S-")
+        idInput.setSelection(idInput.text.length)
+
+        idInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (!s.toString().startsWith("S-")) {
+                    idInput.setText("S-")
+                    idInput.setSelection(idInput.text.length)
+                }
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         val dialog = AlertDialog.Builder(this)
             .setTitle("Add Student")
             .setView(dialogView)
@@ -165,17 +181,20 @@ class ClassDetailActivity : AppCompatActivity() {
         dialog.show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-            val id = idInput.text.toString().trim()
+            val fullInput = idInput.text.toString().trim()
+            val numericPart = fullInput.removePrefix("S-")
 
-            if (id.isEmpty()) {
+            if (numericPart.isEmpty()) {
                 Toast.makeText(this, "Please enter a student ID", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (!id.matches(Regex("^\\d+$"))) {
+            if (!numericPart.matches(Regex("^\\d+$"))) {
                 Toast.makeText(this, "Student ID must be numeric", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            val id = "S$numericPart"
 
             if (classCode == "Unknown Code") {
                 Toast.makeText(this, "Class code missing", Toast.LENGTH_SHORT).show()

@@ -1,44 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center">
+    android:fillViewport="true"
+    android:background="?android:attr/windowBackground">
 
-    <!-- Email -->
-    <TextView
-        android:id="@+id/textView6"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="By using this app, you agree to the following:&#xA;&#xA;Educational Use Only – This app is made for learning and improving reading comprehension.&#xA;&#xA;Supervised Use – Children under 13 should use the app with a parent, guardian, or teacher.&#xA;&#xA;No Misuse – Please don’t copy, modify, or share the app in ways not allowed by the developers.&#xA;&#xA;Data and Privacy – The app may collect basic learning progress (like quiz scores) for research and improvement. Personal information will not be shared.&#xA;&#xA;No Guarantee – Since this is part of an academic project, we cannot promise the app will always be perfect or error-free.&#xA;&#xA;Research Participation – By using the app, you agree that your anonymized results may be used for study purposes.&#xA;&#xA;If you continue, it means you accept these terms." />
+        android:padding="24dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Student ID"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"/>
+        <!-- Terms & Conditions Text -->
 
-    <!-- Sign Up Button -->
+        <!-- Student ID Input -->
 
-    <CheckBox
-        android:id="@+id/checkBox2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Accept Terms and Conditions" />
+        <!-- Accept Terms Checkbox -->
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:fontFamily="@font/pixel"
+            android:lineSpacingExtra="4dp"
+            android:text="By using this app, you agree to the following:&#xA;&#xA;Educational Use Only – This app is made for learning and improving reading comprehension.&#xA;&#xA;Supervised Use – Children under 13 should use the app with a parent, guardian, or teacher.&#xA;&#xA;No Misuse – Please don’t copy, modify, or share the app in ways not allowed by the developers.&#xA;&#xA;Data and Privacy – The app may collect basic learning progress (like quiz scores) for research and improvement. Personal information will not be shared.&#xA;&#xA;No Guarantee – Since this is part of an academic project, we cannot promise the app will always be perfect or error-free.&#xA;&#xA;Research Participation – By using the app, you agree that your anonymized results may be used for study purposes.&#xA;&#xA;If you continue, it means you accept these terms."
+            android:textAlignment="textStart"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="35dp" />
+        <CheckBox
+            android:id="@+id/checkBox2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Accept Terms and Conditions"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView6" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSignUp"
-        style="@style/Widget.Material3.Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/login_button_selector"
-        android:fontFamily="@font/pixel"
-        android:text="Sign Up"
-        android:textColor="#000" />
-</LinearLayout>
+        <!-- Sign Up Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSignUp"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/login_button_selector"
+            android:fontFamily="@font/pixel"
+            android:text="Sign Up"
+            android:textColor="#000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/checkBox2"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

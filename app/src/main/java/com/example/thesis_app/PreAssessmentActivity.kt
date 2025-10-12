@@ -2,6 +2,7 @@ package com.example.thesis_app
 
 import android.app.AlertDialog
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.firebase.database.FirebaseDatabase
@@ -22,6 +23,13 @@ class PreAssessmentActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.linearProgress)
         progressBar.max = 100
         updateProgress()
+
+        // ✅ Add back press handling
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                showExitConfirmation()
+            }
+        })
     }
 
     fun nextStep() {
@@ -31,13 +39,6 @@ class PreAssessmentActivity : AppCompatActivity() {
         } else {
             // ✅ If last step, mark as completed in Firebase
             markPretestCompleted()
-        }
-    }
-
-    fun previousStep() {
-        if (currentStep > 1) {
-            currentStep--
-            updateProgress()
         }
     }
 

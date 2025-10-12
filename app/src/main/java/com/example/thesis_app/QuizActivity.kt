@@ -44,6 +44,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private var selectedAnswerIndex = -1
     private var score = 0 // Current attempt score
     private var showingExplanation = false
+    private var isProcessingClick = false // Flag to prevent multiple clicks
 
     private var originalTotalQuestions: Int = 0
     private var answeredCount: Int = 0
@@ -125,6 +126,12 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
     @SuppressLint("SetTextI18n")
     private fun loadQuestions() {
+        // Guard against invalid index
+        if (currentQuestionIndex >= questionModelList.size) {
+            checkAndFinishQuiz()
+            return
+        }
+
         selectedAnswer = ""
         selectedAnswerIndex = -1
 
@@ -133,12 +140,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn2.setBackgroundColor(getColor(R.color.gray))
         btn3.setBackgroundColor(getColor(R.color.gray))
 
-        if (currentQuestionIndex >= questionModelList.size) {
-            checkAndFinishQuiz()
-            return
-        }
-
-        // ✅ Change text based on retry mode
         if (retries > 0) {
             questionIndicatorTextview.text = "Let's Try Again!"
         } else {
@@ -157,12 +158,16 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onClick(view: View?) {
+        if (isProcessingClick) return // Ignore clicks while processing
+
         val clickedBtn = view as Button
 
         if (clickedBtn.id == R.id.next_btn) {
+            isProcessingClick = true // Set flag to block further clicks
             if (!showingExplanation) {
                 if (selectedAnswerIndex == -1) {
                     Toast.makeText(this, "Please select an answer to continue", Toast.LENGTH_SHORT).show()
+                    isProcessingClick = false // Allow retry if no answer selected
                     return
                 }
 
@@ -218,7 +223,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
                 showingExplanation = true
                 nextBtn.text = "Continue"
-
+                isProcessingClick = false // Allow next click after showing explanation
             } else {
                 explanationText.visibility = View.GONE
                 showingExplanation = false
@@ -248,6 +253,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                     btn2.isEnabled = true
                     btn3.isEnabled = true
                     nextBtn.isEnabled = true
+                    isProcessingClick = false // Allow clicks after transition
                 }, 800)
             }
         } else {
@@ -337,6 +343,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             .setTitle("Try Again")
             .setMessage("You got ${originalTotalQuestions - correctAnswers} question(s) wrong. Please retry the incorrect questions.")
             .setPositiveButton("Retry") { _, _ ->
+                if (isProcessingClick) return@setPositiveButton // Prevent multiple retry clicks
+                isProcessingClick = true
                 // Reset for retry
                 answeredCount = 0
                 score = 0
@@ -344,10 +352,11 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 // Start with first unanswered question
                 currentQuestionIndex = 0
                 while (currentQuestionIndex < questionModelList.size && correctlyAnswered.contains(currentQuestionIndex)) {
-                    currentQuestionIndex++
+                    currentQuestionIndex++ // Skip already correct questions
                 }
                 progressData["answeredCount"] = answeredCount
                 loadQuestions()
+                isProcessingClick = false
             }
             .setCancelable(false)
             .show()
@@ -387,28 +396,53 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             .create()
 
         finishBtn.setOnClickListener {
+            if (isProcessingClick) return@setOnClickListener // Prevent multiple finish clicks
+            isProcessingClick = true
             dialog.dismiss()
             val intent = Intent(this, StudentActivity::class.java)
             startActivity(intent)
             finish()
+            isProcessingClick = false
         }
 
         dialog.show()
     }
 
     private fun showExitConfirmation() {
-        AlertDialog.Builder(this)
-            .setTitle("Exit")
-            .setMessage(
-                if (isPartCompleted) "Are you sure you want to exit review?"
-                else "Are you sure you want to exit? Progress might not be saved."
-            )
-            .setPositiveButton("Yes") { _, _ ->
-                val intent = Intent(this, StudentActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
-            .setNegativeButton("No", null)
-            .show()
+        if (quizId == "pre-test" || quizId == "835247") {
+            // Special exit confirmation for pre-test or quiz ID 835247
+            AlertDialog.Builder(this)
+                .setTitle("Exit Quiz")
+                .setMessage("Are you sure you want to exit? Your progress will not be saved for this quiz.")
+                .setPositiveButton("Yes") { _, _ ->
+                    if (isProcessingClick) return@setPositiveButton // Prevent multiple exit clicks
+                    isProcessingClick = true
+                    finish()
+                    isProcessingClick = false
+                }
+                .setNegativeButton("No", null)
+                .setCancelable(false) // Prevent dismissing dialog by tapping outside
+                .show()
+        } else {
+            // Default exit confirmation for other quizzes
+            AlertDialog.Builder(this)
+                .setTitle("Exit")
+                .setMessage(
+                    if (isPartCompleted) "Are you sure you want to exit review?"
+                    else "Are you sure you want to exit? Progress might not be saved."
+                )
+                .setPositiveButton("Yes") { _, _ ->
+                    if (isProcessingClick) return@setPositiveButton // Prevent multiple exit clicks
+                    isProcessingClick = true
+                    updateProgress(studentId, quizId, partId)
+                    val intent = Intent(this, StudentActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    isProcessingClick = false
+                }
+                .setNegativeButton("No", null)
+                .setCancelable(false) // Prevent dismissing dialog by tapping outside
+                .show()
+        }
     }
 }

@@ -26,8 +26,6 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    (activity as? PreAssessmentActivity)?.previousStep()
-                    parentFragmentManager.popBackStack()
                 }
             })
 
@@ -97,6 +95,7 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                             intent.putExtra("CLASS_CODE", classCode) // ✅ Add class code
 
                             startActivity(intent)
+                            requireActivity().finish()
                         }
                         .addOnFailureListener {
                             Log.e("QuizTimePage", "Failed to fetch pre-test quiz: ${it.message}")

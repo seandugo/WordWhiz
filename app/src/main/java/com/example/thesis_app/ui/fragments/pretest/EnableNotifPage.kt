@@ -24,8 +24,6 @@ class EnableNotifPage : Fragment(R.layout.notif) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    (activity as? PreAssessmentActivity)?.previousStep()
-                    parentFragmentManager.popBackStack()
                 }
             })
 

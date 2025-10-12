@@ -20,7 +20,6 @@ class PreAssessmentFragment : Fragment(R.layout.pre_test_first_page) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    (activity as? PreAssessmentActivity)?.showExitConfirmation()
                 }
             })
 

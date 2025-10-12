@@ -225,6 +225,7 @@ class LoginActivity : ComponentActivity() {
         val intent = Intent(this, LoadingActivity::class.java)
         intent.putExtra("mode", "signup")
         startActivity(intent)
+        finish()
     }
 
     private fun fetchUserData(email: String) {

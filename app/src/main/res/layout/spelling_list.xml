@@ -43,7 +43,7 @@
                     android:text="Spelling Progress"
                     android:textColor="@android:color/white"
                     android:fontFamily="@font/pixel"
-                    android:textSize="37dp"
+                    android:textSize="28dp"
                     android:textStyle="bold"
                     android:layout_marginBottom="4dp" />
 

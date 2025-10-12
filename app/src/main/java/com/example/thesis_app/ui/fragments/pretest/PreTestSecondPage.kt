@@ -20,8 +20,6 @@ class PreTestSecondPage : Fragment(R.layout.pre_test_second_page) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    (activity as? PreAssessmentActivity)?.previousStep()
-                    parentFragmentManager.popBackStack()
                 }
             })
 
