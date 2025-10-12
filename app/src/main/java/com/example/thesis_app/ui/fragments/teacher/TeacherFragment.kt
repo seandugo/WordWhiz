@@ -1,320 +1,159 @@
 package com.example.thesis_app.ui.fragments.teacher
 
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.text.InputFilter
-import android.text.InputType
+import android.util.Log
 import android.view.View
-import android.widget.*
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
-import androidx.cardview.widget.CardView
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.thesis_app.ClassAdapter
-import com.example.thesis_app.ClassDetailActivity
+import com.example.thesis_app.ClassStats
+import com.example.thesis_app.ClassStatsAdapter
 import com.example.thesis_app.R
-import com.example.thesis_app.SignupActivity
-import com.example.thesis_app.models.ClassItem
-import com.google.firebase.auth.FirebaseAuth
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.database.*
+import java.text.SimpleDateFormat
+import java.util.*
 
-class TeacherFragment : Fragment(R.layout.teachers) {
+class TeacherFragment : Fragment(R.layout.teacher_overview) {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: ClassAdapter
-    private val classList = mutableListOf<ClassItem>()
-    private lateinit var itemTouchHelper: ItemTouchHelper
-    private val auth = FirebaseAuth.getInstance()
-    private val database = FirebaseDatabase.getInstance()
-    private val handler = Handler(Looper.getMainLooper())
-    private var isOrderChanged = false
-    private var pendingUpdateRunnable: Runnable? = null
+    private lateinit var recycler: RecyclerView
+    private lateinit var database: DatabaseReference
+    private lateinit var nameTextExpanded: TextView
+    private lateinit var subtitleQuiz: TextView
+    private lateinit var emptyImage: ImageView // add this
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView = view.findViewById(R.id.classRecyclerView)
+        // 🔧 Setup collapsing toolbar
+        val appBar = view.findViewById<AppBarLayout>(R.id.appBarLayout)
+        val collapsingToolbar = view.findViewById<CollapsingToolbarLayout>(R.id.collapsingToolbar)
+        val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar)
+        nameTextExpanded = view.findViewById(R.id.nameTextExpanded)
+        subtitleQuiz = view.findViewById(R.id.subtitleQuiz)
+        recycler = view.findViewById(R.id.resultRecycler)
+        emptyImage = view.findViewById(R.id.emptyImage) // reference it
 
-        adapter = ClassAdapter(
-            classList,
-            onStartDrag = { vh -> itemTouchHelper.startDrag(vh) },
-            onItemClick = { classItem ->
-                // ✅ Send all info when opening ClassDetailActivity
-                val intent = Intent(requireContext(), ClassDetailActivity::class.java).apply {
-                    putExtra("CLASS_NAME", classItem.className)
-                    putExtra("ROOM_NO", classItem.roomNo)
-                    putExtra("CLASS_CODE", classItem.classCode)
-                }
-                startActivity(intent)
-            },
-            onEditClick = { showEditDialog(it) },
-            onDeleteClick = { showDeleteDialog(it) }
-        )
+        setupAppBarToolbar(appBar, collapsingToolbar, toolbar)
 
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.itemAnimator = DefaultItemAnimator()
+        recycler.layoutManager = LinearLayoutManager(requireContext())
+        database = FirebaseDatabase.getInstance().getReference("classes")
 
-        setupDragAndDrop()
-        setupAddClassCard(view)
-        setupTeacherRef()
-
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    (activity as? SignupActivity)?.showExitConfirmation()
-                }
-            }
-        )
+        loadClassStatistics()
     }
 
-    private fun setupTeacherRef() {
-        val teacherId = auth.currentUser!!.uid
-        val teacherClassesRef = database.getReference("users").child(teacherId).child("classes")
+    private fun setupAppBarToolbar(
+        appBar: AppBarLayout,
+        collapsing: CollapsingToolbarLayout,
+        toolbar: MaterialToolbar
+    ) {
+        collapsing.isTitleEnabled = true
+        collapsing.title = "" // start empty
+        toolbar.setNavigationOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
 
-        teacherClassesRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                classList.clear()
-                for (classSnap in snapshot.children) {
-                    val classItem = classSnap.getValue(ClassItem::class.java)
-                    if (classItem != null) {
-                        classList.add(classItem.copy(classCode = classSnap.key ?: ""))
-                    }
-                }
-                classList.sortByDescending { it.order }
-                adapter.notifyDataSetChanged()
+        appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+            val totalScroll = appBarLayout.totalScrollRange
+            if (totalScroll + verticalOffset == 0) {
+                // Fully collapsed
+                collapsing.title = "Welcome Teacher"
+                toolbar.subtitle = "Students results are in!"
+            } else {
+                // Expanded
+                collapsing.title = ""
+                toolbar.subtitle = ""
             }
-            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
-    private fun generateCode(): String {
-        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        return (1..6).map { chars.random() }.joinToString("")
-    }
+    private fun loadClassStatistics() {
+        database.get().addOnSuccessListener { classesSnapshot ->
+            val classStatsList = mutableListOf<ClassStats>()
+            val currentDate = Calendar.getInstance().time
+            val totalClasses = classesSnapshot.childrenCount.toInt()
 
-    private fun generateUniqueCode(onCodeGenerated: (String) -> Unit) {
-        val newCode = generateCode()
-        val classesRef = database.getReference("classes")
-        classesRef.child(newCode).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) generateUniqueCode(onCodeGenerated)
-                else onCodeGenerated(newCode)
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
-    }
-
-    private fun setupDragAndDrop() {
-        val callback = object : ItemTouchHelper.SimpleCallback(
-            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
-        ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
-                val fromPos = viewHolder.adapterPosition
-                val toPos = target.adapterPosition
-                adapter.swapItems(fromPos, toPos)
-                isOrderChanged = true
-                scheduleFirebaseUpdate()
-                return true
+            if (totalClasses == 0) {
+                recycler.visibility = View.GONE
+                emptyImage.visibility = View.VISIBLE
+                return@addOnSuccessListener
+            } else {
+                recycler.visibility = View.VISIBLE
+                emptyImage.visibility = View.GONE
             }
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
-            override fun isLongPressDragEnabled(): Boolean = false
-        }
-        itemTouchHelper = ItemTouchHelper(callback)
-        itemTouchHelper.attachToRecyclerView(recyclerView)
-    }
+            var processedClasses = 0
 
-    private fun scheduleFirebaseUpdate() {
-        pendingUpdateRunnable?.let { handler.removeCallbacks(it) }
-        pendingUpdateRunnable = Runnable {
-            if (isOrderChanged) {
-                updateOrderInFirebase()
-                isOrderChanged = false
-            }
-        }
-        handler.postDelayed(pendingUpdateRunnable!!, 500)
-    }
+            for (classSnapshot in classesSnapshot.children) {
+                val className = classSnapshot.child("className").getValue(String::class.java) ?: "Unnamed Class"
+                val studentsSnapshot = classSnapshot.child("students")
+                val studentIds = studentsSnapshot.children.mapNotNull { it.key }
 
-    private fun updateOrderInFirebase() {
-        val classesRef = database.getReference("classes")
-        classList.forEachIndexed { index, classItem ->
-            if (classItem.classCode.isNotEmpty()) {
-                classesRef.child(classItem.classCode).child("order")
-                    .setValue(classList.size - 1 - index)
-            }
-        }
-    }
-
-    private fun setupAddClassCard(rootView: View) {
-        val addCard = rootView.findViewById<CardView>(R.id.addClassCard)
-        addCard.setOnClickListener {
-            val context = requireContext()
-            val dialogLayout = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(40, 30, 40, 10)
-            }
-
-            val classNameInput = EditText(context).apply {
-                hint = "Class Name"
-                inputType = InputType.TYPE_CLASS_TEXT
-                filters = arrayOf(InputFilter.LengthFilter(20))
-            }
-
-            val roomInput = EditText(context).apply {
-                hint = "Room No. (Optional)"
-                inputType = InputType.TYPE_CLASS_TEXT
-                filters = arrayOf(InputFilter.LengthFilter(20))
-            }
-
-            dialogLayout.addView(TextView(context).apply { text = "Class Name:" })
-            dialogLayout.addView(classNameInput)
-            dialogLayout.addView(TextView(context).apply { text = "Room No. (Optional):" })
-            dialogLayout.addView(roomInput)
-
-            val dialog = AlertDialog.Builder(context)
-                .setTitle("Add Class")
-                .setView(dialogLayout)
-                .setPositiveButton("Create", null)
-                .setNegativeButton("Cancel", null)
-                .create()
-
-            dialog.show()
-
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val className = classNameInput.text.toString().trim().uppercase()
-                val roomNo = roomInput.text.toString().trim()
-
-                if (className.isEmpty()) {
-                    classNameInput.error = "Class Name is required"
-                    classNameInput.requestFocus()
-                    return@setOnClickListener
-                }
-
-                val teacherClassesRef = database.getReference("users")
-                    .child(auth.currentUser!!.uid)
-                    .child("classes")
-
-                teacherClassesRef.orderByChild("className").equalTo(className)
-                    .addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            if (snapshot.exists()) {
-                                classNameInput.error = "This class already exists"
-                                classNameInput.requestFocus()
-                            } else {
-                                generateUniqueCode { classCode ->
-                                    val newOrder = (classList.maxOfOrNull { it.order } ?: -1) + 1
-                                    val newClass = ClassItem(className, roomNo, newOrder, classCode)
-
-                                    // ✅ Save to both user + classes
-                                    teacherClassesRef.child(classCode).setValue(newClass)
-                                    database.getReference("classes").child(classCode)
-                                        .setValue(
-                                            mapOf(
-                                                "className" to className,
-                                                "roomNo" to roomNo,
-                                                "order" to newOrder
-                                            )
-                                        )
-
-                                    adapter.addItemAtTop(newClass)
-                                    recyclerView.scrollToPosition(0)
-                                    dialog.dismiss()
-                                }
-                            }
-                        }
-                        override fun onCancelled(error: DatabaseError) {}
-                    })
-            }
-        }
-    }
-
-    private fun showEditDialog(classItem: ClassItem) {
-        val context = requireContext()
-        val dialogLayout = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(40, 30, 40, 10)
-        }
-
-        val classNameInput = EditText(context).apply {
-            setText(classItem.className)
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
-
-        val roomInput = EditText(context).apply {
-            setText(classItem.roomNo)
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
-
-        dialogLayout.addView(TextView(context).apply { text = "Class Name:" })
-        dialogLayout.addView(classNameInput)
-        dialogLayout.addView(TextView(context).apply { text = "Room No.:" })
-        dialogLayout.addView(roomInput)
-
-        AlertDialog.Builder(context)
-            .setTitle("Edit Class")
-            .setView(dialogLayout)
-            .setPositiveButton("Save", null)
-            .setNegativeButton("Cancel", null)
-            .create().also { dialog ->
-                dialog.show()
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    val className = classNameInput.text.toString().trim().uppercase()
-                    val roomNo = roomInput.text.toString().trim()
-
-                    if (className.isEmpty()) {
-                        classNameInput.error = "Class Name is required"
-                        return@setOnClickListener
-                    }
-
-                    classItem.className = className
-                    classItem.roomNo = roomNo
-
-                    database.getReference("users")
-                        .child(auth.currentUser!!.uid)
-                        .child("classes")
-                        .child(classItem.classCode)
-                        .setValue(classItem)
-
-                    database.getReference("classes")
-                        .child(classItem.classCode)
-                        .updateChildren(
-                            mapOf(
-                                "className" to className,
-                                "roomNo" to roomNo
-                            )
+                getClassStatsForStudents(studentIds, currentDate) { activeCount, inactiveCount ->
+                    classStatsList.add(
+                        ClassStats(
+                            className = className,
+                            activeCount = activeCount,
+                            inactiveCount = inactiveCount,
+                            totalStudents = activeCount + inactiveCount
                         )
-
-                    adapter.notifyDataSetChanged()
-                    Toast.makeText(requireContext(), "Class updated", Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
+                    )
+                    processedClasses++
+                    recycler.adapter = ClassStatsAdapter(classStatsList)
                 }
             }
+        }.addOnFailureListener {
+            recycler.visibility = View.GONE
+            emptyImage.visibility = View.VISIBLE
+        }
     }
 
-    private fun showDeleteDialog(classItem: ClassItem) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Delete Class")
-            .setMessage("Are you sure you want to delete ${classItem.className}?")
-            .setPositiveButton("Delete"){_,_ ->
-                database.getReference("users").child(auth.currentUser!!.uid)
-                    .child("classes").child(classItem.classCode).removeValue()
-                database.getReference("classes").child(classItem.classCode).removeValue()
-                adapter.removeItem(classItem)
-                Toast.makeText(requireContext(), "Class deleted", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+    private fun getClassStatsForStudents(
+        studentIds: List<String>,
+        currentDate: Date,
+        callback: (activeCount: Int, inactiveCount: Int) -> Unit
+    ) {
+        if (studentIds.isEmpty()) {
+            callback(0, 0)
+            return
+        }
+
+        var activeCount = 0
+        var inactiveCount = 0
+        var processedStudents = 0
+
+        val usersRef = FirebaseDatabase.getInstance().getReference("users")
+
+        for (studentId in studentIds) {
+            usersRef.child(studentId).child("activityStreak").get()
+                .addOnSuccessListener { activitySnapshot ->
+                    val lastActiveDateStr = activitySnapshot.child("lastActiveDate").getValue(String::class.java)
+                    if (lastActiveDateStr != null) {
+                        try {
+                            val lastActiveDate = dateFormat.parse(lastActiveDateStr)
+                            val diff = (currentDate.time - (lastActiveDate?.time ?: 0)) / (1000 * 60 * 60 * 24)
+                            if (diff <= 3) activeCount++ else inactiveCount++
+                        } catch (e: Exception) {
+                            Log.e("TeacherFragment", "Date parse error for $studentId: $e")
+                            inactiveCount++
+                        }
+                    } else {
+                        inactiveCount++
+                    }
+                    processedStudents++
+                    if (processedStudents == studentIds.size) callback(activeCount, inactiveCount)
+                }
+                .addOnFailureListener {
+                    Log.e("TeacherFragment", "Error fetching student $studentId activity: $it")
+                    inactiveCount++
+                    processedStudents++
+                    if (processedStudents == studentIds.size) callback(activeCount, inactiveCount)
+                }
+        }
     }
 }

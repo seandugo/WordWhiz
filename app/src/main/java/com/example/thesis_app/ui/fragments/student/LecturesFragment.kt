@@ -33,6 +33,7 @@ class LecturesFragment : Fragment() {
     private lateinit var reviewLectures: ImageView
     private lateinit var progressRef: DatabaseReference
     private lateinit var studentId: String
+    private var classCode: String = ""
 
     private val quizzesListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
@@ -77,6 +78,23 @@ class LecturesFragment : Fragment() {
 
         quizzesRef = FirebaseDatabase.getInstance().reference.child("quizzes")
         progressRef = FirebaseDatabase.getInstance().reference.child("users").child(studentId).child("progress")
+        val classCodeRef = FirebaseDatabase.getInstance().reference
+            .child("users").child(studentId).child("classes")
+
+        classCodeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Assuming student belongs to only one class, get first key
+                classCode = snapshot.children.firstOrNull()?.key ?: ""
+
+                // Initialize adapter **after** fetching classCode
+                setupRecyclerView()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("LecturesFragment", "Failed to get classCode: ${error.message}")
+                setupRecyclerView() // fallback without classCode
+            }
+        })
 
         setupRecyclerView()
 
@@ -104,7 +122,7 @@ class LecturesFragment : Fragment() {
     private fun setupRecyclerView() {
         if (!isAdded) return
 
-        adapter = QuizListAdapter(displayList, studentId, requireActivity())
+        adapter = QuizListAdapter(displayList, studentId, requireActivity(), classCode)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
 

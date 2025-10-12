@@ -117,23 +117,6 @@
                         android:layout_weight="0.5"/>
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/reviewButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Review Answers"
-                    android:textColor="@android:color/black"
-                    android:fontFamily="@font/pixel"/>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/retakeButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Retake Lecture"
-                    android:textColor="@android:color/black"
-                    android:backgroundTint="@android:color/darker_gray"
-                    android:fontFamily="@font/pixel"/>
-
             </LinearLayout>
 
         </LinearLayout>

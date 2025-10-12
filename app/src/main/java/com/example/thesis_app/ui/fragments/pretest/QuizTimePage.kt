@@ -11,7 +11,6 @@ import com.example.thesis_app.PreAssessmentActivity
 import com.example.thesis_app.QuizActivity
 import com.example.thesis_app.R
 import com.example.thesis_app.models.QuestionModel
-import com.example.thesis_app.models.QuizModel
 import com.example.thesis_app.models.QuizPartItem
 import com.google.firebase.database.FirebaseDatabase
 
@@ -36,46 +35,76 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
             val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
             val studentId = sharedPrefs.getString("studentId", "") ?: ""
 
-            val dbRef = FirebaseDatabase.getInstance().reference
-                .child("quizzes")
-                .child("835247")
+            if (studentId.isEmpty()) {
+                Log.e("QuizTimePage", "Student ID missing in SharedPreferences")
+                return@setOnClickListener
+            }
 
-            dbRef.get().addOnSuccessListener { quizSnapshot ->
-                if (quizSnapshot.exists()) {
-                    val title = quizSnapshot.child("title").getValue(String::class.java) ?: ""
-                    val subtitle = quizSnapshot.child("subtitle").getValue(String::class.java) ?: ""
+            val db = FirebaseDatabase.getInstance().reference
 
-                    val partSnapshot = quizSnapshot.child("part1").child("questionList")
-                    val questions = mutableListOf<QuestionModel>()
-
-                    for (qSnap in partSnapshot.children) {
-                        val question = qSnap.getValue(QuestionModel::class.java)
-                        if (question != null) {
-                            questions.add(question)
-                        }
+            // 🔹 Fetch student's classCode from users/{studentId}/classes
+            db.child("users").child(studentId).child("classes")
+                .get()
+                .addOnSuccessListener { classSnapshot ->
+                    if (!classSnapshot.exists()) {
+                        Log.e("QuizTimePage", "No class found for this student!")
+                        return@addOnSuccessListener
                     }
 
-                    // Build QuizPartItem
-                    val partItem = QuizPartItem(
-                        quizId = quizSnapshot.key ?: "quiz1",
-                        quizTitle = title,
-                        quizSubtitle = subtitle,
-                        partId = "part1",
-                        questions = questions,
-                        order = 2
-                    )
+                    // Get the first classCode (assuming student joins one class)
+                    val classCode = classSnapshot.children.firstOrNull()?.key ?: ""
 
-                    // Send to QuizActivity
-                    val intent = Intent(requireContext(), QuizActivity::class.java)
-                    QuizActivity.questionModelList = partItem.questions
-                    intent.putExtra("QUIZ_ID", partItem.quizId)      // "quiz1"
-                    intent.putExtra("PART_ID", "part1")           // correct part name
-                    intent.putExtra("studentId", studentId)
-                    startActivity(intent)
+                    if (classCode.isEmpty()) {
+                        Log.e("QuizTimePage", "Class code is empty!")
+                        return@addOnSuccessListener
+                    }
+
+                    // 🔹 Fetch pre-test quiz (835247)
+                    db.child("quizzes").child("835247").get()
+                        .addOnSuccessListener { quizSnapshot ->
+                            if (!quizSnapshot.exists()) {
+                                Log.e("QuizTimePage", "Pre-test quiz not found!")
+                                return@addOnSuccessListener
+                            }
+
+                            val title = quizSnapshot.child("title").getValue(String::class.java) ?: ""
+                            val subtitle = quizSnapshot.child("subtitle").getValue(String::class.java) ?: ""
+                            val partSnapshot = quizSnapshot.child("part1").child("questionList")
+
+                            val questions = mutableListOf<QuestionModel>()
+                            for (qSnap in partSnapshot.children) {
+                                val question = qSnap.getValue(QuestionModel::class.java)
+                                if (question != null) {
+                                    questions.add(question)
+                                }
+                            }
+
+                            val partItem = QuizPartItem(
+                                quizId = quizSnapshot.key ?: "quiz1",
+                                quizTitle = title,
+                                quizSubtitle = subtitle,
+                                partId = "part1",
+                                questions = questions,
+                                order = 2
+                            )
+
+                            // 🔹 Launch QuizActivity with classCode
+                            val intent = Intent(requireContext(), QuizActivity::class.java)
+                            QuizActivity.questionModelList = partItem.questions
+                            intent.putExtra("QUIZ_ID", partItem.quizId)
+                            intent.putExtra("PART_ID", "part1")
+                            intent.putExtra("STUDENT_ID", studentId)
+                            intent.putExtra("CLASS_CODE", classCode) // ✅ Add class code
+
+                            startActivity(intent)
+                        }
+                        .addOnFailureListener {
+                            Log.e("QuizTimePage", "Failed to fetch pre-test quiz: ${it.message}")
+                        }
                 }
-            }.addOnFailureListener {
-                Log.e("QuizTimePage", "Failed to fetch pre-test quiz: ${it.message}")
-            }
+                .addOnFailureListener {
+                    Log.e("QuizTimePage", "Failed to fetch class code: ${it.message}")
+                }
         }
     }
 }

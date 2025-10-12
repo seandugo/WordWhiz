@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -15,6 +14,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.thesis_app.models.QuestionModel
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -33,29 +35,33 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var questionTextview: TextView
     private lateinit var quizId: String
     private lateinit var studentId: String
+    private lateinit var explanationText: TextView
+    private lateinit var classCode: String
+    private lateinit var partId: String
 
     private var currentQuestionIndex = 0
     private var selectedAnswer = ""
     private var selectedAnswerIndex = -1
-    private var score = 0
-    private var wrongQuestions: MutableList<QuestionModel> = mutableListOf()
-    private lateinit var explanationText: TextView
+    private var score = 0 // Current attempt score
     private var showingExplanation = false
 
-    // ✅ Always keep the original total count
     private var originalTotalQuestions: Int = 0
-    private var answeredCount: Int = 0  // ✅ Track across retries
-    private lateinit var partId: String
-    private var correctAnswers = 0
-    private var wrongAnswers = 0
-    private var retries = 0
-    private var isRetrying = false
+    private var answeredCount: Int = 0
+    private var correctAnswers = 0 // Persistent count of unique correct answers
+    private var firstTryCorrect = 0 // Count of questions correct on first attempt
+    private var totalWrongAnswers = 0 // Accumulated wrong answers across all attempts
+    private var retries = 0 // Number of retry attempts
+    private val correctlyAnswered = mutableSetOf<Int>() // Tracks indices of correctly answered questions
+    private val incorrectQuestions = mutableListOf<Int>() // Tracks indices for retry in current attempt
+    private var isPartCompleted = false // Tracks if the part is already completed in Firebase
+
+    // Local storage for progress
+    private val progressData = mutableMapOf<String, Any>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.quiz)
 
-        // Initialize views
         btn0 = findViewById(R.id.btn0)
         btn1 = findViewById(R.id.btn1)
         btn2 = findViewById(R.id.btn2)
@@ -65,15 +71,42 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         questionProgressIndicator = findViewById(R.id.question_progress_indicator)
         questionTextview = findViewById(R.id.question_textview)
         explanationText = findViewById(R.id.explanation_text)
+
         quizId = intent.getStringExtra("QUIZ_ID") ?: ""
-        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-        studentId = prefs.getString("studentId", "") ?: ""
         partId = intent.getStringExtra("PART_ID") ?: ""
+        classCode = intent.getStringExtra("CLASS_CODE") ?: ""
+        studentId = intent.getStringExtra("STUDENT_ID") ?: getSharedPreferences("USER_PREFS", MODE_PRIVATE).getString("studentId", "") ?: ""
 
-        // Save the original total (before retries)
         originalTotalQuestions = questionModelList.size
+        if (originalTotalQuestions == 0) {
+            Toast.makeText(this, "No questions available!", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
 
-        // Set click listeners
+        // Check if the part is already completed
+        val db = FirebaseDatabase.getInstance().reference
+        db.child("users").child(studentId).child("progress").child(quizId).child(partId).child("isCompleted")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    isPartCompleted = snapshot.getValue(Boolean::class.java) ?: false
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@QuizActivity, "Error checking quiz status: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+        // Initialize local progress data
+        progressData["answeredCount"] = answeredCount
+        progressData["totalQuestions"] = originalTotalQuestions
+        progressData["isCompleted"] = false
+        progressData["correctAnswers"] = correctAnswers
+        progressData["firstTryCorrect"] = firstTryCorrect
+        progressData["wrongAnswers"] = totalWrongAnswers
+        progressData["retries"] = retries
+        progressData["lastUpdated"] = System.currentTimeMillis()
+
         btn0.setOnClickListener(this)
         btn1.setOnClickListener(this)
         btn2.setOnClickListener(this)
@@ -90,77 +123,28 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             })
     }
 
-    private fun updateProgress(
-        studentId: String,
-        quizId: String,
-        partId: String,
-        answeredCount: Int
-    ) {
-        val db = FirebaseDatabase.getInstance().reference
-
-        // Determine completion
-        val isCompleted = answeredCount >= originalTotalQuestions
-
-        val progressData = mapOf(
-            "answeredCount" to answeredCount,
-            "totalQuestions" to originalTotalQuestions,
-            "isCompleted" to isCompleted,
-            "correctAnswers" to correctAnswers,
-            "wrongAnswers" to wrongAnswers,
-            "retries" to retries,
-            "lastUpdated" to System.currentTimeMillis()
-        )
-
-        db.child("users")
-            .child(studentId)
-            .child("progress")
-            .child(quizId)
-            .child(partId)
-            .updateChildren(progressData) // 🔹 use updateChildren instead of setValue
-            .addOnSuccessListener {
-                Log.d(
-                    "QuizActivity",
-                    "Progress updated: $answeredCount/$originalTotalQuestions, isCompleted=$isCompleted, correct=$correctAnswers, wrong=$wrongAnswers, retries=$retries"
-                )
-            }
-            .addOnFailureListener { e ->
-                Log.w("QuizActivity", "Error updating progress", e)
-            }
-    }
-
     @SuppressLint("SetTextI18n")
     private fun loadQuestions() {
         selectedAnswer = ""
         selectedAnswerIndex = -1
 
-        // reset button colors
         btn0.setBackgroundColor(getColor(R.color.gray))
         btn1.setBackgroundColor(getColor(R.color.gray))
         btn2.setBackgroundColor(getColor(R.color.gray))
         btn3.setBackgroundColor(getColor(R.color.gray))
 
-        if (currentQuestionIndex == questionModelList.size) {
-            val isPreTest = quizId == "quiz1" || quizId == "835247"
-
-            if (!isPreTest && wrongQuestions.isNotEmpty()) {
-                // 🔄 Retry only for non-pretests
-                questionModelList = wrongQuestions.toList()
-                wrongQuestions.clear()
-                currentQuestionIndex = 0
-                retries++
-                isRetrying = true
-                Toast.makeText(this, "Retry the incorrect questions!", Toast.LENGTH_LONG).show()
-                loadQuestions()
-                return
-            } else {
-                // ✅ No retry for pre-tests or when no wrong questions left
-                finishQuiz()
-                return
-            }
+        if (currentQuestionIndex >= questionModelList.size) {
+            checkAndFinishQuiz()
+            return
         }
 
-        questionIndicatorTextview.text =
-            "Question ${currentQuestionIndex + 1}/ ${questionModelList.size} "
+        // ✅ Change text based on retry mode
+        if (retries > 0) {
+            questionIndicatorTextview.text = "Let's Try Again!"
+        } else {
+            questionIndicatorTextview.text = "Question ${currentQuestionIndex + 1}/${questionModelList.size}"
+        }
+
         questionProgressIndicator.progress =
             (answeredCount.toFloat() / originalTotalQuestions.toFloat() * 100).toInt()
 
@@ -178,11 +162,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         if (clickedBtn.id == R.id.next_btn) {
             if (!showingExplanation) {
                 if (selectedAnswerIndex == -1) {
-                    Toast.makeText(
-                        applicationContext,
-                        "Please select an answer to continue",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this, "Please select an answer to continue", Toast.LENGTH_SHORT).show()
                     return
                 }
 
@@ -194,34 +174,38 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                     selectedAnswer.trim().equals(correctRaw.trim(), ignoreCase = true)
                 }
 
-                // ✅ Highlight answers
                 val correctBtnIndex = correctIndex?.let {
                     if (it in 0..3) it else if (it - 1 in 0..3) it - 1 else -1
                 } ?: -1
 
                 val buttons = listOf(btn0, btn1, btn2, btn3)
 
-                // Highlight correct in green
                 if (correctBtnIndex in buttons.indices)
                     buttons[correctBtnIndex].setBackgroundColor(getColor(R.color.green))
 
-                // Highlight selected wrong answer in red
                 if (!isCorrect && selectedAnswerIndex in buttons.indices)
                     buttons[selectedAnswerIndex].setBackgroundColor(getColor(R.color.red))
 
-                if (isCorrect) {
+                if (isCorrect && !correctlyAnswered.contains(currentQuestionIndex)) {
                     score++
                     correctAnswers++
-                } else {
-                    wrongQuestions.add(questionModelList[currentQuestionIndex])
-                    wrongAnswers++
+                    if (retries == 0 && answeredCount < originalTotalQuestions) {
+                        firstTryCorrect++ // Only count first-try correct on initial attempt
+                    }
+                    correctlyAnswered.add(currentQuestionIndex)
+                } else if (!isCorrect && !incorrectQuestions.contains(currentQuestionIndex)) {
+                    totalWrongAnswers++
+                    incorrectQuestions.add(currentQuestionIndex)
                 }
 
-                if (answeredCount < originalTotalQuestions) {
-                    answeredCount++
-                    updateProgress(studentId, quizId, partId, answeredCount)
-                    updateQuizCompletionStatus(studentId, quizId)
-                }
+                answeredCount++
+
+                // Update local progress
+                progressData["answeredCount"] = answeredCount
+                progressData["correctAnswers"] = correctAnswers
+                progressData["firstTryCorrect"] = firstTryCorrect
+                progressData["wrongAnswers"] = totalWrongAnswers
+                progressData["lastUpdated"] = System.currentTimeMillis()
 
                 val explanation = questionModelList[currentQuestionIndex].explanation.ifBlank {
                     if (isCorrect) "Correct! Good job." else "Review this question carefully."
@@ -230,28 +214,43 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 explanationText.text = explanation
                 explanationText.visibility = View.VISIBLE
 
-                // Disable buttons after answering
                 buttons.forEach { it.isEnabled = false }
 
                 showingExplanation = true
                 nextBtn.text = "Continue"
 
             } else {
-                // Continue to next question
                 explanationText.visibility = View.GONE
                 showingExplanation = false
                 nextBtn.text = "Next"
 
-                btn0.isEnabled = true
-                btn1.isEnabled = true
-                btn2.isEnabled = true
-                btn3.isEnabled = true
+                // Disable all buttons during transition
+                btn0.isEnabled = false
+                btn1.isEnabled = false
+                btn2.isEnabled = false
+                btn3.isEnabled = false
+                nextBtn.isEnabled = false
 
+                // Move to next unanswered or incorrect question
                 currentQuestionIndex++
-                loadQuestions()
+                while (currentQuestionIndex < questionModelList.size && correctlyAnswered.contains(currentQuestionIndex)) {
+                    currentQuestionIndex++ // Skip already correct questions
+                }
+
+                // Add delay (e.g., 800 ms)
+                nextBtn.postDelayed({
+                    // Load the next question
+                    loadQuestions()
+
+                    // Re-enable buttons after transition
+                    btn0.isEnabled = true
+                    btn1.isEnabled = true
+                    btn2.isEnabled = true
+                    btn3.isEnabled = true
+                    nextBtn.isEnabled = true
+                }, 800)
             }
         } else {
-            // ✅ Option selected
             val buttons = listOf(btn0, btn1, btn2, btn3)
             buttons.forEach { it.setBackgroundColor(getColor(R.color.gray)) }
 
@@ -268,60 +267,126 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    fun updateQuizCompletionStatus(studentId: String, quizId: String) {
+    private fun updateProgress(studentId: String, quizId: String, partId: String) {
+        if (isPartCompleted) return
+
+        progressData["isCompleted"] = correctAnswers >= originalTotalQuestions
+        progressData["lastUpdated"] = System.currentTimeMillis()
+
+        saveProgressToFirebase(quizId, partId, progressData)
+    }
+
+    private fun saveProgressToFirebase(quizId: String, partId: String, progress: Map<String, Any>) {
         val db = FirebaseDatabase.getInstance().reference
-        val quizRef = db.child("users").child(studentId).child("progress").child(quizId)
 
-        quizRef.get().addOnSuccessListener { snapshot ->
-            // Get all part nodes
-            val partNodes = snapshot.children.filter { it.key?.startsWith("part") == true }
+        val paths = mutableListOf(
+            db.child("users").child(studentId).child("progress").child(quizId).child(partId)
+        )
 
-            // Check if all parts are completed
-            val allCompleted = partNodes.all { part ->
-                part.child("isCompleted").getValue(Boolean::class.java) ?: false
-            }
+        if (classCode.isNotEmpty()) {
+            paths.add(
+                db.child("classes").child(classCode).child("students").child(studentId)
+                    .child("progress").child(quizId).child(partId)
+            )
+        }
 
-            // Update quiz-level isCompleted
-            quizRef.child("isCompleted").setValue(allCompleted)
-                .addOnSuccessListener {
-                    if (allCompleted) {
-                        println("Quiz $quizId is now marked as completed for $studentId")
-                    }
-                }
-                .addOnFailureListener { e -> e.printStackTrace() }
+        paths.forEach { pathRef ->
+            pathRef.updateChildren(progress)
         }
     }
 
+    private fun updateQuizCompletionStatus(studentId: String, quizId: String) {
+        if (isPartCompleted) return
+
+        val db = FirebaseDatabase.getInstance().reference
+
+        val paths = mutableListOf(
+            db.child("users").child(studentId).child("progress").child(quizId)
+        )
+
+        if (classCode.isNotEmpty()) {
+            paths.add(
+                db.child("classes").child(classCode).child("students").child(studentId)
+                    .child("progress").child(quizId)
+            )
+        }
+
+        paths.forEach { quizRef ->
+            quizRef.get().addOnSuccessListener { snapshot ->
+                val partNodes = snapshot.children.filter { it.key?.startsWith("part") == true || it.key == "post-test" }
+                val allCompleted = partNodes.all { part -> part.child("isCompleted").getValue(Boolean::class.java) ?: false }
+                quizRef.child("isCompleted").setValue(allCompleted)
+            }
+        }
+    }
+
+    private fun checkAndFinishQuiz() {
+        // Disable retry for pre-test and quiz 835247, and post-test
+        val isRetryAllowed = !(quizId == "pre-test" || quizId == "835247" || partId == "post-test")
+
+        if (correctAnswers >= originalTotalQuestions || !isRetryAllowed) {
+            finishQuiz()
+            return
+        }
+
+        // Normal retry flow
+        retries++
+        progressData["retries"] = retries
+
+        val retryDialog = AlertDialog.Builder(this)
+            .setTitle("Try Again")
+            .setMessage("You got ${originalTotalQuestions - correctAnswers} question(s) wrong. Please retry the incorrect questions.")
+            .setPositiveButton("Retry") { _, _ ->
+                // Reset for retry
+                answeredCount = 0
+                score = 0
+                incorrectQuestions.clear()
+                // Start with first unanswered question
+                currentQuestionIndex = 0
+                while (currentQuestionIndex < questionModelList.size && correctlyAnswered.contains(currentQuestionIndex)) {
+                    currentQuestionIndex++
+                }
+                progressData["answeredCount"] = answeredCount
+                loadQuestions()
+            }
+            .setNegativeButton("Exit") { _, _ ->
+                updateProgress(studentId, quizId, partId)
+                updateQuizCompletionStatus(studentId, quizId)
+                val intent = Intent(this, StudentActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
     private fun finishQuiz() {
-        val percentage = ((score.toFloat() / originalTotalQuestions.toFloat()) * 100).toInt()
+        val percentage = ((correctAnswers.toFloat() / originalTotalQuestions.toFloat()) * 100).toInt()
 
-        // ✅ Final progress
-        updateProgress(studentId, quizId, partId,originalTotalQuestions)
+        // Force the pre-test part (835247 / part1) to completed
+        progressData["isCompleted"] = true
+        progressData["lastUpdated"] = System.currentTimeMillis()
+        saveProgressToFirebase(quizId, partId, progressData) // part1.isCompleted = true
 
-        // Mark pretest as completed
+        // Update the quiz completion status
+        updateQuizCompletionStatus(studentId, quizId) // 835247.isCompleted = true
+
+        // Optional: mark pretestCompleted flag for app logic
         val db = FirebaseDatabase.getInstance().reference
         db.child("users").child(studentId).child("pretestCompleted").setValue(true)
 
-        Log.d("QuizDebug", "Final Score: $score (percentage $percentage%)")
-
+        // Show score dialog
         val dialogView = layoutInflater.inflate(R.layout.score_dialog, null)
-        val scoreProgressIndicator: ProgressBar =
-            dialogView.findViewById(R.id.score_progress_indicator)
+        val scoreProgressIndicator: ProgressBar = dialogView.findViewById(R.id.score_progress_indicator)
         val scoreProgressText: TextView = dialogView.findViewById(R.id.score_progress_text)
         val scoreTitle: TextView = dialogView.findViewById(R.id.score_title)
-        val scoreSubtitle: TextView = dialogView.findViewById(R.id.score_subtitle)
         val finishBtn: Button = dialogView.findViewById(R.id.finish_btn)
 
         scoreProgressIndicator.progress = percentage
         scoreProgressText.text = "$percentage %"
-        if (percentage > 60) {
-            scoreTitle.text = "Congrats! You have passed"
-            scoreTitle.setTextColor(Color.BLUE)
-        } else {
-            scoreTitle.text = "It's Okay! We can try again!"
-            scoreTitle.setTextColor(Color.RED)
-        }
-        scoreSubtitle.text = "$score out of $originalTotalQuestions are correct"
+
+        scoreTitle.text = "Congrats! You completed the pre-test!"
+        scoreTitle.setTextColor(Color.BLUE)
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -341,37 +406,14 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Exit")
-            .setMessage("Are you sure you want to exit? Unsaved progress will not be saved.")
+            .setMessage(
+                if (isPartCompleted) "Are you sure you want to exit review?"
+                else "Are you sure you want to exit? Progress might not be saved."
+            )
             .setPositiveButton("Yes") { _, _ ->
-                val db = FirebaseDatabase.getInstance().reference
-                val progressRef = db.child("users")
-                    .child(studentId)
-                    .child("progress")
-                    .child(quizId)
-                    .child(partId)
-
-                // 🔹 Reset progress fields to default (not deleting structure)
-                val resetData = mapOf(
-                    "answeredCount" to 0,
-                    "correctAnswers" to 0,
-                    "wrongAnswers" to 0,
-                    "retries" to 0,
-                    "isCompleted" to false,
-                    "lastUpdated" to System.currentTimeMillis()
-                )
-
-                progressRef.updateChildren(resetData)
-                    .addOnSuccessListener {
-                        Log.d("QuizActivity", "Progress reset for $quizId/$partId.")
-
-                        val intent = Intent(this, StudentActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("QuizActivity", "Failed to reset progress", e)
-                        Toast.makeText(this, "Failed to reset progress.", Toast.LENGTH_SHORT).show()
-                    }
+                val intent = Intent(this, StudentActivity::class.java)
+                startActivity(intent)
+                finish()
             }
             .setNegativeButton("No", null)
             .show()

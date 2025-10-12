@@ -17,7 +17,8 @@ import com.google.firebase.database.ValueEventListener
 class QuizListAdapter(
     private val items: List<QuizDisplayItem>,
     private val studentId: String,
-    private val activity: FragmentActivity
+    private val activity: FragmentActivity,
+    private val classCode: String
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -37,7 +38,7 @@ class QuizListAdapter(
             TYPE_PART -> {
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.quiz_item_recycler_row, parent, false)
-                PartViewHolder(view, studentId, activity)
+                PartViewHolder(view, studentId, activity, classCode)
             }
             TYPE_DIVIDER -> {
                 val view = LayoutInflater.from(parent.context)
@@ -60,7 +61,8 @@ class QuizListAdapter(
     class PartViewHolder(
         itemView: View,
         private val studentId: String,
-        private val activity: FragmentActivity
+        private val activity: FragmentActivity,
+        private val classCode: String
     ) : RecyclerView.ViewHolder(itemView) {
 
         private val quizTitleText: TextView = itemView.findViewById(R.id.quiz_title_text)
@@ -142,6 +144,7 @@ class QuizListAdapter(
                         QuizActivity.questionModelList = item.questions
                         intent.putExtra("QUIZ_ID", item.quizId)
                         intent.putExtra("PART_ID", item.partId)
+                        intent.putExtra("CLASS_CODE", classCode)
                         intent.putExtra("STUDENT_ID", studentId)
                         itemView.context.startActivity(intent)
                         activity.finish()

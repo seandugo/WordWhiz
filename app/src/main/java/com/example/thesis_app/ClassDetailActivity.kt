@@ -13,6 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.Achievement
 import com.example.thesis_app.models.StudentItem
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.database.*
 
 class ClassDetailActivity : AppCompatActivity() {
@@ -29,6 +32,9 @@ class ClassDetailActivity : AppCompatActivity() {
     private var roomNumber: String = "N/A"
 
     private lateinit var database: DatabaseReference
+    private lateinit var appBar: AppBarLayout
+    private lateinit var collapsingToolbar: CollapsingToolbarLayout
+    private lateinit var toolbar: MaterialToolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,27 +53,31 @@ class ClassDetailActivity : AppCompatActivity() {
         classNameText = findViewById(R.id.headerClassName)
         roomNumberText = findViewById(R.id.headerRoomNumber)
         classCodeText = findViewById(R.id.headerClassCode)
+        toolbar = findViewById(R.id.toolbar)
+        appBar = findViewById(R.id.appbar)
+        collapsingToolbar = findViewById(R.id.collapsingToolbar)
 
+        // Set header texts
         classNameText.text = className
         roomNumberText.text = "Room Number: $roomNumber"
         classCodeText.text = "Class Code: $classCode"
 
         // Toolbar setup
-        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        // Collapsing toolbar behavior
+        setupCollapsingToolbar()
 
         // RecyclerView setup
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = StudentAdapter(studentList) { student ->
-            StudentProgressActivity.start(
+            TeachersStudentProgressActivity.start(
                 context = this,
                 name = student.name ?: "Unknown",
                 className = className,
-                studentId = student.studentId ?: "N/A",
-                progress = calculateProgress(student),
-                achievement = formatAchievements(student.achievements)
+                studentId = student.studentId ?: "N/A"
             )
         }
         recyclerView.adapter = adapter
@@ -79,6 +89,36 @@ class ClassDetailActivity : AppCompatActivity() {
         findViewById<CardView>(R.id.addStudentCard).setOnClickListener {
             showAddStudentDialog()
         }
+    }
+
+    private fun setupCollapsingToolbar() {
+        collapsingToolbar.isTitleEnabled = false
+        var isTitleShown = false
+        var scrollRange = -1
+
+        appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+            if (scrollRange == -1) scrollRange = appBarLayout.totalScrollRange
+
+            if (scrollRange + verticalOffset == 0) {
+                // Collapsed state
+                toolbar.title = classNameText.text
+                toolbar.subtitle = roomNumberText.text
+                classNameText.visibility = TextView.GONE
+                roomNumberText.visibility = TextView.GONE
+                classCodeText.visibility = TextView.GONE
+                isTitleShown = true
+                toolbar.navigationIcon?.setTint(getColor(android.R.color.black))
+            } else if (isTitleShown) {
+                // Expanded state
+                toolbar.title = ""
+                toolbar.subtitle = ""
+                classNameText.visibility = TextView.VISIBLE
+                roomNumberText.visibility = TextView.VISIBLE
+                classCodeText.visibility = TextView.VISIBLE
+                isTitleShown = false
+                toolbar.navigationIcon?.setTint(getColor(android.R.color.white))
+            }
+        })
     }
 
     /**
@@ -112,9 +152,6 @@ class ClassDetailActivity : AppCompatActivity() {
         })
     }
 
-    /**
-     * Add student dialog
-     */
     private fun showAddStudentDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_student, null)
         val idInput = dialogView.findViewById<EditText>(R.id.editStudentId)
@@ -199,19 +236,6 @@ class ClassDetailActivity : AppCompatActivity() {
                     Toast.makeText(this@ClassDetailActivity, "Database error", Toast.LENGTH_SHORT).show()
                 }
             })
-        }
-    }
-
-    private fun calculateProgress(student: StudentItem): String {
-        val total = student.achievements?.size ?: 0
-        return if (total > 0) "${(total * 10).coerceAtMost(100)}%" else "0%"
-    }
-
-    private fun formatAchievements(achievements: List<Achievement>?): String {
-        return if (achievements.isNullOrEmpty()) {
-            "None yet"
-        } else {
-            achievements.joinToString { it.title ?: "Achievement" }
         }
     }
 

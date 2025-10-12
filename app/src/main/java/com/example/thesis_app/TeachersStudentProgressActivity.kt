@@ -18,7 +18,7 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.database.FirebaseDatabase
 
-class StudentProgressActivity : AppCompatActivity() {
+class TeachersStudentProgressActivity : AppCompatActivity() {
 
     private lateinit var progressCarousel: RecyclerView
     private lateinit var achievementsCarousel: RecyclerView
@@ -81,8 +81,9 @@ class StudentProgressActivity : AppCompatActivity() {
         achievementsCarousel.isNestedScrollingEnabled = false
 
         findViewById<TextView>(R.id.seeAllProgress).setOnClickListener {
-            val intent = Intent(this, ProgressListActivity::class.java)
+            val intent = Intent(this, TeacherProgressListActivity::class.java)
             intent.putExtra("studentId", studentId)
+            intent.putExtra("studentName",studentName)
             startActivity(intent)
         }
         findViewById<TextView>(R.id.seeAllSpelling).setOnClickListener {
@@ -256,7 +257,7 @@ class StudentProgressActivity : AppCompatActivity() {
         private const val EXTRA_CODE = "extra_code"
 
         fun start(context: Context, name: String, className: String, studentId: String) {
-            val intent = Intent(context, StudentProgressActivity::class.java).apply {
+            val intent = Intent(context, TeachersStudentProgressActivity::class.java).apply {
                 putExtra(EXTRA_NAME, name)
                 putExtra(EXTRA_CLASS, className)
                 putExtra(EXTRA_CODE, studentId)

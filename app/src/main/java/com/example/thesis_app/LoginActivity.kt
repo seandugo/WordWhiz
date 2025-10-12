@@ -249,37 +249,66 @@ class LoginActivity : ComponentActivity() {
         val quizzesRef = FirebaseDatabase.getInstance().getReference("quizzes")
         val studentProgressRef = userRef.child("progress")
 
-        quizzesRef.get().addOnSuccessListener { snapshot ->
-            if (!snapshot.exists()) return@addOnSuccessListener
+        // ✅ Fetch classCode asynchronously
+        userRef.child("classes").get().addOnSuccessListener { classSnap ->
+            val classCode = classSnap.children.firstOrNull()?.key
 
-            val progressData = mutableMapOf<String, Any>()
+            // Fetch quizzes
+            quizzesRef.get().addOnSuccessListener { snapshot ->
+                if (!snapshot.exists()) return@addOnSuccessListener
 
-            for (quizSnap in snapshot.children) {
-                val quizCode = quizSnap.key ?: continue
-                val partsData = mutableMapOf<String, Any>()
-                for (partSnap in quizSnap.children) {
-                    val partKey = partSnap.key ?: continue
-                    if (partKey.startsWith("part") || partKey == "post-test") {
-                        partsData[partKey] = mapOf("answeredCount" to 0, "isCompleted" to false)
+                val progressData = mutableMapOf<String, Any>()
+
+                for (quizSnap in snapshot.children) {
+                    val quizCode = quizSnap.key ?: continue
+                    val partsData = mutableMapOf<String, Any>()
+                    for (partSnap in quizSnap.children) {
+                        val partKey = partSnap.key ?: continue
+                        if (partKey.startsWith("part") || partKey == "post-test") {
+                            partsData[partKey] = mapOf(
+                                "answeredCount" to 0,
+                                "isCompleted" to false
+                            )
+                        }
+                    }
+                    if (partsData.isNotEmpty()) {
+                        partsData["isCompleted"] = false
+                        progressData[quizCode] = partsData
                     }
                 }
-                if (partsData.isNotEmpty()) {
-                    partsData["isCompleted"] = false
-                    progressData[quizCode] = partsData
-                }
-            }
 
-            studentProgressRef.setValue(progressData)
-                .addOnSuccessListener {
-                    Log.d("Firebase", "✅ Progress initialized for $studentId")
-                    userRef.child("newAccount").setValue(false)
-                    updateProgressWithOrder(studentId, userRef)
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "❌ Failed to initialize progress: ${e.message}")
-                }
+                // Save user progress
+                studentProgressRef.setValue(progressData)
+                    .addOnSuccessListener {
+                        Log.d("Firebase", "✅ Progress initialized for $studentId (user)")
+
+                        // Save user progress
+                        studentProgressRef.setValue(progressData)
+                            .addOnSuccessListener {
+                                Log.d("Firebase", "✅ Progress initialized for $studentId (user)")
+
+                                // Mark newAccount false
+                                userRef.child("newAccount").setValue(false)
+
+                                updateProgressWithOrder(studentId, userRef)
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Firebase", "❌ Failed to initialize user progress: ${e.message}")
+                            }
+
+                        // Mark newAccount false
+                        userRef.child("newAccount").setValue(false)
+
+                        updateProgressWithOrder(studentId, userRef)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firebase", "❌ Failed to initialize user progress: ${e.message}")
+                    }
+            }.addOnFailureListener { e ->
+                Log.e("Firebase", "❌ Failed to fetch quizzes: ${e.message}")
+            }
         }.addOnFailureListener { e ->
-            Log.e("Firebase", "❌ Failed to fetch quizzes: ${e.message}")
+            Log.e("Firebase", "❌ Failed to fetch classCode: ${e.message}")
         }
     }
 

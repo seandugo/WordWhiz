@@ -23,8 +23,6 @@ class QuizDetailAdapter(
         val wrongCount: TextView = itemView.findViewById(R.id.wrongCount)
         val retriedCount: TextView = itemView.findViewById(R.id.retriedCount)
         val retriedLabel: TextView = itemView.findViewById(R.id.retriedLabel) // new
-        val reviewButton: MaterialButton = itemView.findViewById(R.id.reviewButton)
-        val retakeButton: MaterialButton = itemView.findViewById(R.id.retakeButton)
         val multiProgress : MultiSegmentProgressView = itemView.findViewById(R.id.accuracyPercentage)
     }
 
@@ -59,24 +57,16 @@ class QuizDetailAdapter(
             holder.retriedLabel.visibility = View.VISIBLE
         }
 
-        // ✅ Lock buttons if part is not completed
+        // 🔒 Lock entire card if part is not completed
         if (!item.isCompleted) {
-            holder.reviewButton.isEnabled = false
-            holder.retakeButton.isEnabled = false
-            holder.reviewButton.alpha = 0.5f // visually show as disabled
-            holder.retakeButton.alpha = 0.5f
+            holder.itemView.isEnabled = false
+            holder.itemView.alpha = 0.5f // visually dim
         } else {
-            holder.reviewButton.isEnabled = true
-            holder.retakeButton.isEnabled = true
-            holder.reviewButton.alpha = 1f
-            holder.retakeButton.alpha = 1f
-        }
-
-        holder.reviewButton.setOnClickListener {
-            if (item.isCompleted) onReviewClick(item)
-        }
-        holder.retakeButton.setOnClickListener {
-            if (item.isCompleted) onRetakeClick(item)
+            holder.itemView.isEnabled = true
+            holder.itemView.alpha = 1f
+            holder.itemView.setOnClickListener {
+                onReviewClick(item) // entire card is clickable when completed
+            }
         }
     }
 

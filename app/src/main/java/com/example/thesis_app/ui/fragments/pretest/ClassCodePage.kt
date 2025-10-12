@@ -33,16 +33,13 @@ class ClassCodePage : Fragment(R.layout.class_code) {
 
         nextButton.setOnClickListener {
             val classCode = classCodeInput.text.toString().trim()
-
             if (classCode.isEmpty()) {
                 Toast.makeText(requireContext(), "Enter a class code", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // ✅ Get studentId from SharedPreferences
             val sharedPrefs = requireContext().getSharedPreferences("USER_PREFS", 0)
             val studentId = sharedPrefs.getString("studentId", "") ?: ""
-
             if (studentId.isEmpty()) {
                 Toast.makeText(requireContext(), "Student ID missing!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -50,14 +47,14 @@ class ClassCodePage : Fragment(R.layout.class_code) {
 
             val db = FirebaseDatabase.getInstance().reference
 
-            // 🔹 Check if class exists
+            // Check if class exists
             db.child("classes").child(classCode).get().addOnSuccessListener { snapshot ->
                 if (!snapshot.exists()) {
                     Toast.makeText(requireContext(), "Class code not found", Toast.LENGTH_SHORT).show()
                     return@addOnSuccessListener
                 }
 
-                // 🔹 Get student info
+                // Get student info
                 db.child("users").child(studentId).get().addOnSuccessListener { studentSnap ->
                     if (!studentSnap.exists()) {
                         Toast.makeText(requireContext(), "Student not found!", Toast.LENGTH_SHORT).show()
@@ -75,23 +72,26 @@ class ClassCodePage : Fragment(R.layout.class_code) {
                         achievements = listOf()
                     )
 
-                    // 🔹 Save under classes → students
+                    // Add student under class
                     db.child("classes")
                         .child(classCode)
                         .child("students")
                         .child(studentId)
                         .setValue(newStudent)
                         .addOnSuccessListener {
-                            // 🔹 Also add pointer under user → classes
+                            // Add class reference under user
                             db.child("users")
                                 .child(studentId)
                                 .child("classes")
                                 .child(classCode)
                                 .setValue(true)
 
+                            // Initialize student progress inside this fragment
+                            initializeStudentProgress(studentId, classCode)
+
                             Toast.makeText(requireContext(), "Joined class successfully", Toast.LENGTH_SHORT).show()
 
-                            // ✅ Navigate to QuizTimePage
+                            // Navigate to QuizTimePage
                             val secondPageFragment = QuizTimePage()
                             parentFragmentManager.beginTransaction()
                                 .replace(R.id.fragmentContainerView2, secondPageFragment)
@@ -106,6 +106,28 @@ class ClassCodePage : Fragment(R.layout.class_code) {
             }.addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun initializeStudentProgress(studentId: String, classCode: String) {
+        val db = FirebaseDatabase.getInstance()
+        val studentProgressRef = db.getReference("users/$studentId/progress")
+        val classStudentProgressRef = db.getReference("classes/$classCode/students/$studentId/progress")
+
+        studentProgressRef.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                // No existing progress, optional: initialize empty
+                classStudentProgressRef.setValue(emptyMap<String, Any>())
+                return@addOnSuccessListener
+            }
+
+            // Copy progress directly under class → students
+            classStudentProgressRef.setValue(snapshot.value)
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Failed to copy progress: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }.addOnFailureListener { e ->
+            Toast.makeText(requireContext(), "Failed to fetch student progress: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }
