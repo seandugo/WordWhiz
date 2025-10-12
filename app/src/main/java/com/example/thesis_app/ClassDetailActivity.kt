@@ -147,7 +147,6 @@ class ClassDetailActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@ClassDetailActivity, "Failed to load students", Toast.LENGTH_SHORT).show()
             }
         })
     }
