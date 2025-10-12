@@ -349,13 +349,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 progressData["answeredCount"] = answeredCount
                 loadQuestions()
             }
-            .setNegativeButton("Exit") { _, _ ->
-                updateProgress(studentId, quizId, partId)
-                updateQuizCompletionStatus(studentId, quizId)
-                val intent = Intent(this, StudentActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
             .setCancelable(false)
             .show()
     }

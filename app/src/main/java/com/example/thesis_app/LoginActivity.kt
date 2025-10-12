@@ -32,6 +32,17 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login)
 
+        // Check for fresh install or cleared data
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val isFirstRun = prefs.getBoolean("isFirstRun", true)
+        val savedEmail = prefs.getString("email", null)
+        val currentUser = FirebaseAuth.getInstance().currentUser
+
+        if (isFirstRun || (currentUser != null && savedEmail == null)) {
+            FirebaseAuth.getInstance().signOut()
+            prefs.edit().putBoolean("isFirstRun", false).apply()
+        }
+
         login = findViewById(R.id.LoginButton)
         signup = findViewById(R.id.textView9)
         teacherEmail = findViewById(R.id.editEmail)
@@ -60,7 +71,66 @@ class LoginActivity : ComponentActivity() {
             }
             handleSignup()
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
+
+        if (hasAutoLoggedIn) return
+        hasAutoLoggedIn = true
+
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val isFirstRun = prefs.getBoolean("isFirstRun", true)
+
+        if (isFirstRun || !isInternetAvailable()) {
+            Snackbar.make(findViewById(android.R.id.content), "No internet connection or first run. Please log in.", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+        val email = currentUser.email ?: return
+        val savedRole = prefs.getString("role", null)
+        val savedStudentId = prefs.getString("studentId", null)
+
+        if (savedRole != null) {
+            if (savedRole == "student" && savedStudentId != null) {
+                checkInternetAndSetUI(autoLogin = true)
+                val userRef = FirebaseDatabase.getInstance().getReference("users").child(savedStudentId)
+                userRef.get().addOnSuccessListener { snapshot ->
+                    val isNewAccount = snapshot.child("newAccount").getValue(Boolean::class.java) ?: true
+                    if (isNewAccount) userRef.child("newAccount").setValue(true)
+
+                    val hasProgress = snapshot.hasChild("progress")
+                    if (isNewAccount || !hasProgress) initializeStudentProgress(savedStudentId, userRef)
+
+                    // Always update class info for returning students
+                    val classCode = snapshot.child("classes").children.firstOrNull()?.key
+                    if (classCode != null) {
+                        FirebaseDatabase.getInstance().getReference("classes/$classCode/className")
+                            .get()
+                            .addOnSuccessListener { classSnap ->
+                                val className = classSnap.getValue(String::class.java) ?: "No Class"
+                                val studentName = snapshot.child("name").getValue(String::class.java) ?: "Unknown"
+                                savePrefs(savedRole, snapshot.child("email").getValue(String::class.java) ?: email, savedStudentId, studentName, className)
+                                goToLoading(savedRole, savedStudentId)
+                            }
+                            .addOnFailureListener {
+                                goToLoading(savedRole, savedStudentId)
+                            }
+                    } else {
+                        goToLoading(savedRole, savedStudentId)
+                    }
+                }.addOnFailureListener {
+                    Log.e("Firebase", "❌ Failed to verify progress: ${it.message}")
+                    goToLoading(savedRole, savedStudentId)
+                }
+            } else {
+                checkInternetAndSetUI(autoLogin = false)
+                goToLoading(savedRole, savedStudentId)
+            }
+        } else {
+            fetchUserData(email)
+        }
     }
 
     private fun checkInternetAndSetUI(autoLogin: Boolean = false) {
@@ -150,7 +220,6 @@ class LoginActivity : ComponentActivity() {
                 }
             }
     }
-
 
     private fun handleSignup() {
         if (!login.isEnabled) return
@@ -243,7 +312,6 @@ class LoginActivity : ComponentActivity() {
         startActivity(intent)
         finish()
     }
-
 
     private fun initializeStudentProgress(studentId: String, userRef: DatabaseReference) {
         val quizzesRef = FirebaseDatabase.getInstance().getReference("quizzes")
@@ -344,66 +412,6 @@ class LoginActivity : ComponentActivity() {
         return capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) ||
                 capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) ||
                 capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)
-    }
-
-
-    // ✅ Updated onStart
-    override fun onStart() {
-        super.onStart()
-
-        if (hasAutoLoggedIn) return
-        hasAutoLoggedIn = true
-
-        if (!isInternetAvailable()) {
-            Snackbar.make(findViewById(android.R.id.content), "No internet connection. Please connect and try again.", Snackbar.LENGTH_LONG).show()
-            return
-        }
-
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-        val email = currentUser.email ?: return
-        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-        val savedRole = prefs.getString("role", null)
-        val savedStudentId = prefs.getString("studentId", null)
-
-        if (savedRole != null) {
-            if (savedRole == "student" && savedStudentId != null) {
-                checkInternetAndSetUI(autoLogin = true)
-                val userRef = FirebaseDatabase.getInstance().getReference("users").child(savedStudentId)
-                userRef.get().addOnSuccessListener { snapshot ->
-                    val isNewAccount = snapshot.child("newAccount").getValue(Boolean::class.java) ?: true
-                    if (isNewAccount) userRef.child("newAccount").setValue(true)
-
-                    val hasProgress = snapshot.hasChild("progress")
-                    if (isNewAccount || !hasProgress) initializeStudentProgress(savedStudentId, userRef)
-
-                    // Always update class info for returning students
-                    val classCode = snapshot.child("classes").children.firstOrNull()?.key
-                    if (classCode != null) {
-                        FirebaseDatabase.getInstance().getReference("classes/$classCode/className")
-                            .get()
-                            .addOnSuccessListener { classSnap ->
-                                val className = classSnap.getValue(String::class.java) ?: "No Class"
-                                val studentName = snapshot.child("name").getValue(String::class.java) ?: "Unknown"
-                                savePrefs(savedRole, snapshot.child("email").getValue(String::class.java) ?: email, savedStudentId, studentName, className)
-                                goToLoading(savedRole, savedStudentId)
-                            }
-                            .addOnFailureListener {
-                                goToLoading(savedRole, savedStudentId)
-                            }
-                    } else {
-                        goToLoading(savedRole, savedStudentId)
-                    }
-                }.addOnFailureListener {
-                    Log.e("Firebase", "❌ Failed to verify progress: ${it.message}")
-                    goToLoading(savedRole, savedStudentId)
-                }
-            } else {
-                checkInternetAndSetUI(autoLogin = false)
-                goToLoading(savedRole, savedStudentId)
-            }
-        } else {
-            fetchUserData(email)
-        }
     }
 
     private fun disableButtons() {
