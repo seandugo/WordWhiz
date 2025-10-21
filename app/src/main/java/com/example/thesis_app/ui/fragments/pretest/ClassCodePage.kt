@@ -11,6 +11,7 @@ import com.example.thesis_app.PreAssessmentActivity
 import com.example.thesis_app.R
 import com.example.thesis_app.models.StudentItem
 import com.google.firebase.database.FirebaseDatabase
+import androidx.core.content.edit
 
 class ClassCodePage : Fragment(R.layout.class_code) {
     private lateinit var nextButton: Button
@@ -69,102 +70,88 @@ class ClassCodePage : Fragment(R.layout.class_code) {
                 return@setOnClickListener
             }
 
-            // Check if student is already enrolled in this class
-            db.child("users").child(studentId).child("classes").child(classCode).get().addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    // Student is already enrolled, navigate to next page
-                    navigateToQuizTimePage()
-                } else {
-                    // New class code, proceed with joining class
-                    db.child("classes").child(classCode).get().addOnSuccessListener { classSnapshot ->
-                        if (!classSnapshot.exists()) {
-                            Toast.makeText(requireContext(), "Class code not found", Toast.LENGTH_SHORT).show()
-                            return@addOnSuccessListener
-                        }
+            val db = FirebaseDatabase.getInstance().reference
 
-                        // Get student info
-                        db.child("users").child(studentId).get().addOnSuccessListener { studentSnap ->
-                            if (!studentSnap.exists()) {
-                                Toast.makeText(requireContext(), "Student not found!", Toast.LENGTH_SHORT).show()
-                                return@addOnSuccessListener
-                            }
-
-                            val name = studentSnap.child("name").getValue(String::class.java) ?: "Unknown"
-                            val email = studentSnap.child("email").getValue(String::class.java)
-
-                            val newStudent = StudentItem(
-                                name = name,
-                                email = email,
-                                order = classSnapshot.child("students").childrenCount.toInt(),
-                                studentId = studentId,
-                                achievements = listOf()
-                            )
-
-                            // Add student under class
-                            // Add class reference under user
-                            db.child("users")
-                                .child(studentId)
-                                .child("classes")
-                                .child(classCode)
-                                .setValue(true)
-                                .addOnSuccessListener {
-
-                                    // Fetch className from classes node
-                                    db.child("classes")
-                                        .child(classCode)
-                                        .child("className")
-                                        .get()
-                                        .addOnSuccessListener { classSnap ->
-                                            val className = classSnap.getValue(String::class.java) ?: "No Class"
-
-                                            // Save to SharedPreferences
-                                            val prefs = requireContext().getSharedPreferences("USER_PREFS", 0).edit()
-                                            prefs.putString("studentClass", className)
-                                            prefs.apply()
-
-                                            // Initialize student progress
-                                            initializeStudentProgress(studentId, classCode)
-
-                                            Toast.makeText(requireContext(), "Joined class successfully", Toast.LENGTH_SHORT).show()
-
-                                            // Navigate to QuizTimePage
-                                            navigateToQuizTimePage()
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Toast.makeText(requireContext(), "Failed to fetch class name: ${e.message}", Toast.LENGTH_SHORT).show()
-                                            navigateToQuizTimePage()
-                                        }
+            db.child("users").child(studentId).child("classes").child(classCode).get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        // Already enrolled
+                        navigateToQuizTimePage()
+                    } else {
+                        // Check if class exists
+                        db.child("classes").child(classCode).get()
+                            .addOnSuccessListener { classSnapshot ->
+                                if (!classSnapshot.exists()) {
+                                    Toast.makeText(requireContext(), "Class code not found", Toast.LENGTH_SHORT).show()
+                                    return@addOnSuccessListener
                                 }
-                        }
-                    }.addOnFailureListener { e ->
-                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+
+                                // Get student info
+                                db.child("users").child(studentId).get()
+                                    .addOnSuccessListener { studentSnap ->
+                                        if (!studentSnap.exists()) {
+                                            Toast.makeText(requireContext(), "Student not found!", Toast.LENGTH_SHORT).show()
+                                            return@addOnSuccessListener
+                                        }
+
+                                        val name = studentSnap.child("name").getValue(String::class.java) ?: "Unknown"
+                                        val email = studentSnap.child("email").getValue(String::class.java)
+                                        val order = classSnapshot.child("students").childrenCount.toInt()
+
+                                        val newStudent = StudentItem(
+                                            name = name,
+                                            email = email,
+                                            order = order,
+                                            studentId = studentId,
+                                            achievements = listOf()
+                                        )
+
+                                        // ✅ Add student under class
+                                        db.child("classes")
+                                            .child(classCode)
+                                            .child("students")
+                                            .child(studentId)
+                                            .setValue(newStudent)
+                                            .addOnSuccessListener {
+                                                // ✅ Add class under user
+                                                db.child("users")
+                                                    .child(studentId)
+                                                    .child("classes")
+                                                    .child(classCode)
+                                                    .setValue(true)
+                                                    .addOnSuccessListener {
+                                                        // Get class name for shared prefs
+                                                        db.child("classes")
+                                                            .child(classCode)
+                                                            .child("className")
+                                                            .get()
+                                                            .addOnSuccessListener { classSnap ->
+                                                                val className = classSnap.getValue(String::class.java) ?: "No Class"
+
+                                                                requireContext()
+                                                                    .getSharedPreferences(
+                                                                        "USER_PREFS",
+                                                                        0
+                                                                    )
+                                                                    .edit {
+                                                                        putString(
+                                                                            "studentClass",
+                                                                            className
+                                                                        )
+                                                                    }
+
+                                                                Toast.makeText(requireContext(), "Joined class successfully", Toast.LENGTH_SHORT).show()
+                                                                navigateToQuizTimePage()
+                                                            }
+                                                    }
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Toast.makeText(requireContext(), "Failed to add student: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                    }
+                            }
                     }
                 }
-            }.addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun initializeStudentProgress(studentId: String, classCode: String) {
-        val db = FirebaseDatabase.getInstance()
-        val studentProgressRef = db.getReference("users/$studentId/progress")
-        val classStudentProgressRef = db.getReference("classes/$classCode/students/$studentId/progress")
-
-        studentProgressRef.get().addOnSuccessListener { snapshot ->
-            if (!snapshot.exists()) {
-                // No existing progress, initialize empty
-                classStudentProgressRef.setValue(emptyMap<String, Any>())
-                return@addOnSuccessListener
-            }
-
-            // Copy progress to class students
-            classStudentProgressRef.setValue(snapshot.value)
-                .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Failed to copy progress: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-        }.addOnFailureListener { e ->
-            Toast.makeText(requireContext(), "Failed to fetch student progress: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 

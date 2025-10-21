@@ -6,5 +6,6 @@ data class ClassItem(
     var className: String = "",
     var roomNo: String = "",
     var order: Int = 0,
-    @get:Exclude var classCode: String = ""
+    @get:Exclude var classCode: String = "",
+    val archivedAt: Long? = null
 )

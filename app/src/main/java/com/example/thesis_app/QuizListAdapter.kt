@@ -140,14 +140,14 @@ class QuizListAdapter(
                     itemView.setOnClickListener {
                         if (!isUnlocked) return@setOnClickListener
 
-                        val intent = Intent(itemView.context, QuizActivity::class.java)
-                        QuizActivity.questionModelList = item.questions
-                        intent.putExtra("QUIZ_ID", item.quizId)
-                        intent.putExtra("PART_ID", item.partId)
-                        intent.putExtra("CLASS_CODE", classCode)
-                        intent.putExtra("STUDENT_ID", studentId)
+                        val intent = Intent(itemView.context, LectureReviewActivity::class.java)
+                        intent.putExtra("quiz_part", item.displayName)               // Part title (Level 1, Post-Test, etc.)
+                        intent.putExtra("quiz_order", (item.order - 1).toString())   // Quiz order (0-based)
+                        intent.putExtra("QUIZ_ID", item.quizId)                      // Optional: needed if you fetch lecture content from Firebase
+                        intent.putExtra("PART_ID", item.partId)                      // Optional: same as above
+                        intent.putExtra("CLASS_CODE", classCode)                     // Optional: if LectureReview needs class info
+                        intent.putExtra("STUDENT_ID", studentId)                     // Optional: if LectureReview needs student progress
                         itemView.context.startActivity(intent)
-                        activity.finish()
                     }
                 }
 

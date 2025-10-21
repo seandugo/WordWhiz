@@ -104,16 +104,49 @@ class LecturesFragment : Fragment() {
 
         reviewLectures.setOnClickListener {
             val currentTitle = headerTitle.text.toString()
-            val currentQuiz = displayList
+            val currentQuizParts = displayList
                 .filterIsInstance<QuizDisplayItem.Part>()
-                .firstOrNull { it.item.quizTitle == currentTitle }
+                .filter { it.item.quizTitle == currentTitle }
 
-            currentQuiz?.let {
-                val intent = Intent(requireContext(), LectureReviewActivity::class.java)
-                intent.putExtra("quiz_part", it.item.quizTitle)
-                intent.putExtra("quiz_order", (it.item.order - 1).toString())
-                startActivity(intent)
-            }
+            if (currentQuizParts.isEmpty()) return@setOnClickListener
+
+            // Get quizId from first part (all parts have same quizId)
+            val quizId = currentQuizParts.first().item.quizId
+
+            val progressRef = FirebaseDatabase.getInstance()
+                .reference.child("users").child(studentId).child("progress").child(quizId)
+
+            progressRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // Find first incomplete part
+                    val firstIncompletePart = currentQuizParts.firstOrNull { partItem ->
+                        !(snapshot.child(partItem.item.partId).child("isCompleted").getValue(Boolean::class.java)
+                            ?: false)
+                    }
+
+                    val targetPart = firstIncompletePart ?: currentQuizParts.first()
+
+                    val intent = Intent(requireContext(), LectureReviewActivity::class.java)
+                    intent.putExtra("quiz_part", targetPart.item.quizTitle)
+                    intent.putExtra("quiz_order", (targetPart.item.order - 1).toString())
+                    intent.putExtra("QUIZ_ID", targetPart.item.quizId)
+                    intent.putExtra("PART_ID", targetPart.item.partId)
+                    intent.putExtra("STUDENT_ID", studentId)
+                    startActivity(intent)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // fallback → open first part
+                    val firstPart = currentQuizParts.first()
+                    val intent = Intent(requireContext(), LectureReviewActivity::class.java)
+                    intent.putExtra("quiz_part", firstPart.item.quizTitle)
+                    intent.putExtra("quiz_order", (firstPart.item.order - 1).toString())
+                    intent.putExtra("QUIZ_ID", firstPart.item.quizId)
+                    intent.putExtra("PART_ID", firstPart.item.partId)
+                    intent.putExtra("STUDENT_ID", studentId)
+                    startActivity(intent)
+                }
+            })
         }
 
         return view

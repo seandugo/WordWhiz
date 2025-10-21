@@ -14,7 +14,8 @@ class ClassAdapter(
     private val onStartDrag: ((RecyclerView.ViewHolder) -> Unit)? = null,
     private val onItemClick: (ClassItem) -> Unit,
     private val onEditClick: (ClassItem) -> Unit,
-    private val onDeleteClick: (ClassItem) -> Unit
+    private val onDeleteClick: (ClassItem) -> Unit,
+    private val onArchiveClick: (ClassItem) -> Unit // ✅ new callback
 ) : RecyclerView.Adapter<ClassAdapter.ClassViewHolder>() {
 
     inner class ClassViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -58,6 +59,10 @@ class ClassAdapter(
                         onDeleteClick(classItem)
                         true
                     }
+                    R.id.action_archive -> {
+                        onArchiveClick(classItem)
+                        true
+                    }
                     else -> false
                 }
             }
@@ -72,6 +77,14 @@ class ClassAdapter(
         classList[fromPos] = classList[toPos]
         classList[toPos] = temp
         notifyItemMoved(fromPos, toPos)
+    }
+
+    fun archiveItem(classItem: ClassItem) {
+        val index = classList.indexOfFirst { it.classCode == classItem.classCode }
+        if (index != -1) {
+            classList.removeAt(index)
+            notifyItemRemoved(index)
+        }
     }
 
     fun addItemAtTop(newClass: ClassItem) {

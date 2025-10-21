@@ -82,11 +82,6 @@ class TeacherProgressListActivity : AppCompatActivity() {
 
             // Get all quizzes with order, excluding pre-test or specific quiz ID
             val quizList = snapshot.children.mapNotNull { quizSnapshot ->
-                val quizId = quizSnapshot.key ?: return@mapNotNull null
-
-                // Skip unwanted quizzes
-                if (quizId == "pre-test" || quizId == "835247") return@mapNotNull null
-
                 val order = quizSnapshot.child("order").getValue(Int::class.java) ?: Int.MAX_VALUE
                 quizSnapshot to order
             }.sortedBy { it.second }

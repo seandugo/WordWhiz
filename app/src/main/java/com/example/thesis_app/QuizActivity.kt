@@ -1,10 +1,13 @@
 package com.example.thesis_app
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -13,10 +16,13 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.thesis_app.models.QuestionModel
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import android.animation.AnimatorListenerAdapter
 import com.google.firebase.database.ValueEventListener
+import android.animation.Animator
 
 class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -45,6 +51,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private var score = 0 // Current attempt score
     private var showingExplanation = false
     private var isProcessingClick = false // Flag to prevent multiple clicks
+    private lateinit var explanationLayout: View
+    private lateinit var timeBeforeNext: LinearProgressIndicator
 
     private var originalTotalQuestions: Int = 0
     private var answeredCount: Int = 0
@@ -72,11 +80,16 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         questionProgressIndicator = findViewById(R.id.question_progress_indicator)
         questionTextview = findViewById(R.id.question_textview)
         explanationText = findViewById(R.id.explanation_text)
+        explanationLayout = findViewById(R.id.explanation_layout)
+        timeBeforeNext = findViewById(R.id.time_before_next)
 
         quizId = intent.getStringExtra("QUIZ_ID") ?: ""
         partId = intent.getStringExtra("PART_ID") ?: ""
         classCode = intent.getStringExtra("CLASS_CODE") ?: ""
         studentId = intent.getStringExtra("STUDENT_ID") ?: getSharedPreferences("USER_PREFS", MODE_PRIVATE).getString("studentId", "") ?: ""
+
+        nextBtn.animate().setInterpolator(AccelerateDecelerateInterpolator())
+        explanationLayout.animate().setInterpolator(AccelerateDecelerateInterpolator())
 
         originalTotalQuestions = questionModelList.size
         if (originalTotalQuestions == 0) {
@@ -140,16 +153,25 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn2.setBackgroundColor(getColor(R.color.gray))
         btn3.setBackgroundColor(getColor(R.color.gray))
 
-        if (retries > 0) {
-            questionIndicatorTextview.text = "Let's Try Again!"
+        val currentQ = questionModelList[currentQuestionIndex]
+
+        if (currentQ.instruction.isNotBlank()) {
+            questionIndicatorTextview.text = currentQ.instruction
         } else {
+            // Fallback if no instruction provided
             questionIndicatorTextview.text = "Question ${currentQuestionIndex + 1}/${questionModelList.size}"
         }
-
-        questionProgressIndicator.progress =
-            (answeredCount.toFloat() / originalTotalQuestions.toFloat() * 100).toInt()
-
-        val currentQ = questionModelList[currentQuestionIndex]
+        questionProgressIndicator.max = questionModelList.size
+        ObjectAnimator.ofInt(
+            questionProgressIndicator,
+            "progress",
+            questionProgressIndicator.progress,
+            currentQuestionIndex + 1
+        ).apply {
+            duration = 600 // ms – adjust speed
+            interpolator = AccelerateDecelerateInterpolator()
+            start()
+        }
         questionTextview.text = currentQ.question
         btn0.text = currentQ.options[0]
         btn1.text = currentQ.options[1]
@@ -165,16 +187,10 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         if (clickedBtn.id == R.id.next_btn) {
             isProcessingClick = true // Set flag to block further clicks
             if (!showingExplanation) {
-                if (selectedAnswerIndex == -1) {
-                    Toast.makeText(this, "Please select an answer to continue", Toast.LENGTH_SHORT).show()
-                    isProcessingClick = false // Allow retry if no answer selected
-                    return
-                }
-
                 val correctRaw = questionModelList[currentQuestionIndex].correct
                 val correctIndex = correctRaw.toIntOrNull()
                 val isCorrect: Boolean = if (correctIndex != null) {
-                    (correctIndex == selectedAnswerIndex) || (correctIndex - 1 == selectedAnswerIndex)
+                    (correctIndex == selectedAnswerIndex)
                 } else {
                     selectedAnswer.trim().equals(correctRaw.trim(), ignoreCase = true)
                 }
@@ -185,6 +201,12 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
                 val buttons = listOf(btn0, btn1, btn2, btn3)
 
+                if (selectedAnswerIndex == -1) {
+                    Toast.makeText(this, "Please select an answer first!", Toast.LENGTH_SHORT).show()
+                    isProcessingClick = false
+                    return
+                }
+
                 if (correctBtnIndex in buttons.indices)
                     buttons[correctBtnIndex].setBackgroundColor(getColor(R.color.green))
 
@@ -194,9 +216,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 if (isCorrect && !correctlyAnswered.contains(currentQuestionIndex)) {
                     score++
                     correctAnswers++
-                    if (retries == 0 && answeredCount < originalTotalQuestions) {
-                        firstTryCorrect++ // Only count first-try correct on initial attempt
-                    }
+                    if (retries == 0 && answeredCount < originalTotalQuestions) firstTryCorrect++
                     correctlyAnswered.add(currentQuestionIndex)
                 } else if (!isCorrect && !incorrectQuestions.contains(currentQuestionIndex)) {
                     totalWrongAnswers++
@@ -216,14 +236,64 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                     if (isCorrect) "Correct! Good job." else "Review this question carefully."
                 }
 
+                // ✅ Hide next button while explanation is visible
+                nextBtn.visibility = View.GONE
+
                 explanationText.text = explanation
-                explanationText.visibility = View.VISIBLE
+                explanationLayout.visibility = View.VISIBLE
+
+                timeBeforeNext.progress = 0
+                timeBeforeNext.max = 100
+
+                val animation = ObjectAnimator.ofInt(timeBeforeNext, "progress", 0, 100)
+                animation.duration = 3000 // 3 seconds
+                animation.interpolator = LinearInterpolator()
+                animation.start()
+
+                animation.addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        // Hide explanation + sync nextBtn here
+                        explanationLayout.animate()
+                            .alpha(0f)
+                            .setDuration(400)
+                            .withEndAction {
+                                explanationLayout.visibility = View.GONE
+                                explanationLayout.alpha = 1f
+
+                                nextBtn.animate()
+                                    .alpha(0f)
+                                    .setDuration(400)
+                                    .withEndAction {
+                                        nextBtn.visibility = View.GONE
+                                        nextBtn.alpha = 1f
+
+                                        // Move to next question
+                                        nextBtn.postDelayed({
+                                            currentQuestionIndex++
+                                            while (currentQuestionIndex < questionModelList.size &&
+                                                correctlyAnswered.contains(currentQuestionIndex)) {
+                                                currentQuestionIndex++
+                                            }
+                                            loadQuestions()
+
+                                            listOf(btn0, btn1, btn2, btn3).forEach { it.isEnabled = true }
+                                            showingExplanation = false
+                                            isProcessingClick = false
+
+                                            nextBtn.alpha = 0f
+                                            nextBtn.visibility = View.VISIBLE
+                                            nextBtn.animate().alpha(1f).setDuration(400).start()
+                                        }, 200)
+                                    }
+                                    .start()
+                            }
+                            .start()
+                    }
+                })
 
                 buttons.forEach { it.isEnabled = false }
-
                 showingExplanation = true
-                nextBtn.text = "Continue"
-                isProcessingClick = false // Allow next click after showing explanation
+                isProcessingClick = false
             } else {
                 explanationText.visibility = View.GONE
                 showingExplanation = false
@@ -273,56 +343,22 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun updateProgress(studentId: String, quizId: String, partId: String) {
-        if (isPartCompleted) return
-
-        progressData["isCompleted"] = correctAnswers >= originalTotalQuestions
-        progressData["lastUpdated"] = System.currentTimeMillis()
-
-        saveProgressToFirebase(quizId, partId, progressData)
-    }
-
     private fun saveProgressToFirebase(quizId: String, partId: String, progress: Map<String, Any>) {
         val db = FirebaseDatabase.getInstance().reference
-
-        val paths = mutableListOf(
-            db.child("users").child(studentId).child("progress").child(quizId).child(partId)
-        )
-
-        if (classCode.isNotEmpty()) {
-            paths.add(
-                db.child("classes").child(classCode).child("students").child(studentId)
-                    .child("progress").child(quizId).child(partId)
-            )
-        }
-
-        paths.forEach { pathRef ->
-            pathRef.updateChildren(progress)
-        }
+        val userPath = db.child("users").child(studentId).child("progress").child(quizId).child(partId)
+        userPath.updateChildren(progress)
     }
 
     private fun updateQuizCompletionStatus(studentId: String, quizId: String) {
         if (isPartCompleted) return
 
         val db = FirebaseDatabase.getInstance().reference
+        val quizRef = db.child("users").child(studentId).child("progress").child(quizId)
 
-        val paths = mutableListOf(
-            db.child("users").child(studentId).child("progress").child(quizId)
-        )
-
-        if (classCode.isNotEmpty()) {
-            paths.add(
-                db.child("classes").child(classCode).child("students").child(studentId)
-                    .child("progress").child(quizId)
-            )
-        }
-
-        paths.forEach { quizRef ->
-            quizRef.get().addOnSuccessListener { snapshot ->
-                val partNodes = snapshot.children.filter { it.key?.startsWith("part") == true || it.key == "post-test" }
-                val allCompleted = partNodes.all { part -> part.child("isCompleted").getValue(Boolean::class.java) ?: false }
-                quizRef.child("isCompleted").setValue(allCompleted)
-            }
+        quizRef.get().addOnSuccessListener { snapshot ->
+            val partNodes = snapshot.children.filter { it.key?.startsWith("part") == true || it.key == "post-test" }
+            val allCompleted = partNodes.all { part -> part.child("isCompleted").getValue(Boolean::class.java) ?: false }
+            quizRef.child("isCompleted").setValue(allCompleted)
         }
     }
 
@@ -387,7 +423,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         scoreProgressIndicator.progress = percentage
         scoreProgressText.text = "$percentage %"
 
-        scoreTitle.text = "Congrats! You completed the pre-test!"
+        scoreTitle.text = "Congrats! You have completed this test!"
         scoreTitle.setTextColor(Color.BLUE)
 
         val dialog = AlertDialog.Builder(this)
@@ -434,7 +470,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 .setPositiveButton("Yes") { _, _ ->
                     if (isProcessingClick) return@setPositiveButton // Prevent multiple exit clicks
                     isProcessingClick = true
-                    updateProgress(studentId, quizId, partId)
                     val intent = Intent(this, StudentActivity::class.java)
                     startActivity(intent)
                     finish()

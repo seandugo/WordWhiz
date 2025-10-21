@@ -24,6 +24,7 @@ import com.example.thesis_app.SignupActivity
 import com.example.thesis_app.models.ClassItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.firestore.FirebaseFirestore
 
 class TeacherClassesFragment : Fragment(R.layout.teachers) {
 
@@ -55,7 +56,8 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
                 startActivity(intent)
             },
             onEditClick = { showEditDialog(it) },
-            onDeleteClick = { showDeleteDialog(it) }
+            onDeleteClick = { showDeleteDialog(it) },
+            onArchiveClick = { classItem -> archiveClass(classItem) }
         )
 
         recyclerView.adapter = adapter
@@ -65,6 +67,7 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
         setupDragAndDrop()
         setupAddClassCard(view)
         setupTeacherRef()
+        cleanupOldArchives()
 
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -74,6 +77,49 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
                 }
             }
         )
+    }
+
+    private fun archiveClass(classItem: ClassItem) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val database = FirebaseDatabase.getInstance().reference
+
+        // Add timestamp for 15-day expiration
+        val archiveData = classItem.copy(
+            archivedAt = System.currentTimeMillis()
+        )
+
+        // Move to archived_classes
+        val archivedRef = database.child("users").child(userId).child("archived_classes").child(classItem.classCode)
+        archivedRef.setValue(archiveData)
+            .addOnSuccessListener {
+                // Remove from active list
+                database.child("users").child(userId).child("classes").child(classItem.classCode).removeValue()
+
+                // Optional: visually remove from adapter
+                adapter.archiveItem(classItem)
+
+                Toast.makeText(context, "Class archived successfully.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to archive class.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun cleanupOldArchives() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val database = FirebaseDatabase.getInstance().reference
+        val archivedRef = database.child("users").child(userId).child("archived_classes")
+
+        archivedRef.get().addOnSuccessListener { snapshot ->
+            val now = System.currentTimeMillis()
+            for (child in snapshot.children) {
+                val archivedAt = child.child("archivedAt").getValue(Long::class.java) ?: continue
+                val daysPassed = (now - archivedAt) / (1000 * 60 * 60 * 24)
+                if (daysPassed >= 15) {
+                    child.ref.removeValue() // auto-delete old archives
+                }
+            }
+        }
     }
 
     private fun setupTeacherRef() {
@@ -161,6 +207,12 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
     private fun setupAddClassCard(rootView: View) {
         val addCard = rootView.findViewById<CardView>(R.id.addClassCard)
         addCard.setOnClickListener {
+            // ✅ Check if class count reached 30
+            if (classList.size >= 30) {
+                Toast.makeText(requireContext(), "You can only have up to 30 classes.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val context = requireContext()
             val dialogView = layoutInflater.inflate(R.layout.dialog_add_class, null)
 

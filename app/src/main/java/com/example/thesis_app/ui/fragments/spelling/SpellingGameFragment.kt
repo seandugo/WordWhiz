@@ -248,31 +248,55 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
             try {
                 var word: String
                 var meaning: String
+
+                // ✅ Faster & more reliable API list
                 val apis = listOf(
+                    "https://api.api-ninjas.com/v1/randomword", // fast & reliable (needs API key)
+                    "https://random-word.ryanrk.com/api/english/word/random",
+                    "https://random-words-api.kushcreates.com/api?words=1&language=en",
+                    "https://random-words-api.vercel.app/word",
                     "https://random-word-api.vercel.app/api?words=1",
                     "https://random-word-form.herokuapp.com/random/noun"
                 )
 
+                val apiKey = "YOUR_API_NINJAS_KEY" // optional, only for first API
+
                 do {
                     word = ""
                     meaning = ""
+
                     var response: String? = null
                     for (api in apis) {
                         try {
-                            response = URL(api).readText()
-                            break
-                        } catch (_: Exception) {}
+                            response = withTimeout(1000L) { // ⏱ 1-second timeout per API
+                                if (api.contains("api-ninjas.com")) {
+                                    URL(api).openConnection().apply {
+                                        setRequestProperty("X-Api-Key", apiKey)
+                                    }.getInputStream().bufferedReader().use { it.readText() }
+                                } else {
+                                    URL(api).readText()
+                                }
+                            }
+                            if (!response.isNullOrBlank()) break
+                        } catch (_: Exception) { /* Try next API */ }
                     }
-                    if (response == null) throw Exception("No API response")
 
+                    if (response == null) throw Exception("No API responded in time")
+
+                    // 🧩 Extract word depending on API response type
                     word = when {
-                        response.startsWith("[") -> JSONArray(response).getString(0)
-                        response.startsWith("{") -> JSONObject(response).getString("word")
-                        else -> response.trim('"')
+                        response.startsWith("[") -> JSONArray(response).optString(0)
+                        response.startsWith("{") -> {
+                            val obj = JSONObject(response)
+                            obj.optString("word")
+                                .ifEmpty { obj.optJSONArray("word")?.optString(0) ?: "" }
+                        }
+                        else -> response.trim('"', ' ', '\n')
                     }
 
                     if (word.length !in 3..8) continue
 
+                    // 📖 Get meaning from dictionary API
                     try {
                         val dictRes = URL("https://api.dictionaryapi.dev/api/v2/entries/en/$word").readText()
                         val json = JSONArray(dictRes).getJSONObject(0)
@@ -289,7 +313,7 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
                     currentMeaning = meaning
                     currentGuess = CharArray(currentWord.length) { '_' }
 
-                    // Save immediately
+                    // 💾 Save immediately
                     val prefs = requireActivity().getSharedPreferences("USER_PREFS", Context.MODE_PRIVATE)
                     val studentId = prefs.getString("studentId", null)
                     if (studentId != null) {
@@ -478,31 +502,33 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
             val i = hiddenIndices.random()
             val charToReveal = currentWord[i]
 
-            // Reveal all occurrences of this character
-            for (index in currentWord.indices) {
-                if (currentWord[index] == charToReveal) {
-                    currentGuess[index] = charToReveal
-                    revealedByHint.add(index)
-                }
-            }
+            // ✅ Reveal only one letter, not duplicates
+            currentGuess[i] = charToReveal
+            revealedByHint.add(i)
 
             updateWordDisplay()
 
-            // Disable all buttons for this character
+            // Disable only the revealed character button if all its letters are already revealed
             val rows = listOf(row1, row2)
             for (r in rows) {
                 for (j in 0 until r.childCount) {
                     val btn = r.getChildAt(j) as? Button ?: continue
                     if (btn.text.toString().equals(charToReveal.toString(), ignoreCase = true)) {
-                        btn.isEnabled = false
+                        // disable button if all occurrences of that letter are revealed
+                        val allRevealed = currentWord.indices
+                            .filter { currentWord[it] == charToReveal }
+                            .all { currentGuess[it] == charToReveal }
+                        if (allRevealed) btn.isEnabled = false
                     }
                 }
             }
+
             remainingHints--
             totalHints.text = remainingHints.toString()
             if (remainingHints == 0) btnHint.isEnabled = false
         }
     }
+
 
     private fun setupLetterButtons() {
         row1.removeAllViews()

@@ -116,6 +116,14 @@
                 android:clipToPadding="false"
                 android:paddingBottom="16dp"
                 android:layout_marginBottom="50dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/startButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pixel"
+                android:textColor="@color/black"
+                android:text="Start!"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
