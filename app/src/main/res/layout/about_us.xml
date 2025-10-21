@@ -22,10 +22,10 @@
             android:layout_height="wrap_content"
             android:text="WORDWHIZ"
             android:textColor="#FFC007"
-            android:textSize="28sp"
+            android:textSize="@dimen/abouts_us_welcome_text"
             android:textStyle="bold"
             android:fontFamily="@font/pixel"
-            android:layout_gravity="center_vertical"/>
+            android:layout_gravity="center_vertical" />
     </androidx.appcompat.widget.Toolbar>
 
     <ScrollView
@@ -36,30 +36,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp"
+            android:padding="@dimen/about_us_linear_Layout_padding"
             android:gravity="center_horizontal">
 
-        <!-- Header -->
+            <!-- Header -->
             <TextView
                 android:id="@+id/headerTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="ABOUT US"
-                android:textSize="24sp"
+                android:textSize="@dimen/about_us_headerTitle"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
                 android:fontFamily="@font/pixel"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="@dimen/about_us_appLogoImage_marginBottom" />
 
             <!-- App Logo -->
             <ImageView
                 android:id="@+id/appLogoImage"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="@dimen/about_us_appLogoImage_width"
+                android:layout_height="@dimen/about_us_appLogoImage_width"
                 android:src="@drawable/wordwhiz_logo"
                 android:contentDescription="WordWhiz Logo"
-                android:layout_marginBottom="12dp"
-                android:scaleType="fitCenter"/>
+                android:layout_marginBottom="@dimen/about_us_appLogoImage_marginBottom"
+                android:scaleType="fitCenter" />
 
             <!-- Collapsible Description Header -->
             <LinearLayout
@@ -68,9 +68,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="12dp"
+                android:padding="@dimen/about_us_descriptionHeader_padding"
                 android:background="#FFC007"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="@dimen/about_us_descriptionHeader_marginBottom"
                 android:clickable="true"
                 android:focusable="true">
 
@@ -81,39 +81,39 @@
                     android:text="App Description"
                     android:textAlignment="center"
                     android:fontFamily="@font/pixel"
-                    android:textSize="18sp"
+                    android:textSize="@dimen/about_us_researchTeamHeader_textSize"
                     android:textStyle="bold"
-                    android:textColor="@android:color/black"/>
+                    android:textColor="@android:color/black" />
 
                 <ImageView
                     android:id="@+id/arrowIcon"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
+                    android:layout_width="@dimen/about_us_arrowIcon_size"
+                    android:layout_height="@dimen/about_us_arrowIcon_size"
                     android:src="@drawable/ic_arrow_down"
-                    android:contentDescription="Arrow Icon"/>
+                    android:contentDescription="Arrow Icon" />
             </LinearLayout>
 
             <!-- Collapsible Description Box -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="@dimen/about_us_description_card_marginBottom"
                 android:clipToOutline="true"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="@dimen/about_us_team_card_cornerRadius"
+                app:cardElevation="@dimen/about_us_team_card_elevation"
                 android:backgroundTint="#FFF8E1">
 
                 <TextView
                     android:id="@+id/appDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp"
+                    android:padding="@dimen/about_us_description_card_padding"
                     android:text="WordWhiz – Learn Language the Fun Way!\n\nWordWhiz is an innovative language learning app designed to make mastering English engaging, interactive, and effective for students of all levels. By combining gamification with proven teaching methods, WordWhiz motivates learners to actively participate in language exercises, turning learning into an exciting challenge.\n\nWith WordWhiz, students can:\n\n- Boost involvement through game-like features such as points, levels, and rewards that keep motivation high.\n- Improve pronunciation, intonation, and punctuation with interactive exercises that provide instant feedback and guidance.\n- Enhance overall learning outcomes by seamlessly integrating with standard classroom techniques, supporting both teachers and students in achieving measurable progress.\n\nWhether in the classroom or at home, WordWhiz transforms language learning into a fun and effective experience. Engage, learn, and excel with WordWhiz!"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="4dp"
+                    android:textSize="@dimen/about_us_description_textSize"
+                    android:lineSpacingExtra="@dimen/about_us_description_lineSpacing"
                     android:textColor="@android:color/black"
                     android:fontFamily="@font/pixel"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Research Team Header -->
@@ -122,58 +122,58 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Research Team"
-                android:textSize="18sp"
+                android:textSize="@dimen/about_us_researchTeamHeader_textSize"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
                 android:fontFamily="@font/pixel"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="@dimen/about_us_researchTeamHeader_marginBottom" />
 
             <!-- TEAM MEMBER 1 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
+                android:layout_marginBottom="@dimen/about_us_team_card_marginBottom"
+                app:cardCornerRadius="@dimen/about_us_team_card_cornerRadius"
+                app:cardElevation="@dimen/about_us_team_card_elevation"
                 android:backgroundTint="#FFF8E1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="12dp"
+                    android:padding="@dimen/about_us_team_card_padding"
                     android:gravity="center_vertical">
 
                     <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="@dimen/about_us_profileImage_size"
+                        android:layout_height="@dimen/about_us_profileImage_size"
                         android:src="@drawable/profile_ahleeah"
                         android:scaleType="centerCrop"
                         android:background="@drawable/circle_mask"
                         android:clipToOutline="true"
-                        android:contentDescription="Profile Ahleeah"/>
+                        android:contentDescription="Profile Ahleeah" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_marginStart="12dp">
+                        android:layout_marginStart="@dimen/about_us_profileImage_marginStart">
 
                         <TextView
                             android:text="Ahleeah Reeyo L. Alduñar"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="@android:color/black"/>
+                            android:textSize="@dimen/about_us_team_name_textSize"
+                            android:textColor="@android:color/black" />
 
                         <TextView
                             android:text="0965-198-7927"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:textSize="14sp"
-                            android:textColor="@android:color/black"/>
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/about_us_team_contact_textSize"
+                            android:textColor="@android:color/black" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -182,48 +182,48 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
+                android:layout_marginBottom="@dimen/about_us_team_card_marginBottom"
+                app:cardCornerRadius="@dimen/about_us_team_card_cornerRadius"
+                app:cardElevation="@dimen/about_us_team_card_elevation"
                 android:backgroundTint="#FFF8E1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="12dp"
+                    android:padding="@dimen/about_us_team_card_padding"
                     android:gravity="center_vertical">
 
                     <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="@dimen/about_us_profileImage_size"
+                        android:layout_height="@dimen/about_us_profileImage_size"
                         android:src="@drawable/profile_catherine"
                         android:scaleType="centerCrop"
                         android:background="@drawable/circle_mask"
                         android:clipToOutline="true"
-                        android:contentDescription="Profile Catherine"/>
+                        android:contentDescription="Profile Catherine" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_marginStart="12dp">
+                        android:layout_marginStart="@dimen/about_us_profileImage_marginStart">
 
                         <TextView
                             android:text="Catherine N. Belen"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="@android:color/black"/>
+                            android:textSize="@dimen/about_us_team_name_textSize"
+                            android:textColor="@android:color/black" />
 
                         <TextView
                             android:text="0976-182-1315"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:textSize="14sp"
-                            android:textColor="@android:color/black"/>
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/about_us_team_contact_textSize"
+                            android:textColor="@android:color/black" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -232,48 +232,48 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
+                android:layout_marginBottom="@dimen/about_us_team_card_marginBottom"
+                app:cardCornerRadius="@dimen/about_us_team_card_cornerRadius"
+                app:cardElevation="@dimen/about_us_team_card_elevation"
                 android:backgroundTint="#FFF8E1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="12dp"
+                    android:padding="@dimen/about_us_team_card_padding"
                     android:gravity="center_vertical">
 
                     <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="@dimen/about_us_profileImage_size"
+                        android:layout_height="@dimen/about_us_profileImage_size"
                         android:src="@drawable/profile_julieanne"
                         android:scaleType="centerCrop"
                         android:background="@drawable/circle_mask"
                         android:clipToOutline="true"
-                        android:contentDescription="Profile Julieanne"/>
+                        android:contentDescription="Profile Julieanne" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_marginStart="12dp">
+                        android:layout_marginStart="@dimen/about_us_profileImage_marginStart">
 
                         <TextView
                             android:text="Julieanne P. Castro"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="@android:color/black"/>
+                            android:textSize="@dimen/about_us_team_name_textSize"
+                            android:textColor="@android:color/black" />
 
                         <TextView
                             android:text="0977-073-5581"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:textSize="14sp"
-                            android:textColor="@android:color/black"/>
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/about_us_team_contact_textSize"
+                            android:textColor="@android:color/black" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -282,48 +282,48 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
+                android:layout_marginBottom="@dimen/about_us_team_card_marginBottom"
+                app:cardCornerRadius="@dimen/about_us_team_card_cornerRadius"
+                app:cardElevation="@dimen/about_us_team_card_elevation"
                 android:backgroundTint="#FFF8E1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="12dp"
+                    android:padding="@dimen/about_us_team_card_padding"
                     android:gravity="center_vertical">
 
                     <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="@dimen/about_us_profileImage_size"
+                        android:layout_height="@dimen/about_us_profileImage_size"
                         android:src="@drawable/profile_sean"
                         android:scaleType="centerCrop"
                         android:background="@drawable/circle_mask"
                         android:clipToOutline="true"
-                        android:contentDescription="Profile Sean"/>
+                        android:contentDescription="Profile Sean" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_marginStart="12dp">
+                        android:layout_marginStart="@dimen/about_us_profileImage_marginStart">
 
                         <TextView
                             android:text="Sean Paul E. Dumaop"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="@android:color/black"/>
+                            android:textSize="@dimen/about_us_team_name_textSize"
+                            android:textColor="@android:color/black" />
 
                         <TextView
                             android:text="0929-539-8722"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:textSize="14sp"
-                            android:textColor="@android:color/black"/>
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/about_us_team_contact_textSize"
+                            android:textColor="@android:color/black" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -332,48 +332,48 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
+                android:layout_marginBottom="@dimen/about_us_team_card_marginBottom"
+                app:cardCornerRadius="@dimen/about_us_team_card_cornerRadius"
+                app:cardElevation="@dimen/about_us_team_card_elevation"
                 android:backgroundTint="#FFF8E1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="12dp"
+                    android:padding="@dimen/about_us_team_card_padding"
                     android:gravity="center_vertical">
 
                     <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="@dimen/about_us_profileImage_size"
+                        android:layout_height="@dimen/about_us_profileImage_size"
                         android:src="@drawable/profile_princess"
                         android:scaleType="centerCrop"
                         android:background="@drawable/circle_mask"
                         android:clipToOutline="true"
-                        android:contentDescription="Profile Princess"/>
+                        android:contentDescription="Profile Princess" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_marginStart="12dp">
+                        android:layout_marginStart="@dimen/about_us_profileImage_marginStart">
 
                         <TextView
                             android:text="Princes Faith D. Handig"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="@android:color/black"/>
+                            android:textSize="@dimen/about_us_team_name_textSize"
+                            android:textColor="@android:color/black" />
 
                         <TextView
                             android:text="0964-199-5009"
-                            android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:textSize="14sp"
-                            android:textColor="@android:color/black"/>
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/about_us_team_contact_textSize"
+                            android:textColor="@android:color/black" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ===== Toolbar ===== -->
+    <dimen name="abouts_us_welcome_text">20sp</dimen> <!-- Title text size -->
+
+    <!-- ===== LinearLayout Padding ===== -->
+    <dimen name="about_us_linear_Layout_padding">16dp</dimen>
+
+    <!-- ===== Header Title ===== -->
+    <dimen name="about_us_headerTitle">22sp</dimen>
+
+    <!-- ===== App Logo ===== -->
+    <dimen name="about_us_appLogoImage_width">150dp</dimen>
+    <dimen name="about_us_appLogoImage_marginBottom">16dp</dimen>
+
+    <!-- ===== Collapsible Description Header ===== -->
+    <dimen name="about_us_descriptionHeader_padding">12dp</dimen>
+    <dimen name="about_us_arrowIcon_size">45dp</dimen>
+    <dimen name="about_us_descriptionHeader_marginBottom">8dp</dimen>
+    <dimen name="about_us_description_card_marginBottom">24dp</dimen>
+    <dimen name="about_us_description_card_padding">16dp</dimen>
+    <dimen name="about_us_description_textSize">14sp</dimen>
+    <dimen name="about_us_description_lineSpacing">4dp</dimen>
+
+    <!-- ===== Research Team Header ===== -->
+    <dimen name="about_us_researchTeamHeader_textSize">18sp</dimen>
+    <dimen name="about_us_researchTeamHeader_marginBottom">12dp</dimen>
+
+    <!-- ===== Team Member Cards ===== -->
+    <dimen name="about_us_team_card_cornerRadius">12dp</dimen>
+    <dimen name="about_us_team_card_elevation">3dp</dimen>
+    <dimen name="about_us_team_card_marginBottom">8dp</dimen>
+    <dimen name="about_us_team_card_padding">12dp</dimen>
+
+    <!-- ===== Team Member Image ===== -->
+    <dimen name="about_us_profileImage_size">60dp</dimen>
+    <dimen name="about_us_profileImage_marginStart">12dp</dimen>
+
+    <!-- ===== Team Member Text ===== -->
+    <dimen name="about_us_team_name_textSize">16sp</dimen>
+    <dimen name="about_us_team_contact_textSize">14sp</dimen>
+
+</resources>
