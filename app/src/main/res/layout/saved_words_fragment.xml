@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,13 +10,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="24dp"
+        android:padding="@dimen/saved_words_fragment_empty_padding"
         android:visibility="gone">
 
         <ImageView
             android:id="@+id/dayImage"
             android:layout_width="wrap_content"
-            android:layout_height="346dp"
+            android:layout_height="@dimen/saved_words_fragment_image_height"
             android:contentDescription="Daily spelling image"
             android:src="@drawable/saved_words" />
 
@@ -27,12 +26,12 @@
             android:layout_height="wrap_content"
             android:text="Enhance your vocabulary by saving words here"
             android:gravity="center"
-            android:textSize="16sp"
+            android:textSize="@dimen/saved_words_fragment_description_text_size"
             android:fontFamily="@font/pixel"
             android:textColor="#333333"
-            android:layout_marginBottom="32dp"
-            android:paddingLeft="40dp"
-            android:paddingRight="40dp"/>
+            android:layout_marginBottom="@dimen/saved_words_fragment_description_margin_bottom"
+            android:paddingLeft="@dimen/saved_words_fragment_description_padding_horizontal"
+            android:paddingRight="@dimen/saved_words_fragment_description_padding_horizontal"/>
     </LinearLayout>
 
     <!-- Header + RecyclerView container -->
@@ -47,11 +46,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Recall your words!"
-            android:textSize="24sp"
+            android:textSize="@dimen/saved_words_fragment_header_text_size"
             android:textStyle="bold"
             android:fontFamily="@font/pixel"
             android:textColor="#333333"
-            android:padding="16dp"
+            android:padding="@dimen/saved_words_fragment_header_padding"
             android:visibility="gone"/>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -59,8 +58,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"/>
+            android:paddingLeft="@dimen/saved_words_fragment_recycler_padding_horizontal"
+            android:paddingRight="@dimen/saved_words_fragment_recycler_padding_horizontal"/>
     </LinearLayout>
 
 </FrameLayout>

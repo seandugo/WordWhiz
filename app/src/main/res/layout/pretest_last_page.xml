@@ -23,7 +23,8 @@
 
         <Button
             android:id="@+id/button"
-            android:layout_width="223dp"
+            android:layout_width="@dimen/intro_teacher_fourth_page_button_width"
+            android:textSize="@dimen/intro_teacher_fourth_page_button_text_size"
             android:layout_height="wrap_content"
             android:text="@string/let_s_start"
             android:textColor="#000"

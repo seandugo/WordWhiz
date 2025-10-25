@@ -3,15 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="6dp">
+    android:layout_margin="@dimen/item_quiz_progress_margin"
+    app:cardCornerRadius="@dimen/item_quiz_progress_corner_radius"
+    app:cardElevation="@dimen/item_quiz_progress_elevation">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/item_quiz_progress_padding">
 
         <!-- Title + Subtitle -->
         <LinearLayout
@@ -23,7 +23,7 @@
                 android:id="@+id/quizTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="@dimen/item_quiz_progress_title_text_size"
                 android:textStyle="bold"
                 tools:text="Android"
                 android:fontFamily="@font/pixel" />
@@ -32,10 +32,10 @@
                 android:id="@+id/quizSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="@dimen/item_quiz_progress_subtitle_text_size"
                 tools:text="Android"
                 android:fontFamily="@font/pixel"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="@dimen/item_quiz_progress_progress_text_margin_top" />
 
         </LinearLayout>
 
@@ -43,7 +43,7 @@
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progressBar"
             android:layout_width="match_parent"
-            android:layout_height="12dp"
+            android:layout_height="@dimen/item_quiz_progress_progress_height"
             app:trackColor="?attr/colorSurfaceVariant"
             app:indicatorColor="?attr/colorPrimary"
             android:progress="0"
@@ -55,9 +55,9 @@
             android:id="@+id/progressText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/item_quiz_progress_progress_text_margin_top"
             android:text="0% completed"
-            android:textSize="12sp"
+            android:textSize="@dimen/item_quiz_progress_progress_text_size"
             android:fontFamily="@font/pixel" />
 
     </LinearLayout>

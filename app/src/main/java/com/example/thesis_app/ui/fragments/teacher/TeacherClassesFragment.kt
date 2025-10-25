@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.thesis_app.ArchiveClasses
 import com.example.thesis_app.ClassAdapter
 import com.example.thesis_app.ClassDetailActivity
 import com.example.thesis_app.R
@@ -30,6 +31,7 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ClassAdapter
+    private lateinit var archiveButton: ImageView
     private val classList = mutableListOf<ClassItem>()
     private lateinit var itemTouchHelper: ItemTouchHelper
     private val auth = FirebaseAuth.getInstance()
@@ -42,6 +44,7 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView = view.findViewById(R.id.classRecyclerView)
+        archiveButton = view.findViewById(R.id.archiveButton)
 
         adapter = ClassAdapter(
             classList,
@@ -68,6 +71,11 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
         setupAddClassCard(view)
         setupTeacherRef()
         cleanupOldArchives()
+
+        archiveButton.setOnClickListener {
+            val intent = Intent(requireContext(), ArchiveClasses::class.java)
+            startActivity(intent)
+        }
 
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,

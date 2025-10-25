@@ -3,14 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="6dp">
+    android:layout_margin="@dimen/quiz_item_recycler_row_card_margin"
+    app:cardCornerRadius="@dimen/quiz_item_recycler_row_card_corner_radius"
+    app:cardElevation="@dimen/quiz_item_recycler_row_card_elevation">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:padding="@dimen/quiz_item_recycler_row_card_padding">
 
         <!-- LEFT: Title + Subtitle -->
         <LinearLayout
@@ -26,7 +26,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pixel"
-                android:textSize="18sp"
+                android:textSize="@dimen/quiz_item_recycler_row_title_text_size"
                 android:textStyle="bold"
                 tools:text="Android" />
 
@@ -34,7 +34,7 @@
                 android:id="@+id/quiz_subtitle_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/quiz_item_recycler_row_subtitle_margin_top"
                 tools:text="All about Android OS" />
         </LinearLayout>
 
@@ -50,19 +50,19 @@
 
             <ImageView
                 android:id="@+id/checkImage"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="@dimen/quiz_item_recycler_row_check_icon_size"
+                android:layout_height="@dimen/quiz_item_recycler_row_check_icon_size"
                 android:src="@drawable/check"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
             <!-- Percentage text -->
             <TextView
                 android:id="@+id/quiz_percentage_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/quiz_item_recycler_row_percentage_margin_top"
                 android:text="0%"
-                android:textSize="12sp"
+                android:textSize="@dimen/quiz_item_recycler_row_percentage_text_size"
                 android:textStyle="bold" />
         </LinearLayout>
 

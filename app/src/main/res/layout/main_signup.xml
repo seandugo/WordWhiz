@@ -21,20 +21,19 @@
                 android:id="@+id/toolbar_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_margin="@dimen/main_signup_toolbar_margin"
                 android:fontFamily="@font/pixel"
                 android:text="Signup"
                 android:textColor="#000"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_signup_title_text_size"
                 android:textStyle="bold" />
 
-            <!-- Horizontal ProgressBar -->
             <ProgressBar
                 android:id="@+id/pageProgressBar"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_marginEnd="20dp"
-                android:layout_height="4dp"
+                android:layout_marginEnd="@dimen/main_signup_progress_margin_end"
+                android:layout_height="@dimen/main_signup_progress_height"
                 android:max="100"
                 android:progress="0"
                 android:progressTint="#FFC007" />
@@ -46,5 +45,4 @@
         android:name="com.example.thesis_app.ui.fragments.signup.FirstPageFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
 </LinearLayout>

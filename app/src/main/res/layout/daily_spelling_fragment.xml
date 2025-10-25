@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="@dimen/daily_spelling_fragment_padding"
     android:gravity="center"
     android:background="@android:color/white">
 
@@ -11,8 +11,8 @@
     <ImageView
         android:id="@+id/dayImage"
         android:layout_width="wrap_content"
-        android:layout_height="345dp"
-        android:layout_marginBottom="24dp"
+        android:layout_height="@dimen/daily_spelling_fragment_image_height"
+        android:layout_marginBottom="@dimen/daily_spelling_fragment_image_margin_bottom"
         android:contentDescription="Daily spelling image"
         android:src="@drawable/spelling" />
 
@@ -22,11 +22,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Expand Vocabulary"
-        android:textSize="28sp"
+        android:textSize="@dimen/daily_spelling_fragment_title_text_size"
         android:textStyle="bold"
         android:fontFamily="@font/pixel"
         android:textColor="#1565C0"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="@dimen/daily_spelling_fragment_title_margin_bottom"/>
 
     <!-- Description -->
     <TextView
@@ -35,10 +35,10 @@
         android:layout_height="wrap_content"
         android:text="Welcome to Daily Spelling challenge!\nGet ready to practice and learn new words."
         android:gravity="center"
-        android:textSize="16sp"
+        android:textSize="@dimen/daily_spelling_fragment_description_text_size"
         android:fontFamily="@font/pixel"
         android:textColor="#333333"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginBottom="@dimen/daily_spelling_fragment_description_margin_bottom"/>
 
     <!-- Start Button -->
     <Button
@@ -49,6 +49,6 @@
         android:backgroundTint="#FFC007"
         android:textColor="@android:color/black"
         android:fontFamily="@font/pixel"
-        android:padding="12dp"/>
+        android:padding="@dimen/daily_spelling_fragment_button_padding"/>
 
 </LinearLayout>

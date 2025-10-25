@@ -20,10 +20,11 @@
 
         <Button
             android:id="@+id/button"
-            android:layout_width="223dp"
+            android:layout_width="@dimen/intro_teacher_fourth_page_button_width"
             android:layout_height="wrap_content"
             android:text="Next"
             android:textColor="#000"
+            android:textSize="@dimen/intro_teacher_fourth_page_button_text_size"
             android:fontFamily="@font/pixel"/>
     </LinearLayout>
 </LinearLayout>

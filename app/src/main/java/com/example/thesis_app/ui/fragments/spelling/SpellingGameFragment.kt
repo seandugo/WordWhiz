@@ -249,17 +249,14 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
                 var word: String
                 var meaning: String
 
-                // ✅ Faster & more reliable API list
+                // ✅ Stable, free random word APIs (no API key required)
                 val apis = listOf(
-                    "https://api.api-ninjas.com/v1/randomword", // fast & reliable (needs API key)
-                    "https://random-word.ryanrk.com/api/english/word/random",
-                    "https://random-words-api.kushcreates.com/api?words=1&language=en",
-                    "https://random-words-api.vercel.app/word",
                     "https://random-word-api.vercel.app/api?words=1",
-                    "https://random-word-form.herokuapp.com/random/noun"
+                    "https://random-words-api.vercel.app/word",
+                    "https://random-word-form.herokuapp.com/random/noun",
+                    "https://random-word.ryanrk.com/api/english/word/random",
+                    "https://random-word-api.kushcreates.com/api?words=1&language=en"
                 )
-
-                val apiKey = "YOUR_API_NINJAS_KEY" // optional, only for first API
 
                 do {
                     word = ""
@@ -268,14 +265,8 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
                     var response: String? = null
                     for (api in apis) {
                         try {
-                            response = withTimeout(1000L) { // ⏱ 1-second timeout per API
-                                if (api.contains("api-ninjas.com")) {
-                                    URL(api).openConnection().apply {
-                                        setRequestProperty("X-Api-Key", apiKey)
-                                    }.getInputStream().bufferedReader().use { it.readText() }
-                                } else {
-                                    URL(api).readText()
-                                }
+                            response = withTimeout(1500L) { // ⏱ 1.5-second timeout per API
+                                URL(api).readText()
                             }
                             if (!response.isNullOrBlank()) break
                         } catch (_: Exception) { /* Try next API */ }

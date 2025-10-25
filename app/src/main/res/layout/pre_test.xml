@@ -17,16 +17,16 @@
             android:name="com.example.thesis_app.ui.fragments.pretest.PreAssessmentFragment"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/linearProgress"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/pre_test_progress_height"
             style="@style/Widget.Material3.LinearProgressIndicator"
             android:max="100"
             android:progress="0"
-            android:padding="20dp"/>
+            android:padding="@dimen/pre_test_progress_padding" />
 
     </LinearLayout>
 </LinearLayout>

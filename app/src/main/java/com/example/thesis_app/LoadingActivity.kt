@@ -57,7 +57,6 @@ class LoadingActivity : ComponentActivity() {
 
                 "signup" -> {
                     startActivity(Intent(this, SignupActivity::class.java))
-                    finish()
                 }
 
                 "createAccount" -> {

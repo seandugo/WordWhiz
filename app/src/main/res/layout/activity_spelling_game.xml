@@ -8,24 +8,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- AppBar with Toolbar -->
+        <!-- AppBar -->
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
-
-        </com.google.android.material.appbar.AppBarLayout>
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 
         <!-- Main Content -->
         <LinearLayout
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="20dp"
+            android:padding="@dimen/padding_default"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="?attr/actionBarSize">
 
+            <!-- Speaker Buttons -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -33,67 +32,65 @@
 
                 <ImageView
                     android:id="@+id/btnSpeakSlow"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_margin="10dp"
-                    android:adjustViewBounds="true"
+                    android:layout_width="@dimen/button_size_small"
+                    android:layout_height="@dimen/button_size_small"
+                    android:layout_margin="@dimen/margin_default"
                     android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
                     android:src="@drawable/slow_speaker"
-                    android:background="@drawable/rounded_button"/>
+                    android:background="@drawable/rounded_button" />
 
                 <ImageView
                     android:id="@+id/btnSpeakNormal"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    android:src="@drawable/volume"
-                    android:layout_margin="10dp"
-                    android:padding="20dp"
+                    android:layout_width="@dimen/button_size_large"
+                    android:layout_height="@dimen/button_size_large"
+                    android:layout_margin="@dimen/margin_default"
+                    android:padding="@dimen/padding_default"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
-                    android:background="@drawable/rounded_button"/>
+                    android:src="@drawable/volume"
+                    android:background="@drawable/rounded_button" />
             </LinearLayout>
 
-            <!-- User's current guess -->
+            <!-- Guess Section -->
             <LinearLayout
                 android:id="@+id/guessLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:paddingLeft="30dp">
+                android:layout_marginTop="@dimen/margin_large"
+                android:paddingLeft="@dimen/padding_large">
 
                 <TextView
                     android:id="@+id/textGuess"
                     android:text="Tap letters..."
-                    android:textSize="32sp"
+                    android:textSize="@dimen/text_large"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
 
                 <ImageView
                     android:id="@+id/backspace"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:src="@drawable/backspace"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"/>
-
+                    android:layout_width="@dimen/icon_size_small"
+                    android:layout_height="@dimen/icon_size_small"
+                    android:layout_marginLeft="@dimen/margin_default"
+                    android:src="@drawable/backspace" />
             </LinearLayout>
 
-            <!-- Meaning -->
+            <!-- Word Meaning -->
             <TextView
                 android:id="@+id/textMeaning"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:textSize="15sp"
-                android:gravity="center"/>
+                android:layout_marginTop="@dimen/margin_default"
+                android:textSize="@dimen/text_small"
+                android:gravity="center" />
 
-            <!-- Letters Grid -->
+            <!-- Letter Grid -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginTop="20dp">
+                android:layout_marginTop="@dimen/margin_large">
 
                 <LinearLayout
                     android:id="@+id/row1"
@@ -101,21 +98,23 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_marginBottom="@dimen/margin_small" />
 
                 <LinearLayout
                     android:id="@+id/row2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:orientation="horizontal"/>
+                    android:orientation="horizontal" />
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="@dimen/padding_small"
             android:titleTextAppearance="@style/ToolbarTitleText">
 
             <TextView
@@ -126,38 +125,38 @@
                 android:fontFamily="@font/pixel"
                 android:textColor="@android:color/white"
                 android:background="@drawable/rounded_cancel"
-                android:padding="10dp"/>
+                android:padding="@dimen/padding_small"
+                android:textSize="@dimen/text_medium" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:layout_margin="20dp"
+                android:layout_margin="@dimen/margin_default"
                 android:background="@drawable/rounded_button">
 
                 <TextView
                     android:id="@+id/totalHints"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:padding="10dp"
+                    android:layout_width="@dimen/icon_size_large"
+                    android:layout_height="@dimen/icon_size_large"
+                    android:padding="@dimen/padding_small"
                     android:text="3"
                     android:textAlignment="center"
                     android:textColor="@color/black"
-                    android:textSize="24sp" />
+                    android:textSize="@dimen/text_large" />
 
                 <ImageView
                     android:id="@+id/btnHint"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:contentDescription="Hint"
-                    android:padding="10dp"
+                    android:layout_width="@dimen/icon_size_large"
+                    android:layout_height="@dimen/icon_size_large"
+                    android:padding="@dimen/padding_small"
                     android:scaleType="fitCenter"
                     android:src="@drawable/hints" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- Loading overlay -->
+    <!-- Loading Overlay -->
     <LinearLayout
         android:id="@+id/loadingLayout"
         android:orientation="vertical"
@@ -168,8 +167,8 @@
 
         <com.github.ybq.android.spinkit.SpinKitView
             android:id="@+id/progress"
-            android:layout_width="165dp"
-            android:layout_height="179dp"
+            android:layout_width="@dimen/loading_spinner_width"
+            android:layout_height="@dimen/loading_spinner_height"
             app:SpinKit_Color="#FFC007"
             app:SpinKit_Style="CubeGrid" />
 
@@ -180,9 +179,8 @@
             android:text="Finding word for you..."
             android:fontFamily="@font/pixel"
             android:gravity="center"
-            android:textSize="18sp"
-            android:layout_marginTop="20dp"/>
-
+            android:textSize="@dimen/text_medium"
+            android:layout_marginTop="@dimen/margin_large" />
     </LinearLayout>
 
 </FrameLayout>

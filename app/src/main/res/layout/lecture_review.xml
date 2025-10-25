@@ -11,7 +11,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="220dp"
+        android:layout_height="@dimen/lecture_review_header_height"
         android:fitsSystemWindows="true">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -46,7 +46,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:gravity="bottom|center_horizontal"
-                android:paddingBottom="32dp"
+                android:paddingBottom="@dimen/lecture_review_header_padding_bottom"
                 app:layout_collapseMode="parallax">
 
                 <TextView
@@ -55,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:text="Quiz Title"
                     android:textColor="@android:color/white"
-                    android:textSize="32sp"
+                    android:textSize="@dimen/lecture_review_name_text_size"
                     android:textAlignment="center"
                     android:fontFamily="@font/pixel"
                     android:textStyle="bold"/>
@@ -67,8 +67,8 @@
                     android:text="Lecture 1"
                     android:fontFamily="@font/pixel"
                     android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:layout_marginTop="8dp"/>
+                    android:textSize="@dimen/lecture_review_lecture_text_size"
+                    android:layout_marginTop="@dimen/lecture_review_lecture_margin_top"/>
             </LinearLayout>
 
             <!-- Toolbar -->
@@ -83,7 +83,7 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Scrollable content (TextView + RecyclerView together) -->
+    <!-- Scrollable content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -94,7 +94,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="@dimen/lecture_review_content_padding">
 
             <TextView
                 android:id="@+id/summaryText"
@@ -102,11 +102,11 @@
                 android:layout_height="wrap_content"
                 android:text="Lecture Overview"
                 android:textColor="@android:color/black"
-                android:textSize="16sp"
+                android:textSize="@dimen/lecture_review_summary_text_size"
                 android:fontFamily="@font/pixel"
                 android:textStyle="bold"
                 android:textAlignment="center"
-                android:paddingBottom="8dp"/>
+                android:paddingBottom="@dimen/lecture_review_summary_padding_bottom"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/lectureRecycler"
@@ -114,13 +114,13 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 android:clipToPadding="false"
-                android:paddingBottom="16dp"
-                android:layout_marginBottom="50dp"/>
+                android:paddingBottom="@dimen/lecture_review_recycler_padding_bottom"
+                android:layout_marginBottom="@dimen/lecture_review_recycler_margin_bottom"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/startButton"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/lecture_review_button_height"
                 android:fontFamily="@font/pixel"
                 android:textColor="@color/black"
                 android:text="Start!"/>

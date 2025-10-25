@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingTop="10dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingBottom="10dp"
+    android:paddingTop="@dimen/padding_top_with_courses"
+    android:paddingLeft="@dimen/padding_left_with_courses"
+    android:paddingRight="@dimen/padding_right_with_courses"
+    android:paddingBottom="@dimen/padding_bottom_with_courses"
     tools:context=".MainActivity">
 
     <!-- Top App Bar -->
@@ -18,11 +18,9 @@
         android:layout_height="wrap_content"
         android:title="My Quiz"
         android:titleTextAppearance="@style/ToolbarTitleText"
-        android:elevation="4dp">
+        android:elevation="@dimen/elevation_with_courses" />
 
-    </com.google.android.material.appbar.MaterialToolbar>
-
-    <!-- Existing content -->
+    <!-- Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,8 +35,8 @@
             android:background="@drawable/rounded_right"
             android:backgroundTint="#FFC007"
             android:orientation="vertical"
-            android:padding="12dp"
-            android:layout_marginEnd="8dp">
+            android:padding="@dimen/header_padding_with_courses"
+            android:layout_marginEnd="@dimen/header_margin_end_with_courses">
 
             <TextView
                 android:id="@+id/headerTitle"
@@ -46,12 +44,12 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pixel"
                 android:shadowColor="#000000"
-                android:shadowDx="2"
-                android:shadowDy="2"
-                android:shadowRadius="3"
+                android:shadowDx="@dimen/header_shadow_dx_with_courses"
+                android:shadowDy="@dimen/header_shadow_dy_with_courses"
+                android:shadowRadius="@dimen/header_shadow_radius_with_courses"
                 android:text="title"
                 android:textColor="#FFF"
-                android:textSize="24sp"
+                android:textSize="@dimen/header_title_text_size_with_courses"
                 android:textStyle="bold" />
 
             <TextView
@@ -60,7 +58,6 @@
                 android:layout_height="wrap_content"
                 android:text="subtitle"
                 android:textColor="#000" />
-
         </LinearLayout>
 
         <ImageView
@@ -73,25 +70,25 @@
             android:background="@drawable/rounded_left"
             android:backgroundTint="#FFC007"
             android:src="@drawable/book"
-            android:padding="10dp" />
+            android:padding="@dimen/review_image_padding_with_courses" />
     </LinearLayout>
 
+    <!-- Recycler & Progress Section -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ProgressBar
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:id="@+id/progress_bar"
+            android:layout_width="@dimen/progress_size_with_courses"
+            android:layout_height="@dimen/progress_size_with_courses"
             android:layout_centerInParent="true"
-            android:visibility="gone"
-            android:id="@+id/progress_bar"/>
+            android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:id="@+id/recycler_view"/>
+            android:layout_marginTop="@dimen/recycler_margin_top_with_courses" />
     </RelativeLayout>
-
 </LinearLayout>

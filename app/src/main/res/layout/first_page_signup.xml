@@ -4,16 +4,16 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="@dimen/first_page_signup_padding">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/teacher"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        android:layout_marginBottom="8dp">
+        app:cardCornerRadius="@dimen/first_page_signup_card_corner_radius"
+        app:cardElevation="@dimen/first_page_signup_card_elevation"
+        android:layout_marginBottom="@dimen/first_page_signup_card_margin_bottom">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -30,7 +30,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#66000000"/> <!-- semi-transparent black -->
+                android:background="#66000000" />
 
             <!-- Centered Text -->
             <TextView
@@ -39,15 +39,15 @@
                 android:layout_gravity="center"
                 android:fontFamily="@font/pixel"
                 android:text="Teacher"
-                android:textSize="60sp"
+                android:textSize="@dimen/first_page_signup_text_size"
                 android:textStyle="bold"
                 android:textColor="#FFC007"
                 android:shadowColor="#000000"
-                android:shadowDx="2"
-                android:shadowDy="2"
-                android:shadowRadius="3"
+                android:shadowDx="@dimen/first_page_signup_shadow_dx"
+                android:shadowDy="@dimen/first_page_signup_shadow_dy"
+                android:shadowRadius="@dimen/first_page_signup_shadow_radius"
                 android:background="#66000000"
-                android:padding="6dp"/>
+                android:padding="@dimen/first_page_signup_text_padding" />
         </FrameLayout>
 
     </androidx.cardview.widget.CardView>
@@ -57,43 +57,40 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        android:layout_marginTop="8dp">
+        app:cardCornerRadius="@dimen/first_page_signup_card_corner_radius"
+        app:cardElevation="@dimen/first_page_signup_card_elevation"
+        android:layout_marginTop="@dimen/first_page_signup_card_margin_top">
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- Background Image -->
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@drawable/student" />
 
-            <!-- Dark overlay -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#66000000"/> <!-- semi-transparent black -->
+                android:background="#66000000" />
 
-            <!-- Centered Text -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="@font/pixel"
                 android:text="Student"
-                android:textSize="60sp"
+                android:textSize="@dimen/first_page_signup_text_size"
                 android:textStyle="bold"
                 android:textColor="#FFC007"
                 android:shadowColor="#000000"
-                android:shadowDx="2"
-                android:shadowDy="2"
-                android:shadowRadius="3"
+                android:shadowDx="@dimen/first_page_signup_shadow_dx"
+                android:shadowDy="@dimen/first_page_signup_shadow_dy"
+                android:shadowRadius="@dimen/first_page_signup_shadow_radius"
                 android:background="#66000000"
-                android:padding="6dp"/>
+                android:padding="@dimen/first_page_signup_text_padding" />
         </FrameLayout>
 
     </androidx.cardview.widget.CardView>

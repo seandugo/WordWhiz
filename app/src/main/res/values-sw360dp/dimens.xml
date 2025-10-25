@@ -1,5 +1,5 @@
 <resources>
-    <dimen name="abouts_us_welcome_text">18sp</dimen>
+    <dimen name="abouts_us_welcome_text">20sp</dimen>
     <dimen name="about_us_linear_Layout_padding">14dp</dimen>
     <dimen name="about_us_headerTitle">20sp</dimen>
     <dimen name="about_us_appLogoImage_width">100dp</dimen>
@@ -20,4 +20,366 @@
     <dimen name="about_us_profileImage_marginStart">10dp</dimen>
     <dimen name="about_us_team_name_textSize">14sp</dimen>
     <dimen name="about_us_team_contact_textSize">12sp</dimen>
+
+    <dimen name="appbar_height">200dp</dimen>
+    <dimen name="header_padding_bottom">40dp</dimen>
+    <dimen name="header_text_large">24sp</dimen>
+    <dimen name="header_text_medium">16sp</dimen>
+    <dimen name="header_text_small">14sp</dimen>
+    <dimen name="header_text_margin_small">5dp</dimen>
+    <dimen name="header_classcode_padding">10dp</dimen>
+
+    <!-- Card -->
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_elevation">6dp</dimen>
+    <dimen name="card_padding">20dp</dimen>
+    <dimen name="card_margin_bottom">10dp</dimen>
+
+    <!-- Buttons -->
+    <dimen name="button_size">50dp</dimen>
+    <dimen name="button_text_size">28sp</dimen>
+
+    <!-- Layout padding -->
+    <dimen name="screen_padding">10dp</dimen>
+    <dimen name="recycler_padding_bottom">16dp</dimen>
+
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="padding_default">20dp</dimen>
+    <dimen name="padding_large">30dp</dimen>
+
+    <dimen name="margin_small">6dp</dimen>
+    <dimen name="margin_default">10dp</dimen>
+    <dimen name="margin_large">20dp</dimen>
+
+    <dimen name="button_size_small">100dp</dimen>
+    <dimen name="button_size_large">150dp</dimen>
+
+    <dimen name="icon_size_small">34dp</dimen>
+    <dimen name="icon_size_large">50dp</dimen>
+
+    <dimen name="text_small">15sp</dimen>
+    <dimen name="text_medium">18sp</dimen>
+    <dimen name="text_large">32sp</dimen>
+
+    <dimen name="loading_spinner_width">165dp</dimen>
+    <dimen name="loading_spinner_height">179dp</dimen>
+
+    <dimen name="margin_activity_teacher_small">8dp</dimen>
+    <dimen name="margin_activity_teacher_medium">12dp</dimen>
+    <dimen name="margin_activity_teacher_large">20dp</dimen>
+
+    <!-- Padding -->
+    <dimen name="padding_card">20dp</dimen>
+
+    <!-- Text Sizes -->
+    <dimen name="text_title">24sp</dimen>
+    <dimen name="text_button">18sp</dimen>
+
+    <!-- Button Size -->
+    <dimen name="button_small">50dp</dimen>
+
+    <!-- Card -->
+    <dimen name="card_radius">12dp</dimen>
+    <dimen name="card_elevation_activity_teacher">6dp</dimen>
+
+    <dimen name="carousel_image_size">75dp</dimen>
+    <dimen name="carousel_text_size">14sp</dimen>
+
+    <dimen name="classcode_image_padding">14dp</dimen>
+    <dimen name="classcode_input_side_padding">30dp</dimen>
+    <dimen name="classcode_note_side_padding">30dp</dimen>
+    <dimen name="classcode_note_bottom_padding">12dp</dimen>
+    <dimen name="classcode_note_text_size">11sp</dimen>
+    <dimen name="classcode_button_width">180dp</dimen>
+
+    <dimen name="class_overview_recycler_card_margin">12dp</dimen>
+    <dimen name="class_overview_recycler_card_corner">24dp</dimen>
+    <dimen name="class_overview_recycler_card_elevation">6dp</dimen>
+    <dimen name="class_overview_recycler_card_padding">16dp</dimen>
+
+    <dimen name="class_overview_recycler_title_text_size">24sp</dimen>
+    <dimen name="class_overview_recycler_title_padding_bottom">12dp</dimen>
+
+    <dimen name="class_overview_recycler_bar_height">180dp</dimen>
+    <dimen name="class_overview_recycler_bar_margin_vertical">8dp</dimen>
+
+    <dimen name="class_overview_recycler_stats_padding_top">12dp</dimen>
+    <dimen name="class_overview_recycler_label_text_size">16sp</dimen>
+
+    <dimen name="class_overview_recycler_value_row_margin_top">4dp</dimen>
+    <dimen name="class_overview_recycler_value_text_size">18sp</dimen>
+    <dimen name="class_overview_recycler_value_padding_vertical">12dp</dimen>
+    <dimen name="class_overview_recycler_value_padding_horizontal">8dp</dimen>
+    <dimen name="class_overview_recycler_value_margin_horizontal">4dp</dimen>
+
+    <!-- Padding -->
+    <dimen name="padding_top_with_courses">10dp</dimen>
+    <dimen name="padding_left_with_courses">16dp</dimen>
+    <dimen name="padding_right_with_courses">16dp</dimen>
+    <dimen name="padding_bottom_with_courses">10dp</dimen>
+
+    <!-- Toolbar -->
+    <dimen name="elevation_with_courses">4dp</dimen>
+
+    <!-- Header -->
+    <dimen name="header_padding_with_courses">12dp</dimen>
+    <dimen name="header_margin_end_with_courses">8dp</dimen>
+    <dimen name="header_shadow_dx_with_courses">2.0</dimen>
+    <dimen name="header_shadow_dy_with_courses">2.0</dimen>
+    <dimen name="header_shadow_radius_with_courses">3.0</dimen>
+    <dimen name="header_title_text_size_with_courses">24sp</dimen>
+
+    <!-- Image -->
+    <dimen name="review_image_padding_with_courses">10dp</dimen>
+
+    <!-- ProgressBar -->
+    <dimen name="progress_size_with_courses">20dp</dimen>
+
+    <!-- Recycler -->
+    <dimen name="recycler_margin_top_with_courses">16dp</dimen>
+
+    <dimen name="tab_height_with_daily_spelling">48dp</dimen>
+    <dimen name="tab_text_size_with_daily_spelling">16sp</dimen>
+    <dimen name="tab_indicator_height_with_daily_spelling">2dp</dimen>
+    <dimen name="tab_margin_with_daily_spelling">0dp</dimen>
+
+    <!-- ViewPager -->
+    <dimen name="viewpager_margin_top_with_daily_spelling">0dp</dimen>
+
+    <dimen name="daily_spelling_fragment_padding">24dp</dimen>
+    <dimen name="daily_spelling_fragment_image_height">345dp</dimen>
+    <dimen name="daily_spelling_fragment_image_margin_bottom">24dp</dimen>
+    <dimen name="daily_spelling_fragment_title_text_size">28sp</dimen>
+    <dimen name="daily_spelling_fragment_title_margin_bottom">12dp</dimen>
+    <dimen name="daily_spelling_fragment_description_text_size">16sp</dimen>
+    <dimen name="daily_spelling_fragment_description_margin_bottom">32dp</dimen>
+    <dimen name="daily_spelling_fragment_button_padding">12dp</dimen>
+
+    <dimen name="login_screen_padding">16dp</dimen>
+    <dimen name="login_logo_width">257dp</dimen>
+    <dimen name="login_logo_height">155dp</dimen>
+    <dimen name="login_title_text_size">60sp</dimen>
+    <dimen name="login_input_margin">12dp</dimen>
+    <dimen name="login_button_margin_top">12dp</dimen>
+    <dimen name="login_create_account_margin_top">8dp</dimen>
+    <dimen name="login_create_account_height">54dp</dimen>
+    <dimen name="login_text_shadow_dx">2</dimen>
+    <dimen name="login_text_shadow_dy">2</dimen>
+    <dimen name="login_text_shadow_radius">3</dimen>
+
+    <dimen name="loading_space_top">92dp</dimen>
+    <dimen name="loading_logo_width">299dp</dimen>
+    <dimen name="loading_logo_height">224dp</dimen>
+    <dimen name="loading_progress_width">71dp</dimen>
+    <dimen name="loading_progress_height">76dp</dimen>
+    <dimen name="loading_space_middle">92dp</dimen>
+
+    <dimen name="first_page_signup_padding">16dp</dimen>
+    <dimen name="first_page_signup_card_corner_radius">16dp</dimen>
+    <dimen name="first_page_signup_card_elevation">8dp</dimen>
+    <dimen name="first_page_signup_card_margin_bottom">8dp</dimen>
+    <dimen name="first_page_signup_card_margin_top">8dp</dimen>
+    <dimen name="first_page_signup_text_size">60sp</dimen>
+    <dimen name="first_page_signup_shadow_dx">2</dimen>
+    <dimen name="first_page_signup_shadow_dy">2</dimen>
+    <dimen name="first_page_signup_shadow_radius">3</dimen>
+    <dimen name="first_page_signup_text_padding">6dp</dimen>
+
+    <dimen name="intro_teacher_fourth_page_button_width">180dp</dimen>
+    <dimen name="intro_teacher_fourth_page_button_text_size">16sp</dimen>
+
+    <dimen name="item_achievement_margin">4dp</dimen>
+    <dimen name="item_achievement_corner_radius">16dp</dimen>
+    <dimen name="item_achievement_elevation">4dp</dimen>
+    <dimen name="item_achievement_image_height">120dp</dimen>
+    <dimen name="item_achievement_text_padding">8dp</dimen>
+    <dimen name="item_achievement_text_size">14sp</dimen>
+
+    <dimen name="item_definition_padding">20dp</dimen>
+    <dimen name="item_definition_emoji_text_size">48sp</dimen>
+    <dimen name="item_definition_title_text_size">18sp</dimen>
+    <dimen name="item_definition_definition_text_size">15sp</dimen>
+    <dimen name="item_definition_example_margin_top">6dp</dimen>
+    <dimen name="item_definition_example_text_size">14sp</dimen>
+    <dimen name="item_definition_explanation_text_size">13sp</dimen>
+    <dimen name="item_definition_margin_top_small">4dp</dimen>
+    <dimen name="item_definition_divider_margin_top">20dp</dimen>
+
+    <dimen name="item_quiz_divider_padding_top">12dp</dimen>
+    <dimen name="item_quiz_divider_padding_bottom">12dp</dimen>
+    <dimen name="item_quiz_divider_title_padding_top">8dp</dimen>
+    <dimen name="item_quiz_divider_title_text_size">12sp</dimen>
+    <dimen name="item_quiz_divider_line_height">1dp</dimen>
+
+    <dimen name="item_quiz_progress_margin">4dp</dimen>
+    <dimen name="item_quiz_progress_corner_radius">24dp</dimen>
+    <dimen name="item_quiz_progress_elevation">6dp</dimen>
+    <dimen name="item_quiz_progress_padding">16dp</dimen>
+
+    <dimen name="item_quiz_progress_title_text_size">18sp</dimen>
+    <dimen name="item_quiz_progress_subtitle_text_size">14sp</dimen>
+    <dimen name="item_quiz_progress_progress_height">12dp</dimen>
+    <dimen name="item_quiz_progress_progress_text_size">12sp</dimen>
+    <dimen name="item_quiz_progress_progress_text_margin_top">4dp</dimen>
+
+    <dimen name="lecture_review_header_height">220dp</dimen>
+    <dimen name="lecture_review_header_padding_bottom">32dp</dimen>
+    <dimen name="lecture_review_name_text_size">32sp</dimen>
+    <dimen name="lecture_review_lecture_text_size">14sp</dimen>
+    <dimen name="lecture_review_lecture_margin_top">8dp</dimen>
+    <dimen name="lecture_review_content_padding">12dp</dimen>
+    <dimen name="lecture_review_summary_text_size">16sp</dimen>
+    <dimen name="lecture_review_summary_padding_bottom">8dp</dimen>
+    <dimen name="lecture_review_recycler_padding_bottom">16dp</dimen>
+    <dimen name="lecture_review_recycler_margin_bottom">50dp</dimen>
+    <dimen name="lecture_review_button_height">48dp</dimen>
+
+    <dimen name="main_loading_space_height">92dp</dimen>
+    <dimen name="main_loading_spinner_width">165dp</dimen>
+    <dimen name="main_loading_spinner_height">179dp</dimen>
+    <dimen name="main_loading_text_size">16sp</dimen>
+
+    <dimen name="main_signup_toolbar_margin">10dp</dimen>
+    <dimen name="main_signup_title_text_size">18sp</dimen>
+    <dimen name="main_signup_progress_height">4dp</dimen>
+    <dimen name="main_signup_progress_margin_end">20dp</dimen>
+
+    <dimen name="meaning_recycler_row_padding">16dp</dimen>
+    <dimen name="meaning_recycler_row_margin_vertical">8dp</dimen>
+
+    <dimen name="meaning_recycler_row_word_text_size">34sp</dimen>
+    <dimen name="meaning_recycler_row_icon_padding">8dp</dimen>
+
+    <dimen name="meaning_recycler_row_section_margin_top">8dp</dimen>
+    <dimen name="meaning_recycler_row_section_title_size">16sp</dimen>
+
+    <dimen name="nav_header_height">200dp</dimen>
+
+    <dimen name="pre_test_progress_padding">20dp</dimen>
+    <dimen name="pre_test_progress_height">8dp</dimen>
+
+    <dimen name="profile_appbar_height">200dp</dimen>
+    <dimen name="profile_padding">16dp</dimen>
+    <dimen name="profile_inner_padding">12dp</dimen>
+    <dimen name="profile_header_text_size">24sp</dimen>
+    <dimen name="profile_sub_text_size">16sp</dimen>
+    <dimen name="profile_small_text_size">14sp</dimen>
+    <dimen name="profile_icon_size">36dp</dimen>
+
+    <dimen name="progress_recycler_card_margin">8dp</dimen>
+    <dimen name="progress_recycler_card_corner_radius">24dp</dimen>
+    <dimen name="progress_recycler_card_elevation">6dp</dimen>
+    <dimen name="progress_recycler_outer_padding_vertical">12dp</dimen>
+    <dimen name="progress_recycler_outer_padding_horizontal">12dp</dimen>
+    <dimen name="progress_recycler_title_padding">8dp</dimen>
+    <dimen name="progress_recycler_title_text_size">30sp</dimen>
+    <dimen name="progress_recycler_progress_size">200dp</dimen>
+    <dimen name="progress_recycler_inner_padding">20dp</dimen>
+    <dimen name="progress_recycler_box_margin">4dp</dimen>
+    <dimen name="progress_recycler_box_padding">30dp</dimen>
+    <dimen name="progress_recycler_count_text_size">24sp</dimen>
+
+    <dimen name="quiz_screen_padding">16dp</dimen>
+    <dimen name="quiz_indicator_text_size">18sp</dimen>
+    <dimen name="quiz_progress_margin_vertical">8dp</dimen>
+    <dimen name="quiz_card_margin_vertical">8dp</dimen>
+    <dimen name="quiz_card_elevation">4dp</dimen>
+    <dimen name="quiz_card_padding">16dp</dimen>
+
+    <dimen name="quiz_question_height">120dp</dimen>
+    <dimen name="quiz_question_text_size">18sp</dimen>
+    <dimen name="quiz_question_padding">8dp</dimen>
+    <dimen name="quiz_question_margin_vertical">8dp</dimen>
+
+    <dimen name="quiz_button_margin_vertical">4dp</dimen>
+    <dimen name="quiz_button_padding_vertical">12dp</dimen>
+    <dimen name="quiz_button_text_size">18sp</dimen>
+
+    <dimen name="quiz_next_padding_vertical">12dp</dimen>
+    <dimen name="quiz_next_padding_horizontal">40dp</dimen>
+    <dimen name="quiz_next_text_size">20sp</dimen>
+    <dimen name="quiz_next_margin_vertical">4dp</dimen>
+
+    <dimen name="quiz_explanation_margin_top">20dp</dimen>
+    <dimen name="quiz_explanation_text_size">16sp</dimen>
+    <dimen name="quiz_explanation_padding">8dp</dimen>
+    <dimen name="quiz_explanation_margin_vertical">8dp</dimen>
+    <dimen name="quiz_time_padding">10dp</dimen>
+    <dimen name="quiz_time_margin_vertical">8dp</dimen>
+
+    <dimen name="quiz_item_recycler_row_card_margin">4dp</dimen>
+    <dimen name="quiz_item_recycler_row_card_corner_radius">24dp</dimen>
+    <dimen name="quiz_item_recycler_row_card_elevation">6dp</dimen>
+    <dimen name="quiz_item_recycler_row_card_padding">24dp</dimen>
+    <dimen name="quiz_item_recycler_row_title_text_size">18sp</dimen>
+    <dimen name="quiz_item_recycler_row_subtitle_margin_top">4dp</dimen>
+    <dimen name="quiz_item_recycler_row_check_icon_size">24dp</dimen>
+    <dimen name="quiz_item_recycler_row_percentage_margin_top">4dp</dimen>
+    <dimen name="quiz_item_recycler_row_percentage_text_size">12sp</dimen>
+
+    <dimen name="quiz_review_appbar_height">220dp</dimen>
+    <dimen name="quiz_review_header_padding_bottom">32dp</dimen>
+    <dimen name="quiz_review_title_text_size">32sp</dimen>
+    <dimen name="quiz_review_title_padding">12dp</dimen>
+    <dimen name="quiz_review_subtitle_padding_horizontal">16dp</dimen>
+    <dimen name="quiz_review_subtitle_padding_vertical">6dp</dimen>
+    <dimen name="quiz_review_subtitle_text_size">14sp</dimen>
+    <dimen name="quiz_review_subtitle_margin_top">8dp</dimen>
+    <dimen name="quiz_review_recycler_padding">12dp</dimen>
+
+    <dimen name="saved_words_fragment_empty_padding">24dp</dimen>
+    <dimen name="saved_words_fragment_image_height">346dp</dimen>
+    <dimen name="saved_words_fragment_description_text_size">16sp</dimen>
+    <dimen name="saved_words_fragment_description_margin_bottom">32dp</dimen>
+    <dimen name="saved_words_fragment_description_padding_horizontal">40dp</dimen>
+    <dimen name="saved_words_fragment_header_text_size">24sp</dimen>
+    <dimen name="saved_words_fragment_header_padding">16dp</dimen>
+    <dimen name="saved_words_fragment_recycler_padding_horizontal">16dp</dimen>
+
+    <dimen name="score_dialog_card_margin">24dp</dimen>
+    <dimen name="score_dialog_card_radius">20dp</dimen>
+    <dimen name="score_dialog_card_elevation">8dp</dimen>
+    <dimen name="score_dialog_card_padding">16dp</dimen>
+    <dimen name="score_dialog_inner_padding">16dp</dimen>
+
+    <dimen name="score_dialog_title_text_size">20sp</dimen>
+    <dimen name="score_dialog_progress_margin_top">12dp</dimen>
+    <dimen name="score_dialog_progress_margin_bottom">12dp</dimen>
+
+    <dimen name="score_dialog_progress_size">90dp</dimen>
+    <dimen name="score_dialog_progress_thickness">8dp</dimen>
+    <dimen name="score_dialog_progress_track_radius">20dp</dimen>
+    <dimen name="score_dialog_progress_text_size">18sp</dimen>
+
+    <dimen name="score_dialog_button_margin_top">12dp</dimen>
+    <dimen name="score_dialog_button_padding_horizontal">24dp</dimen>
+
+    <dimen name="signup_root_padding">24dp</dimen>
+    <dimen name="signup_field_margin_bottom">16dp</dimen>
+
+    <dimen name="signup_strength_margin_top">4dp</dimen>
+    <dimen name="signup_strength_margin_bottom">8dp</dimen>
+    <dimen name="signup_strength_bar_height">6dp</dimen>
+    <dimen name="signup_strength_text_size">12sp</dimen>
+    <dimen name="signup_strength_text_margin_start">8dp</dimen>
+
+    <dimen name="signup_button_margin_top">16dp</dimen>
+
+    <dimen name="spelling_list_appbar_height">200dp</dimen>
+    <dimen name="spelling_list_header_padding_bottom">40dp</dimen>
+    <dimen name="spelling_list_title_text_size">28sp</dimen>
+    <dimen name="spelling_list_title_margin_bottom">4dp</dimen>
+    <dimen name="spelling_list_student_id_padding">10dp</dimen>
+    <dimen name="spelling_list_student_id_text_size">14sp</dimen>
+    <dimen name="spelling_list_recycler_padding">16dp</dimen>
+
+    <dimen name="student_card_item_name">18sp</dimen>
+    <dimen name="student_card_item_id">14sp</dimen>
+
+    <dimen name="student_progress_header_name">24sp</dimen>
+    <dimen name="student_progress_header_class">16sp</dimen>
+    <dimen name="student_progress_header_code">14sp</dimen>
+    <dimen name="student_progress_count_text">16sp</dimen>
+    <dimen name="student_progress_section_title">16sp</dimen>
+    <dimen name="student_progress_empty_text">24sp</dimen>
 </resources>

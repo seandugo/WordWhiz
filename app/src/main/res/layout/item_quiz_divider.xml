@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp">
+    android:paddingTop="@dimen/item_quiz_divider_padding_top"
+    android:paddingBottom="@dimen/item_quiz_divider_padding_bottom">
 
     <!-- top dividing line -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="@dimen/item_quiz_divider_line_height"
         android:background="@android:color/darker_gray" />
 
     <!-- centered title -->
@@ -19,8 +19,8 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:fontFamily="@font/pixel"
-        android:paddingTop="8dp"
+        android:paddingTop="@dimen/item_quiz_divider_title_padding_top"
         android:text="Next Quiz Title"
-        android:textSize="12sp"
+        android:textSize="@dimen/item_quiz_divider_title_text_size"
         android:textStyle="bold" />
 </LinearLayout>

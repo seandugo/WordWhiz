@@ -1,10 +1,10 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="4dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
+    android:layout_margin="@dimen/item_achievement_margin"
+    app:cardCornerRadius="@dimen/item_achievement_corner_radius"
+    app:cardElevation="@dimen/item_achievement_elevation"
     android:clickable="true"
     android:focusable="true">
 
@@ -15,7 +15,7 @@
         <ImageView
             android:id="@+id/achievementIcon"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="@dimen/item_achievement_image_height"
             android:scaleType="centerInside" />
 
         <View
@@ -29,11 +29,11 @@
             android:id="@+id/achievementTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:gravity="center"
             android:textColor="@android:color/white"
-            android:layout_gravity="bottom"
-            android:padding="8dp"
-            android:textSize="14sp"
+            android:padding="@dimen/item_achievement_text_padding"
+            android:textSize="@dimen/item_achievement_text_size"
             android:textStyle="bold" />
 
     </FrameLayout>

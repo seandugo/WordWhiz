@@ -32,7 +32,6 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
         super.onViewCreated(view, savedInstanceState)
 
         // 🔧 Setup collapsing toolbar
-        val appBar = view.findViewById<AppBarLayout>(R.id.appBarLayout)
         val collapsingToolbar = view.findViewById<CollapsingToolbarLayout>(R.id.collapsingToolbar)
         val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar)
         nameTextExpanded = view.findViewById(R.id.nameTextExpanded)
@@ -40,7 +39,7 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
         recycler = view.findViewById(R.id.resultRecycler)
         emptyImage = view.findViewById(R.id.emptyImage) // reference it
 
-        setupAppBarToolbar(appBar, collapsingToolbar, toolbar)
+        setupAppBarToolbar( collapsingToolbar, toolbar)
 
         recycler.layoutManager = LinearLayoutManager(requireContext())
         database = FirebaseDatabase.getInstance().getReference("classes")
@@ -49,7 +48,6 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
     }
 
     private fun setupAppBarToolbar(
-        appBar: AppBarLayout,
         collapsing: CollapsingToolbarLayout,
         toolbar: MaterialToolbar
     ) {
@@ -58,19 +56,6 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
         toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
-
-        appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-            val totalScroll = appBarLayout.totalScrollRange
-            if (totalScroll + verticalOffset == 0) {
-                // Fully collapsed
-                collapsing.title = "Welcome Teacher"
-                toolbar.subtitle = "Students results are in!"
-            } else {
-                // Expanded
-                collapsing.title = ""
-                toolbar.subtitle = ""
-            }
-        })
     }
 
     private fun loadClassStatistics() {

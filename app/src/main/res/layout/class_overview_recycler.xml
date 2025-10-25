@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="6dp"
+    android:layout_margin="@dimen/class_overview_recycler_card_margin"
+    app:cardCornerRadius="@dimen/class_overview_recycler_card_corner"
+    app:cardElevation="@dimen/class_overview_recycler_card_elevation"
     android:foreground="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true">
@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/class_overview_recycler_card_padding">
 
         <!-- Class Title -->
         <TextView
@@ -24,24 +24,24 @@
             android:gravity="center"
             android:fontFamily="@font/pixel"
             android:text="Class Name"
-            android:textSize="24sp"
+            android:textSize="@dimen/class_overview_recycler_title_text_size"
             android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:paddingBottom="12dp" />
+            android:paddingBottom="@dimen/class_overview_recycler_title_padding_bottom" />
 
         <!-- Bar Graph -->
         <com.example.thesis_app.models.BarGraphView
             android:id="@+id/accuracyPercentage"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_marginVertical="8dp" />
+            android:layout_height="@dimen/class_overview_recycler_bar_height"
+            android:layout_marginVertical="@dimen/class_overview_recycler_bar_margin_vertical" />
 
         <!-- Statistics Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="12dp">
+            android:paddingTop="@dimen/class_overview_recycler_stats_padding_top">
 
             <!-- Labels Row -->
             <LinearLayout
@@ -57,7 +57,7 @@
                     android:gravity="center"
                     android:fontFamily="@font/pixel"
                     android:text="Active:"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/class_overview_recycler_label_text_size" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -66,7 +66,7 @@
                     android:gravity="center"
                     android:fontFamily="@font/pixel"
                     android:text="Inactive:"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/class_overview_recycler_label_text_size" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -75,7 +75,7 @@
                     android:gravity="center"
                     android:fontFamily="@font/pixel"
                     android:text="Students:"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/class_overview_recycler_label_text_size" />
             </LinearLayout>
 
             <!-- Values Row -->
@@ -83,7 +83,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="4dp">
+                android:layout_marginTop="@dimen/class_overview_recycler_value_row_margin_top">
 
                 <TextView
                     android:id="@+id/activeCount"
@@ -92,11 +92,11 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="5"
-                    android:textSize="18sp"
-                    android:paddingVertical="12dp"
-                    android:paddingHorizontal="8dp"
+                    android:textSize="@dimen/class_overview_recycler_value_text_size"
+                    android:paddingVertical="@dimen/class_overview_recycler_value_padding_vertical"
+                    android:paddingHorizontal="@dimen/class_overview_recycler_value_padding_horizontal"
                     android:background="@drawable/correct"
-                    android:layout_marginHorizontal="4dp" />
+                    android:layout_marginHorizontal="@dimen/class_overview_recycler_value_margin_horizontal" />
 
                 <TextView
                     android:id="@+id/inactiveCount"
@@ -105,11 +105,11 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="4"
-                    android:textSize="18sp"
-                    android:paddingVertical="12dp"
-                    android:paddingHorizontal="8dp"
+                    android:textSize="@dimen/class_overview_recycler_value_text_size"
+                    android:paddingVertical="@dimen/class_overview_recycler_value_padding_vertical"
+                    android:paddingHorizontal="@dimen/class_overview_recycler_value_padding_horizontal"
                     android:background="@drawable/wrong"
-                    android:layout_marginHorizontal="4dp" />
+                    android:layout_marginHorizontal="@dimen/class_overview_recycler_value_margin_horizontal" />
 
                 <TextView
                     android:id="@+id/studentsTotal"
@@ -118,11 +118,11 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="9"
-                    android:textSize="18sp"
-                    android:paddingVertical="12dp"
-                    android:paddingHorizontal="8dp"
+                    android:textSize="@dimen/class_overview_recycler_value_text_size"
+                    android:paddingVertical="@dimen/class_overview_recycler_value_padding_vertical"
+                    android:paddingHorizontal="@dimen/class_overview_recycler_value_padding_horizontal"
                     android:background="@drawable/retry"
-                    android:layout_marginHorizontal="4dp" />
+                    android:layout_marginHorizontal="@dimen/class_overview_recycler_value_margin_horizontal" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

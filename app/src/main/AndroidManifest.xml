@@ -55,7 +55,8 @@
             android:label="Student Progress" />
 
         <!-- Other activities -->
-        <activity android:name=".TeacherActivity" />
+        <activity android:name=".TeacherActivity" android:exported="true" android:screenOrientation="portrait"/>
+        <activity android:name=".ArchiveClasses" android:exported="true" android:screenOrientation="portrait"/>
         <activity android:name=".QuizActivity" android:exported="true" android:screenOrientation="portrait" />
         <activity android:name=".LoginActivity" android:exported="true" android:screenOrientation="portrait" />
         <activity android:name=".LoadingActivity" android:exported="true" android:screenOrientation="portrait" />

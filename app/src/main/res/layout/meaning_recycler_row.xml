@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:layout_marginVertical="8dp"
+    android:padding="@dimen/meaning_recycler_row_padding"
+    android:layout_marginVertical="@dimen/meaning_recycler_row_margin_vertical"
     android:background="@drawable/rounded_corner_search"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="#2C70C5"
-            android:textSize="34sp"
+            android:textSize="@dimen/meaning_recycler_row_word_text_size"
             android:textStyle="bold"
             tools:text="Word" />
 
@@ -28,7 +28,7 @@
             android:id="@+id/tts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp"
+            android:padding="@dimen/meaning_recycler_row_icon_padding"
             android:src="@drawable/volume"
             android:background="@drawable/rounded_button"/>
     </LinearLayout>
@@ -36,46 +36,45 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/meaning_recycler_row_section_margin_top"
         android:textStyle="bold"
         android:text="Definitions : "
         android:fontFamily="@font/pixel"
-        android:textSize="16sp"/>
+        android:textSize="@dimen/meaning_recycler_row_section_title_size"/>
 
     <TextView
+        android:id="@+id/definitions_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="1 defination \n\n 2 another \n\n 3 third"
-        android:id="@+id/definitions_textview"/>
+        tools:text="1 definition\n\n2 another\n\n3 third" />
 
     <TextView
+        android:id="@+id/synonyms_title_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/meaning_recycler_row_section_margin_top"
         android:textStyle="bold"
         android:text="Synonyms : "
-        android:id="@+id/synonyms_title_textview"
-        android:textSize="16sp"/>
+        android:textSize="@dimen/meaning_recycler_row_section_title_size"/>
 
     <TextView
+        android:id="@+id/synonyms_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="asad, asaad, asdia ,asdajod"
-        android:id="@+id/synonyms_textview"/>
+        tools:text="asad, asaad, asdia, asdajod" />
 
     <TextView
+        android:id="@+id/antonyms_title_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/meaning_recycler_row_section_margin_top"
         android:textStyle="bold"
         android:text="Antonyms : "
-        android:id="@+id/antonyms_title_textview"
-        android:textSize="16sp"/>
+        android:textSize="@dimen/meaning_recycler_row_section_title_size"/>
 
     <TextView
+        android:id="@+id/antonyms_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="asad, asaad, asdia ,asdajod"
-        android:id="@+id/antonyms_textview"/>
-
+        tools:text="asad, asaad, asdia, asdajod"/>
 </LinearLayout>

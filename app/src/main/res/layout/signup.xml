@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="@dimen/signup_root_padding"
     android:gravity="center">
 
     <!-- Name -->
@@ -13,7 +12,8 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Name (F.N./M.I./Surname)">
+        android:hint="Name (F.N./M.I./Surname)"
+        android:layout_marginBottom="@dimen/signup_field_margin_bottom">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editName"
@@ -28,7 +28,8 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Email">
+        android:hint="Email"
+        android:layout_marginBottom="@dimen/signup_field_margin_bottom">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editEmail"
@@ -44,7 +45,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
-        app:endIconMode="password_toggle">
+        app:endIconMode="password_toggle"
+        android:layout_marginBottom="@dimen/signup_field_margin_bottom">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editPassword"
@@ -59,14 +61,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp">
+        android:layout_marginTop="@dimen/signup_strength_margin_top"
+        android:layout_marginBottom="@dimen/signup_strength_margin_bottom">
 
         <ProgressBar
             android:id="@+id/passwordStrengthBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="0dp"
-            android:layout_height="6dp"
+            android:layout_height="@dimen/signup_strength_bar_height"
             android:layout_weight="1"
             android:max="100"
             android:progress="0"
@@ -78,8 +80,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="12sp"
-            android:layout_marginStart="8dp"
+            android:textSize="@dimen/signup_strength_text_size"
+            android:layout_marginStart="@dimen/signup_strength_text_margin_start"
             android:textColor="@android:color/darker_gray" />
     </LinearLayout>
 
@@ -90,7 +92,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Confirm Password"
-        app:endIconMode="password_toggle">
+        app:endIconMode="password_toggle"
+        android:layout_marginBottom="@dimen/signup_field_margin_bottom">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editConfirmPassword"
@@ -109,6 +112,7 @@
         android:text="Next"
         android:textColor="#000"
         android:enabled="false"
-        android:backgroundTint="#FFC007" />
+        android:backgroundTint="#FFC007"
+        android:layout_marginTop="@dimen/signup_button_margin_top" />
 
 </LinearLayout>
