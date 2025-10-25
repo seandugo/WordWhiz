@@ -390,4 +390,16 @@
     <dimen name="student_progress_count_text">18sp</dimen>
     <dimen name="student_progress_section_title">18sp</dimen>
     <dimen name="student_progress_empty_text">28sp</dimen>
+
+    <dimen name="tnc_page_signup_padding">48dp</dimen>
+    <dimen name="tnc_page_signup_text_margin_top">40dp</dimen>
+    <dimen name="tnc_page_signup_line_spacing">8dp</dimen>
+    <dimen name="tnc_page_signup_text_size">18sp</dimen>
+    <dimen name="tnc_page_signup_button_margin_top">32dp</dimen>
+
+    <dimen name="terms_and_c_toolbar_text_size">32sp</dimen>
+    <dimen name="terms_and_c_text_padding">40dp</dimen>
+    <dimen name="terms_and_c_text_size">18sp</dimen>
+    <dimen name="terms_and_c_line_spacing">6dp</dimen>
+    <dimen name="terms_and_c_image_padding">60dp</dimen>
 </resources>

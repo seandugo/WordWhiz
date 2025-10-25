@@ -1,6 +1,10 @@
 package com.example.thesis_app
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +13,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.QuizDisplayItem
 import com.example.thesis_app.models.QuizPartItem
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -140,13 +145,22 @@ class QuizListAdapter(
                     itemView.setOnClickListener {
                         if (!isUnlocked) return@setOnClickListener
 
-                        val intent = Intent(itemView.context, LectureReviewActivity::class.java)
-                        intent.putExtra("quiz_part", item.displayName)               // Part title (Level 1, Post-Test, etc.)
-                        intent.putExtra("quiz_order", (item.order - 1).toString())   // Quiz order (0-based)
-                        intent.putExtra("QUIZ_ID", item.quizId)                      // Optional: needed if you fetch lecture content from Firebase
-                        intent.putExtra("PART_ID", item.partId)                      // Optional: same as above
-                        intent.putExtra("CLASS_CODE", classCode)                     // Optional: if LectureReview needs class info
-                        intent.putExtra("STUDENT_ID", studentId)                     // Optional: if LectureReview needs student progress
+                        // ✅ Check internet first
+                        if (!isInternetAvailable(itemView.context)) {
+                            // No internet, cancel action
+                            Snackbar.make(itemView, "No internet connection.", Snackbar.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+
+                        // ✅ Proceed if online
+                        val intent = Intent(itemView.context, LectureReviewActivity::class.java).apply {
+                            putExtra("quiz_part", item.displayName)
+                            putExtra("quiz_order", (item.order - 1).toString())
+                            putExtra("QUIZ_ID", item.quizId)
+                            putExtra("PART_ID", item.partId)
+                            putExtra("CLASS_CODE", classCode)
+                            putExtra("STUDENT_ID", studentId)
+                        }
                         itemView.context.startActivity(intent)
                     }
                 }
@@ -154,6 +168,16 @@ class QuizListAdapter(
                 override fun onCancelled(error: DatabaseError) {}
             })
         }
+        @SuppressLint("ServiceCast")
+        private fun isInternetAvailable(context: Context): Boolean {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = cm.activeNetwork ?: return false
+            val caps = cm.getNetworkCapabilities(network) ?: return false
+            return caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                    caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+        }
+
     }
 
     class DividerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

@@ -18,26 +18,29 @@
             android:layout_height="wrap_content"
             android:text="WORDWHIZ"
             android:textColor="#FFC007"
-            android:textSize="28sp"
+            android:textSize="@dimen/terms_and_c_toolbar_text_size"
             android:textStyle="bold"
             android:fontFamily="@font/pixel"
             android:layout_gravity="center_vertical"/>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Email -->
     <TextView
         android:id="@+id/textView6"
-        android:padding="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="@dimen/terms_and_c_text_padding"
         android:fontFamily="@font/pixel"
         android:layout_gravity="center"
+        android:textSize="@dimen/terms_and_c_text_size"
+        android:lineSpacingExtra="@dimen/terms_and_c_line_spacing"
         android:text="By using this app, you agree to the following:&#xA;&#xA;Educational Use Only – This app is made for learning and improving reading comprehension.&#xA;&#xA;Supervised Use – Children under 13 should use the app with a parent, guardian, or teacher.&#xA;&#xA;No Misuse – Please don’t copy, modify, or share the app in ways not allowed by the developers.&#xA;&#xA;Data and Privacy – The app may collect basic learning progress (like quiz scores) for research and improvement. Personal information will not be shared.&#xA;&#xA;No Guarantee – Since this is part of an academic project, we cannot promise the app will always be perfect or error-free.&#xA;&#xA;Research Participation – By using the app, you agree that your anonymized results may be used for study purposes.&#xA;&#xA;Thank you for being part of our Research." />
 
     <ImageView
+        android:id="@+id/logo_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="@dimen/terms_and_c_image_padding"
         android:src="@drawable/wordwhiz_logo"
-        android:padding="40dp"/>
+        android:layout_gravity="center"/>
 
 </LinearLayout>

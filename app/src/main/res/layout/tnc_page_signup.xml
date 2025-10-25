@@ -10,28 +10,24 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:padding="@dimen/tnc_page_signup_padding">
 
         <!-- Terms & Conditions Text -->
-
-        <!-- Student ID Input -->
-
-        <!-- Accept Terms Checkbox -->
         <TextView
             android:id="@+id/textView6"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="@dimen/tnc_page_signup_text_margin_top"
             android:fontFamily="@font/pixel"
-            android:lineSpacingExtra="4dp"
+            android:lineSpacingExtra="@dimen/tnc_page_signup_line_spacing"
             android:text="By using this app, you agree to the following:&#xA;&#xA;Educational Use Only – This app is made for learning and improving reading comprehension.&#xA;&#xA;Supervised Use – Children under 13 should use the app with a parent, guardian, or teacher.&#xA;&#xA;No Misuse – Please don’t copy, modify, or share the app in ways not allowed by the developers.&#xA;&#xA;Data and Privacy – The app may collect basic learning progress (like quiz scores) for research and improvement. Personal information will not be shared.&#xA;&#xA;No Guarantee – Since this is part of an academic project, we cannot promise the app will always be perfect or error-free.&#xA;&#xA;Research Participation – By using the app, you agree that your anonymized results may be used for study purposes.&#xA;&#xA;If you continue, it means you accept these terms."
             android:textAlignment="textStart"
-            android:textSize="14sp"
+            android:textSize="@dimen/tnc_page_signup_text_size"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Accept Terms Checkbox -->
         <CheckBox
             android:id="@+id/checkBox2"
             android:layout_width="0dp"
@@ -47,17 +43,13 @@
             style="@style/Widget.Material3.Button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/tnc_page_signup_button_margin_top"
             android:backgroundTint="@color/login_button_selector"
             android:fontFamily="@font/pixel"
             android:text="Sign Up"
             android:textColor="#000"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/checkBox2"
-            app:layout_constraintVertical_bias="0.0" />
-
+            app:layout_constraintTop_toBottomOf="@id/checkBox2" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

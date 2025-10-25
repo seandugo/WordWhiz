@@ -34,7 +34,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="@dimen/quiz_progress_margin_vertical"
-            tools:progress="40"/>
+            android:indeterminate="false"
+            android:progress="0"
+            style="@style/Widget.Material3.LinearProgressIndicator" />
+
 
         <!-- Quiz card -->
         <androidx.cardview.widget.CardView

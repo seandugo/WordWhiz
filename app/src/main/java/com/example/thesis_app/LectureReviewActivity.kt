@@ -1,6 +1,9 @@
 package com.example.thesis_app
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +27,14 @@ class LectureReviewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ Step 1: Check internet before setting the layout or Firebase
+        if (!isInternetAvailable()) {
+            // If no internet, close and return to NoInternetFragment through main navigation
+            finish()
+            return
+        }
+
         setContentView(R.layout.lecture_review)
 
         startButton = findViewById(R.id.startButton)
@@ -36,7 +47,7 @@ class LectureReviewActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.nameTextExpanded).text = quizPart
         findViewById<TextView>(R.id.lecture).text = "Lecture ${quizOrder}"
 
-        // Load definitions normally (your existing code)
+        // ✅ Step 2: Load definitions if internet is okay
         val resourceId = when (quizOrder - 1) {
             0 -> R.raw.analogies
             1 -> R.raw.genre_viewing
@@ -64,8 +75,18 @@ class LectureReviewActivity : AppCompatActivity() {
             adapter = DefinitionAdapter(definitions)
         }
 
-        // ✅ Check completion
+        // ✅ Step 3: Setup completion check
         checkAndSetupButton()
+    }
+
+    /**
+     * Checks if device has an active internet connection.
+     */
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     private fun checkAndSetupButton() {
@@ -75,7 +96,6 @@ class LectureReviewActivity : AppCompatActivity() {
         dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
-                // ✅ Get all quizzes sorted by order
                 val quizList = snapshot.children.mapNotNull { quizSnap ->
                     val quizKey = quizSnap.key ?: return@mapNotNull null
                     val order = quizSnap.child("order").getValue(Int::class.java) ?: 0
@@ -85,18 +105,17 @@ class LectureReviewActivity : AppCompatActivity() {
                 val quizKeys = quizList.map { it.first }
                 val quizIndex = quizKeys.indexOf(quizId)
 
-                // ✅ Get all parts of current quiz sorted
                 val partsList = snapshot.child(quizId).children
                     .filter { it.key?.startsWith("part") == true || it.key == "post-test" }
                     .mapNotNull { it.key }
-                    .sortedBy { if (it == "post-test") Int.MAX_VALUE else it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0 }
+                    .sortedBy {
+                        if (it == "post-test") Int.MAX_VALUE
+                        else it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                    }
 
                 val partIndex = partsList.indexOf(partId)
 
-                // ✅ Check if current part is completed
                 val isCurrentCompleted = snapshot.child("$quizId/$partId/isCompleted").getValue(Boolean::class.java) ?: false
-
-                // ✅ Lock/unlock logic
                 val previousQuizCompleted = if (quizIndex <= 0) true
                 else snapshot.child(quizKeys[quizIndex - 1]).child("isCompleted").getValue(Boolean::class.java) ?: false
 
@@ -109,7 +128,6 @@ class LectureReviewActivity : AppCompatActivity() {
                     }
                 } else previousQuizCompleted && previousPartCompleted
 
-                // ✅ Update button based on lock/unlock and completion
                 when {
                     !isUnlocked -> {
                         startButton.isEnabled = false
@@ -122,9 +140,13 @@ class LectureReviewActivity : AppCompatActivity() {
                     else -> {
                         startButton.isEnabled = true
                         startButton.text = "Start"
-
                         startButton.setOnClickListener {
-                            startQuiz(partId, snapshot)
+                            if (isInternetAvailable()) {
+                                startQuiz(partId, snapshot)
+                            } else {
+                                // Close the activity automatically if internet lost mid-session
+                                finish()
+                            }
                         }
                     }
                 }
@@ -134,9 +156,6 @@ class LectureReviewActivity : AppCompatActivity() {
         })
     }
 
-    /**
-     * Starts the quiz for the given part, but only if there are questions.
-     */
     private fun startQuiz(partIdToStart: String, snapshot: DataSnapshot) {
         val questionsRef = FirebaseDatabase.getInstance().reference
             .child("quizzes").child(quizId).child(partIdToStart).child("questionList")
@@ -174,14 +193,16 @@ class LectureReviewActivity : AppCompatActivity() {
         val jsonArray = JSONObject(jsonString).getJSONArray("definitions")
         for (i in 0 until jsonArray.length()) {
             val obj = jsonArray.getJSONObject(i)
-            add(DefinitionModel(
-                number = obj.getInt("number"),
-                title = obj.getString("title"),
-                emoji = obj.getString("emoji"),
-                definition = obj.getString("definition"),
-                example = obj.getString("example"),
-                explanation = obj.optString("explanation", "")
-            ))
+            add(
+                DefinitionModel(
+                    number = obj.getInt("number"),
+                    title = obj.getString("title"),
+                    emoji = obj.getString("emoji"),
+                    definition = obj.getString("definition"),
+                    example = obj.getString("example"),
+                    explanation = obj.optString("explanation", "")
+                )
+            )
         }
     }
 }

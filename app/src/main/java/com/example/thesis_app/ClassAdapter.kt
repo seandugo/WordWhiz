@@ -1,13 +1,15 @@
 package com.example.thesis_app
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thesis_app.models.ClassItem
+import com.example.thesis_app.utils.NetworkUtils
+import com.google.android.material.snackbar.Snackbar
 
 class ClassAdapter(
     private val classList: MutableList<ClassItem>,
@@ -15,7 +17,7 @@ class ClassAdapter(
     private val onItemClick: (ClassItem) -> Unit,
     private val onEditClick: (ClassItem) -> Unit,
     private val onDeleteClick: (ClassItem) -> Unit,
-    private val onArchiveClick: (ClassItem) -> Unit // ✅ new callback
+    private val onArchiveClick: (ClassItem) -> Unit
 ) : RecyclerView.Adapter<ClassAdapter.ClassViewHolder>() {
 
     inner class ClassViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -32,21 +34,32 @@ class ClassAdapter(
 
     override fun onBindViewHolder(holder: ClassViewHolder, position: Int) {
         val classItem = classList[position]
+        val context = holder.itemView.context
+
         holder.className.text = classItem.className
         holder.roomNumber.text = classItem.roomNo
 
-        // Normal click
-        holder.itemView.setOnClickListener { onItemClick(classItem) }
+        // ✅ Click listener with internet check
+        holder.itemView.setOnClickListener {
+            if (!NetworkUtils.isInternetAvailable(context)) {
+                Snackbar.make(holder.itemView, "No internet connection. Try again later.", Snackbar.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-        // Drag
+            // Only call the callback — don't start activity here
+            onItemClick(classItem)
+        }
+
+
+        // ✅ Drag support
         holder.itemView.setOnLongClickListener {
             onStartDrag?.invoke(holder)
             true
         }
 
-        // Popup menu
+        // ✅ Popup menu for edit/delete/archive
         holder.menuButton.setOnClickListener { v ->
-            val popup = PopupMenu(v.context, v)
+            val popup = androidx.appcompat.widget.PopupMenu(v.context, v)
             popup.inflate(R.menu.class_item_menu)
 
             popup.setOnMenuItemClickListener { item ->
@@ -72,6 +85,7 @@ class ClassAdapter(
 
     override fun getItemCount(): Int = classList.size
 
+    // ✅ Helper functions for item management
     fun swapItems(fromPos: Int, toPos: Int) {
         val temp = classList[fromPos]
         classList[fromPos] = classList[toPos]

@@ -60,7 +60,7 @@ class ArchiveClasses : AppCompatActivity() {
                     archivedClass?.let {
                         archivedList.add(it)
 
-                        val archivedAt = it.archivedAt
+                        val archivedAt = it.timestampArchived
                         val deleteAfter = 7 * 24 * 60 * 60 * 1000L // ✅ delete after 7 days
 
                         val deleteTime = archivedAt + deleteAfter
