@@ -90,27 +90,54 @@ class TeacherClassesFragment : Fragment(R.layout.teachers) {
     private fun archiveClass(classItem: ClassItem) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val database = FirebaseDatabase.getInstance().reference
+        val classCode = classItem.classCode
 
-        // Add timestamp for 15-day expiration
-        val archiveData = classItem.copy(
-            archivedAt = System.currentTimeMillis()
-        )
+        val userClassRef = database.child("users").child(userId).child("classes").child(classCode)
+        val globalClassRef = database.child("classes").child(classCode)
+        val archivedRef = database.child("users").child(userId).child("archived_classes").child(classCode)
 
-        // Move to archived_classes
-        val archivedRef = database.child("users").child(userId).child("archived_classes").child(classItem.classCode)
-        archivedRef.setValue(archiveData)
-            .addOnSuccessListener {
-                // Remove from active list
-                database.child("users").child(userId).child("classes").child(classItem.classCode).removeValue()
-
-                // Optional: visually remove from adapter
-                adapter.archiveItem(classItem)
-
-                Toast.makeText(context, "Class archived successfully.", Toast.LENGTH_SHORT).show()
+        // Step 1️⃣: Verify teacher actually owns this class
+        userClassRef.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                Toast.makeText(context, "You do not own this class.", Toast.LENGTH_SHORT).show()
+                return@addOnSuccessListener
             }
-            .addOnFailureListener {
-                Toast.makeText(context, "Failed to archive class.", Toast.LENGTH_SHORT).show()
+
+            // Step 2️⃣: Fetch full class data from global "classes" node
+            globalClassRef.get().addOnSuccessListener { globalSnap ->
+                if (!globalSnap.exists()) {
+                    Toast.makeText(context, "Class not found in global records.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+
+                // Step 3️⃣: Add timestamp to archived data
+                val archivedData = globalSnap.value
+                val archiveMap = hashMapOf(
+                    "archivedAt" to System.currentTimeMillis(),
+                    "classData" to archivedData
+                )
+
+                // Step 4️⃣: Move to archived_classes
+                archivedRef.setValue(archiveMap)
+                    .addOnSuccessListener {
+                        // Step 5️⃣: Delete from active lists
+                        globalClassRef.removeValue()
+                        userClassRef.removeValue()
+
+                        // Step 6️⃣: Update UI
+                        adapter.archiveItem(classItem)
+
+                        Toast.makeText(context, "Class archived successfully.", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(context, "Failed to archive class.", Toast.LENGTH_SHORT).show()
+                    }
+            }.addOnFailureListener {
+                Toast.makeText(context, "Error fetching class data.", Toast.LENGTH_SHORT).show()
             }
+        }.addOnFailureListener {
+            Toast.makeText(context, "Error verifying ownership.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun cleanupOldArchives() {

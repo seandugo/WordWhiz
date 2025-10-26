@@ -124,24 +124,9 @@ class StudentProgressActivity : AppCompatActivity() {
     private fun fetchDaysStreak() {
         val userRef = FirebaseDatabase.getInstance()
             .getReference("users/$studentId/activityStreak")
-        val today = java.time.LocalDate.now().toString()
-        val yesterday = java.time.LocalDate.now().minusDays(1).toString()
 
         userRef.get().addOnSuccessListener { snapshot ->
-            var streakCount = snapshot.child("streakCount").getValue(Int::class.java) ?: 0
-            val lastActiveDate = snapshot.child("lastActiveDate").getValue(String::class.java)
-
-            if (lastActiveDate == today) {
-                // do nothing
-            } else if (lastActiveDate == yesterday) {
-                streakCount += 1
-                userRef.child("streakCount").setValue(streakCount)
-                userRef.child("lastActiveDate").setValue(today)
-            } else {
-                streakCount = 1
-                userRef.child("streakCount").setValue(1)
-                userRef.child("lastActiveDate").setValue(today)
-            }
+            val streakCount = snapshot.child("streakCount").getValue(Int::class.java) ?: 0
             daysStreak.text = streakCount.toString()
         }.addOnFailureListener {
             daysStreak.text = "0"

@@ -158,31 +158,44 @@ class TeacherProfileFragment : Fragment() {
         sdf: SimpleDateFormat,
         now: Date
     ) {
-        var totalStudents = studentIds.size
-        var activeCount = 0
-        var inactiveCount = 0
-
-        if (totalStudents == 0) {
+        if (studentIds.isEmpty()) {
             updateBarGraph(0, 0, 0)
             return
         }
 
+        var totalStudents = studentIds.size
+        var activeCount = 0
+        var inactiveCount = 0
         var processed = 0
+
+        val INACTIVE_THRESHOLD_DAYS = 1  // 🔧 You can easily tweak this (e.g., 1, 3, or 7)
+
         for (studentId in studentIds) {
             dbUsers.child(studentId).child("activityStreak").get()
                 .addOnSuccessListener { activitySnap ->
                     val lastActiveDateStr = activitySnap.child("lastActiveDate").getValue(String::class.java)
-                    if (lastActiveDateStr != null) {
+
+                    if (!lastActiveDateStr.isNullOrEmpty()) {
                         try {
                             val lastActive = sdf.parse(lastActiveDateStr)
                             val diffDays = ((now.time - lastActive.time) / (1000 * 60 * 60 * 24))
-                            if (diffDays <= 3) activeCount++ else inactiveCount++
+
+                            // ✅ Only count as active if last activity is within threshold
+                            if (diffDays <= INACTIVE_THRESHOLD_DAYS) {
+                                activeCount++
+                            } else {
+                                inactiveCount++
+                            }
+
                         } catch (e: Exception) {
+                            // 🧩 Couldn’t parse date → count as inactive
                             inactiveCount++
                         }
                     } else {
+                        // 🧩 No lastActiveDate found → consider inactive
                         inactiveCount++
                     }
+
                     processed++
                     if (processed == totalStudents) {
                         updateBarGraph(activeCount, inactiveCount, totalStudents)

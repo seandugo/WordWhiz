@@ -143,7 +143,7 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
                         try {
                             val lastActiveDate = dateFormat.parse(lastActiveDateStr)
                             val diff = (currentDate.time - (lastActiveDate?.time ?: 0)) / (1000 * 60 * 60 * 24)
-                            if (diff <= 3) activeCount++ else inactiveCount++
+                            if (diff <= 1) activeCount++ else inactiveCount++
                         } catch (e: Exception) {
                             Log.e("TeacherFragment", "Date parse error for $studentId: $e")
                             inactiveCount++

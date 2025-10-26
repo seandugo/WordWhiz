@@ -56,19 +56,27 @@ class ArchiveClasses : AppCompatActivity() {
                 archivedList.clear()
 
                 for (classSnap in snapshot.children) {
-                    val archivedClass = classSnap.getValue(ArchivedClass::class.java)
-                    archivedClass?.let {
-                        archivedList.add(it)
+                    val archivedAt = classSnap.child("archivedAt").getValue(Long::class.java) ?: 0L
+                    val classDataSnap = classSnap.child("classData")
 
-                        val archivedAt = it.timestampArchived
-                        val deleteAfter = 7 * 24 * 60 * 60 * 1000L // ✅ delete after 7 days
+                    // ✅ Safely read nested classData
+                    val className = classDataSnap.child("className").getValue(String::class.java) ?: "Unnamed Class"
+                    val roomNumber = classDataSnap.child("roomNumber").getValue(String::class.java) ?: "N/A"
 
-                        val deleteTime = archivedAt + deleteAfter
+                    val archivedClass = ArchivedClass(
+                        classId = classSnap.key ?: "",
+                        className = className,
+                        roomNumber = roomNumber,
+                        archivedAt = archivedAt
+                    )
 
-                        // ✅ Safe check
-                        if (archivedAt > 0 && System.currentTimeMillis() >= deleteTime) {
-                            classSnap.ref.removeValue()
-                        }
+                    archivedList.add(archivedClass)
+
+                    // ✅ Auto-delete logic (7 days)
+                    val deleteAfter = 7 * 24 * 60 * 60 * 1000L
+                    val deleteTime = archivedAt + deleteAfter
+                    if (archivedAt > 0 && System.currentTimeMillis() >= deleteTime) {
+                        classSnap.ref.removeValue()
                     }
                 }
 

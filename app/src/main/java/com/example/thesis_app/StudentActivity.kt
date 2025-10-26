@@ -62,6 +62,8 @@ class StudentActivity : AppCompatActivity() {
                     showExitConfirmation()
                 }
             })
+
+        updateStreakAfterActivity()
     }
 
     // ✅ Checks for internet before showing a fragment
@@ -73,6 +75,31 @@ class StudentActivity : AppCompatActivity() {
             replaceFragment(NoInternetFragment(), 99)
         } else {
             replaceFragment(fragment, index)
+        }
+    }
+
+    fun updateStreakAfterActivity() {
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null)
+        val userRef = FirebaseDatabase.getInstance()
+            .getReference("users/$studentId/activityStreak")
+        val today = java.time.LocalDate.now().toString()
+        val yesterday = java.time.LocalDate.now().minusDays(1).toString()
+
+        userRef.get().addOnSuccessListener { snapshot ->
+            var streakCount = snapshot.child("streakCount").getValue(Int::class.java) ?: 0
+            val lastActiveDate = snapshot.child("lastActiveDate").getValue(String::class.java)
+
+            // Only update if the student *just completed an activity*
+            if (lastActiveDate != today) {
+                if (lastActiveDate == yesterday) {
+                    streakCount += 1
+                } else {
+                    streakCount = 1
+                }
+                userRef.child("streakCount").setValue(streakCount)
+                userRef.child("lastActiveDate").setValue(today)
+            }
         }
     }
 
