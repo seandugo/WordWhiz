@@ -103,6 +103,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pixel"
+                android:textSize="@dimen/text_profile"
                 android:text="Don't have an account yet?" />
 
             <TextView
@@ -111,14 +112,8 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pixel"
                 android:text=" Create Account"
+                android:textSize="@dimen/text_profile"
                 android:textColor="#FFC007" />
-
-            <ProgressBar
-                android:id="@+id/loginProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_marginTop="@dimen/login_button_margin_top" />
         </LinearLayout>
 
     </LinearLayout>

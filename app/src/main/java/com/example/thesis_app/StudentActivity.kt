@@ -82,25 +82,55 @@ class StudentActivity : AppCompatActivity() {
         val presencePath = "users/$studentId/presence"
         presenceRef = database.getReference(presencePath)
 
-        // Automatically go offline when disconnected
-        presenceRef?.child("status")?.onDisconnect()?.setValue("offline")
-        presenceRef?.child("lastSeen")?.onDisconnect()?.setValue(System.currentTimeMillis())
+        // 🟢 Create a reference to monitor connection state
+        val connectedRef = database.getReference(".info/connected")
 
-        // Mark as online when app starts
-        presenceRef?.child("status")?.setValue("online")
-        presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
+        connectedRef.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                val connected = snapshot.getValue(Boolean::class.java) ?: false
+                if (connected) {
+                    // Mark online when connection established
+                    presenceRef?.child("status")?.setValue("online")
+                    presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
+
+                    // 🧠 Ensure automatic offline on disconnect
+                    presenceRef?.child("status")?.onDisconnect()?.setValue("offline")
+                    presenceRef?.child("lastSeen")?.onDisconnect()?.setValue(System.currentTimeMillis())
+                }
+            }
+
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+        })
     }
 
     // ✅ Update online status when activity starts
     override fun onStart() {
         super.onStart()
+        setUserOnline()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setUserOnline()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        setUserOnline()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        setUserOffline()
+    }
+
+
+    private fun setUserOnline() {
         presenceRef?.child("status")?.setValue("online")
         presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
     }
 
-    // ✅ Update offline + last seen when activity stops
-    override fun onStop() {
-        super.onStop()
+    private fun setUserOffline() {
         presenceRef?.child("status")?.setValue("offline")
         presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
     }

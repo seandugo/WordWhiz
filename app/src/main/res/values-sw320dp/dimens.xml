@@ -113,7 +113,8 @@
     <dimen name="class_overview_recycler_bar_margin_vertical">6dp</dimen>
 
     <dimen name="class_overview_recycler_stats_padding_top">8dp</dimen>
-    <dimen name="class_overview_recycler_label_text_size">14sp</dimen>
+    <dimen name="class_overview_recycler_label_text_size">10sp</dimen>
+    <dimen name="teacher_profile_title_padding_bottom">9dp</dimen>
 
     <dimen name="class_overview_recycler_value_row_margin_top">4dp</dimen>
     <dimen name="class_overview_recycler_value_text_size">16sp</dimen>
@@ -273,9 +274,10 @@
     <dimen name="profile_sub_text_size">14sp</dimen>
     <dimen name="profile_small_text_size">12sp</dimen>
     <dimen name="profile_icon_size">28dp</dimen>
-    <dimen name="lectures_profile">11sp</dimen>
+    <dimen name="lectures_profile">9sp</dimen>
     <dimen name="streak_profile">11sp</dimen>
     <dimen name="spelled_profile">11sp</dimen>
+    <dimen name="text_profile">12sp</dimen>
 
     <dimen name="progress_recycler_card_margin">6dp</dimen>
     <dimen name="progress_recycler_card_corner_radius">20dp</dimen>
@@ -383,6 +385,8 @@
     <dimen name="spelling_list_student_id_padding">8dp</dimen>
     <dimen name="spelling_list_student_id_text_size">12sp</dimen>
     <dimen name="spelling_list_recycler_padding">12dp</dimen>
+    <dimen name="text_spelling">9sp</dimen>
+    <dimen name="text_medium_spelling">12sp</dimen>
 
     <dimen name="student_card_item_name">16sp</dimen>
     <dimen name="student_card_item_id">12sp</dimen>

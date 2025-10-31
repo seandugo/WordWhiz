@@ -55,7 +55,7 @@
                         android:text="Slow Speed"
                         android:textColor="@android:color/white"
                         android:textStyle="bold"
-                        android:textSize="10sp"
+                        android:textSize="@dimen/text_spelling"
                         android:paddingBottom="2dp"/>
                 </FrameLayout>
 
@@ -86,7 +86,7 @@
                         android:text="Normal Speed"
                         android:textColor="@android:color/white"
                         android:textStyle="bold"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/text_medium_spelling"
                         android:paddingBottom="4dp" />
 
                 </FrameLayout>

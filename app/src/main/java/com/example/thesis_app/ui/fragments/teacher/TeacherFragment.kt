@@ -27,8 +27,9 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
     private lateinit var emptyImage: ImageView
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-    // 🔹 Keep a reference to avoid duplicate listeners
-    private val listeners = mutableListOf<ValueEventListener>()
+    private val classStatsList = mutableListOf<ClassStats>()
+    private lateinit var adapter: ClassStatsAdapter
+    private val listeners = mutableMapOf<String, ValueEventListener>() // ✅ map by classCode
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -42,7 +43,9 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
 
         setupAppBarToolbar(collapsingToolbar, toolbar)
         recycler.layoutManager = LinearLayoutManager(requireContext())
-        database = FirebaseDatabase.getInstance().getReference("classes")
+
+        adapter = ClassStatsAdapter(classStatsList)
+        recycler.adapter = adapter
 
         loadClassStatisticsRealtime()
     }
@@ -58,23 +61,15 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
         }
     }
 
-    // ✅ Realtime version: actively listens for updates in students' presence/activity
+    // ✅ Real-time listener for teacher’s classes
     private fun loadClassStatisticsRealtime() {
-        val teacherUid = FirebaseAuth.getInstance().currentUser?.uid
-        if (teacherUid == null) {
-            recycler.visibility = View.GONE
-            emptyImage.visibility = View.VISIBLE
-            return
-        }
+        val teacherUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         val teacherClassesRef = FirebaseDatabase.getInstance().getReference("users/$teacherUid/classes")
 
         teacherClassesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(classesSnapshot: DataSnapshot) {
-                val classStatsList = mutableListOf<ClassStats>()
-                val currentDate = Calendar.getInstance().time
-
-                if (!classesSnapshot.exists() || classesSnapshot.childrenCount == 0L) {
+                if (!classesSnapshot.exists()) {
                     recycler.visibility = View.GONE
                     emptyImage.visibility = View.VISIBLE
                     return
@@ -83,8 +78,10 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
                 recycler.visibility = View.VISIBLE
                 emptyImage.visibility = View.GONE
 
-                var processedClasses = 0
-                val totalClasses = classesSnapshot.childrenCount.toInt()
+                // clear old listeners
+                clearAllListeners()
+
+                classStatsList.clear()
 
                 for (classSnap in classesSnapshot.children) {
                     val classCode = classSnap.key ?: continue
@@ -95,51 +92,37 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
                             val className = classDataSnap.child("className").getValue(String::class.java) ?: "Unnamed Class"
                             val studentIds = classDataSnap.child("students").children.mapNotNull { it.key }
 
-                            // 🔹 Listen for live changes in each class’s student stats
-                            getRealtimeClassStats(studentIds, currentDate) { active, inLecture, inactive ->
-                                classStatsList.add(
-                                    ClassStats(
-                                        className = className,
-                                        activeCount = active,
-                                        inactiveCount = inactive,
-                                        totalStudents = active + inLecture + inactive,
-                                        inLectureCount = inLecture // add this field to ClassStats
-                                    )
-                                )
-                                processedClasses++
-                                if (processedClasses == totalClasses) {
-                                    recycler.adapter = ClassStatsAdapter(classStatsList)
-                                }
-                            }
+                            // Add placeholder item
+                            val classStats = ClassStats(className, 0, 0, 0, 0)
+                            classStatsList.add(classStats)
+                            adapter.notifyItemInserted(classStatsList.size - 1)
+
+                            // Start live updates for this class
+                            listenToClassRealtime(classCode, studentIds, classStats)
                         }
 
                         override fun onCancelled(error: DatabaseError) {
-                            Log.e("TeacherFragment", "Error fetching class data: ${error.message}")
+                            Log.e("TeacherFragment", "Error fetching class: ${error.message}")
                         }
                     })
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                recycler.visibility = View.GONE
-                emptyImage.visibility = View.VISIBLE
-                Log.e("TeacherFragment", "Realtime listener cancelled: ${error.message}")
+                Log.e("TeacherFragment", "Classes listener cancelled: ${error.message}")
             }
         })
     }
 
-    // ✅ Real-time tracker: updates instantly when any student’s presence or activity changes
-    private fun getRealtimeClassStats(
+    // ✅ One listener per class that updates in real-time
+    private fun listenToClassRealtime(
+        classCode: String,
         studentIds: List<String>,
-        currentDate: Date,
-        callback: (activeCount: Int, inLectureCount: Int, inactiveCount: Int) -> Unit
+        classStats: ClassStats
     ) {
-        if (studentIds.isEmpty()) {
-            callback(0, 0, 0)
-            return
-        }
-
         val usersRef = FirebaseDatabase.getInstance().getReference("users")
+        val currentDate = Calendar.getInstance().time
+
         val listener = usersRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var activeCount = 0
@@ -148,24 +131,19 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
 
                 for (studentId in studentIds) {
                     val studentSnap = snapshot.child(studentId)
-
-                    // 🟢 Check real-time presence
                     val status = studentSnap.child("presence/status").getValue(String::class.java)
 
                     when (status) {
                         "online" -> activeCount++
                         "in_lecture" -> inLectureCount++
                         else -> {
-                            val lastActiveDateStr =
-                                studentSnap.child("activityStreak/lastActiveDate").getValue(String::class.java)
+                            val lastActiveDateStr = studentSnap.child("activityStreak/lastActiveDate").getValue(String::class.java)
                             if (lastActiveDateStr != null) {
                                 try {
                                     val lastActiveDate = dateFormat.parse(lastActiveDateStr)
-                                    val diffDays =
-                                        (currentDate.time - (lastActiveDate?.time ?: 0)) / (1000 * 60 * 60 * 24)
+                                    val diffDays = (currentDate.time - (lastActiveDate?.time ?: 0)) / (1000 * 60 * 60 * 24)
                                     if (diffDays <= 1) activeCount++ else inactiveCount++
                                 } catch (e: Exception) {
-                                    Log.e("TeacherFragment", "Date parse error for $studentId: ${e.message}")
                                     inactiveCount++
                                 }
                             } else inactiveCount++
@@ -173,23 +151,53 @@ class TeacherFragment : Fragment(R.layout.teacher_overview) {
                     }
                 }
 
-                callback(activeCount, inLectureCount, inactiveCount)
+                // ✅ Update existing item and refresh adapter row
+                val index = classStatsList.indexOfFirst { it.className == classStats.className }
+                if (index != -1) {
+                    classStatsList[index] = ClassStats(
+                        className = classStats.className,
+                        activeCount = activeCount,
+                        inLectureCount = inLectureCount,
+                        inactiveCount = inactiveCount,
+                        totalStudents = activeCount + inLectureCount + inactiveCount
+                    )
+                    adapter.notifyItemChanged(index)
+                    updateOverallCounts()
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("TeacherFragment", "getRealtimeClassStats cancelled: ${error.message}")
-                callback(0, 0, studentIds.size)
+                Log.e("TeacherFragment", "Listener cancelled for $classCode: ${error.message}")
             }
         })
 
-        listeners.add(listener)
+        listeners[classCode] = listener
+    }
+
+    // ✅ Updates the four count TextViews based on totals across all classes
+    private fun updateOverallCounts() {
+        var totalActive = 0
+        var totalInLecture = 0
+        var totalInactive = 0
+        var totalStudents = 0
+
+        for (stats in classStatsList) {
+            totalActive += stats.activeCount
+            totalInLecture += stats.inLectureCount
+            totalInactive += stats.inactiveCount
+            totalStudents += stats.totalStudents
+        }
+    }
+
+
+    private fun clearAllListeners() {
+        val usersRef = FirebaseDatabase.getInstance().getReference("users")
+        listeners.forEach { (_, l) -> usersRef.removeEventListener(l) }
+        listeners.clear()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // ✅ Clean up all real-time listeners
-        val usersRef = FirebaseDatabase.getInstance().getReference("users")
-        listeners.forEach { usersRef.removeEventListener(it) }
-        listeners.clear()
+        clearAllListeners()
     }
 }

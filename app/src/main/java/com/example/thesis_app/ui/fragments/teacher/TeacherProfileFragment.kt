@@ -17,10 +17,8 @@ import com.example.thesis_app.ui.fragments.bottomsheets.ProfileBottomSheet
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.card.MaterialCardView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,6 +34,10 @@ class TeacherProfileFragment : Fragment() {
     private lateinit var detailsContainer: LinearLayout
     private lateinit var toolbar: MaterialToolbar
     private lateinit var appBarLayout: AppBarLayout
+
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private var usersListener: ValueEventListener? = null
+    private val usersRef = FirebaseDatabase.getInstance().getReference("users")
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreateView(
@@ -57,36 +59,24 @@ class TeacherProfileFragment : Fragment() {
         seeAllClasses = view.findViewById(R.id.seeAllClasses)
         detailsContainer = view.findViewById(R.id.detailsContainer)
 
-        // 🔧 Properly set up toolbar and collapsing behavior
         setupAppBarToolbar(collapsingToolbar, toolbar)
 
-        // 🧠 Get teacher info from SharedPreferences (email)
+        // 🧠 Load teacher info
         val prefs = requireActivity().getSharedPreferences("USER_PREFS", android.content.Context.MODE_PRIVATE)
         val teacherEmail = prefs.getString("email", "Unknown") ?: "Unknown"
-
-        // 🧾 Get teacher name from Firebase using current user ID
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         val userRef = FirebaseDatabase.getInstance().getReference("users").child(uid ?: "")
+
         userRef.child("name").get().addOnSuccessListener { snapshot ->
             val teacherName = snapshot.getValue(String::class.java) ?: "Teacher"
-            // Set expanded text
             collapsingToolbar.title = teacherName
             nameTextExpanded.text = teacherName
             classTextExpanded.text = teacherEmail
-            // Set toolbar title and subtitle when collapsed
             setupToolbarCollapseListener(teacherName, teacherEmail)
-        }.addOnFailureListener {
-            collapsingToolbar.title = "Teacher"
-            nameTextExpanded.text = "Teacher"
-            classTextExpanded.text = teacherEmail
-            setupToolbarCollapseListener("Teacher", teacherEmail)
         }
 
-        // 🧮 Load statistics from Firebase
-        loadClassStatistics()
-
-        // Add dynamic class content to ensure scrollable content
-        loadDynamicClassContent()
+        // 🔁 Start real-time overall update
+        listenToOverallStudentsRealtime()
 
         seeAllClasses.setOnClickListener {
             (activity as? TeacherActivity)?.navigateToOverview()
@@ -95,123 +85,49 @@ class TeacherProfileFragment : Fragment() {
         return view
     }
 
-    private fun setupToolbarCollapseListener(teacherName: String, teacherEmail: String) {
-        appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-            val isCollapsed = Math.abs(verticalOffset) >= appBarLayout.totalScrollRange
-            if (isCollapsed) {
-                toolbar.title = teacherName
-                toolbar.subtitle = teacherEmail
-            } else {
-                toolbar.title = ""
-                toolbar.subtitle = ""
+    // ✅ Real-time listener for overall student data
+    private fun listenToOverallStudentsRealtime() {
+        val currentDate = Calendar.getInstance().time
+
+        usersListener = usersRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var totalStudents = 0
+                var activeCount = 0
+                var inactiveCount = 0
+
+                for (userSnap in snapshot.children) {
+                    val role = userSnap.child("role").getValue(String::class.java)
+                    if (role != "student") continue
+                    totalStudents++
+
+                    val status = userSnap.child("presence/status").getValue(String::class.java)
+                    val lastActiveDateStr = userSnap.child("activityStreak/lastActiveDate").getValue(String::class.java)
+
+                    when (status) {
+                        "online", "in_lecture" -> activeCount++
+                        else -> {
+                            if (lastActiveDateStr != null) {
+                                try {
+                                    val lastActiveDate = dateFormat.parse(lastActiveDateStr)
+                                    val diffDays = (currentDate.time - (lastActiveDate?.time ?: 0)) / (1000 * 60 * 60 * 24)
+                                    if (diffDays <= 1) activeCount++ else inactiveCount++
+                                } catch (e: Exception) {
+                                    inactiveCount++
+                                }
+                            } else inactiveCount++
+                        }
+                    }
+                }
+
+                updateOverallUI(activeCount, inactiveCount, totalStudents)
             }
+
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
-    @SuppressLint("SimpleDateFormat")
-    private fun loadClassStatistics() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val teacherClassesRef = FirebaseDatabase.getInstance().getReference("users/$uid/classes")
-        val dbUsers = FirebaseDatabase.getInstance().getReference("users")
-        val dbClasses = FirebaseDatabase.getInstance().getReference("classes")
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val now = Date()
-
-        teacherClassesRef.get().addOnSuccessListener { classesSnapshot ->
-            if (!classesSnapshot.exists() || classesSnapshot.childrenCount == 0L) {
-                updateBarGraph(0, 0, 0)
-                addPlaceholderCard()
-                return@addOnSuccessListener
-            }
-
-            val studentIds = mutableListOf<String>()
-            val classCodes = classesSnapshot.children.mapNotNull { it.key }
-            var processedClasses = 0
-
-            for (classCode in classCodes) {
-                dbClasses.child(classCode).child("students").get()
-                    .addOnSuccessListener { studentsSnap ->
-                        for (studentSnap in studentsSnap.children) {
-                            studentSnap.key?.let { studentIds.add(it) }
-                        }
-                        processedClasses++
-                        if (processedClasses == classCodes.size) {
-                            calculateActivityCounts(studentIds, dbUsers, sdf, now)
-                        }
-                    }
-                    .addOnFailureListener {
-                        processedClasses++
-                        if (processedClasses == classCodes.size) {
-                            calculateActivityCounts(studentIds, dbUsers, sdf, now)
-                        }
-                    }
-            }
-        }.addOnFailureListener {
-            updateBarGraph(0, 0, 0)
-            addPlaceholderCard()
-        }
-    }
-
-    private fun calculateActivityCounts(
-        studentIds: List<String>,
-        dbUsers: DatabaseReference,
-        sdf: SimpleDateFormat,
-        now: Date
-    ) {
-        if (studentIds.isEmpty()) {
-            updateBarGraph(0, 0, 0)
-            return
-        }
-
-        var totalStudents = studentIds.size
-        var activeCount = 0
-        var inactiveCount = 0
-        var processed = 0
-
-        val INACTIVE_THRESHOLD_DAYS = 1  // 🔧 You can easily tweak this (e.g., 1, 3, or 7)
-
-        for (studentId in studentIds) {
-            dbUsers.child(studentId).child("activityStreak").get()
-                .addOnSuccessListener { activitySnap ->
-                    val lastActiveDateStr = activitySnap.child("lastActiveDate").getValue(String::class.java)
-
-                    if (!lastActiveDateStr.isNullOrEmpty()) {
-                        try {
-                            val lastActive = sdf.parse(lastActiveDateStr)
-                            val diffDays = ((now.time - lastActive.time) / (1000 * 60 * 60 * 24))
-
-                            // ✅ Only count as active if last activity is within threshold
-                            if (diffDays <= INACTIVE_THRESHOLD_DAYS) {
-                                activeCount++
-                            } else {
-                                inactiveCount++
-                            }
-
-                        } catch (e: Exception) {
-                            // 🧩 Couldn’t parse date → count as inactive
-                            inactiveCount++
-                        }
-                    } else {
-                        // 🧩 No lastActiveDate found → consider inactive
-                        inactiveCount++
-                    }
-
-                    processed++
-                    if (processed == totalStudents) {
-                        updateBarGraph(activeCount, inactiveCount, totalStudents)
-                    }
-                }
-                .addOnFailureListener {
-                    inactiveCount++
-                    processed++
-                    if (processed == totalStudents) {
-                        updateBarGraph(activeCount, inactiveCount, totalStudents)
-                    }
-                }
-        }
-    }
-
-    private fun updateBarGraph(active: Int, inactive: Int, total: Int) {
+    // ✅ Update text views + bar graph in real-time
+    private fun updateOverallUI(active: Int, inactive: Int, total: Int) {
         activeCountText.text = active.toString()
         inactiveCountText.text = inactive.toString()
         totalCountText.text = total.toString()
@@ -222,149 +138,27 @@ class TeacherProfileFragment : Fragment() {
         barGraphView.invalidate()
     }
 
-    private fun loadDynamicClassContent() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val teacherClassesRef = FirebaseDatabase.getInstance().getReference("users/$uid/classes")
-
-        teacherClassesRef.get().addOnSuccessListener { classesSnapshot ->
-            if (!classesSnapshot.exists() || classesSnapshot.childrenCount == 0L) {
-                addPlaceholderCard()
-                return@addOnSuccessListener
-            }
-
-            val classCodes = classesSnapshot.children.mapNotNull { it.key }
-            for (classCode in classCodes) {
-                val classRef = FirebaseDatabase.getInstance().getReference("classes/$classCode")
-                classRef.get().addOnSuccessListener { classSnap ->
-                    val className = classSnap.child("className").getValue(String::class.java) ?: "Unnamed Class"
-                    val studentCount = classSnap.child("students").childrenCount.toInt()
-                    addClassCard(classCode, className, studentCount)
-                }.addOnFailureListener {
-                    addClassCard(classCode, "Unnamed Class", 0)
-                }
-            }
-        }.addOnFailureListener {
-            addPlaceholderCard()
-        }
-    }
-
-    private fun addClassCard(classCode: String, className: String, studentCount: Int) {
-        val cardView = MaterialCardView(requireContext()).apply {
-            layoutParams = ViewGroup.MarginLayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(48, 48, 48, 48) // 16dp margins
-            }
-            cardElevation = 6f
-            radius = 16f
-            setStrokeWidth(1)
-            setStrokeColor(ContextCompat.getColor(requireContext(), R.color.gray))
-        }
-
-        val cardContent = LinearLayout(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            orientation = LinearLayout.VERTICAL
-            setPadding(60, 60, 60, 60) // 20dp padding
-        }
-
-        val classTitle = TextView(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            text = "Class: $className"
-            textSize = 16f
-            setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black))
-            typeface = ResourcesCompat.getFont(requireContext(), R.font.pixel)
-        }
-
-        val classCodeText = TextView(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            text = "Code: $classCode"
-            textSize = 14f
-            setTextColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray))
-            typeface = ResourcesCompat.getFont(requireContext(), R.font.pixel)
-            setPadding(0, 8, 0, 0)
-        }
-
-        val studentCountText = TextView(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            text = "Students: $studentCount"
-            textSize = 14f
-            setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black))
-            typeface = ResourcesCompat.getFont(requireContext(), R.font.pixel)
-            setPadding(0, 12, 0, 0)
-        }
-
-        cardContent.addView(classTitle)
-        cardContent.addView(classCodeText)
-        cardContent.addView(studentCountText)
-        cardView.addView(cardContent)
-        detailsContainer.addView(cardView)
-    }
-
-    private fun addPlaceholderCard() {
-        val cardView = MaterialCardView(requireContext()).apply {
-            layoutParams = ViewGroup.MarginLayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(48, 48, 48, 48)
-            }
-            cardElevation = 6f
-            radius = 16f
-            setStrokeWidth(1)
-            setStrokeColor(ContextCompat.getColor(requireContext(), R.color.gray))
-        }
-
-        val cardContent = LinearLayout(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            orientation = LinearLayout.VERTICAL
-            setPadding(60, 60, 60, 60)
-        }
-
-        val placeholderText = TextView(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            text = "No classes available"
-            textSize = 16f
-            setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black))
-            typeface = ResourcesCompat.getFont(requireContext(), R.font.pixel)
-        }
-
-        cardContent.addView(placeholderText)
-        cardView.addView(cardContent)
-        detailsContainer.addView(cardView)
-    }
-
-    private fun setupAppBarToolbar(
-        collapsing: CollapsingToolbarLayout,
-        toolbar: MaterialToolbar
-    ) {
+    private fun setupAppBarToolbar(collapsing: CollapsingToolbarLayout, toolbar: MaterialToolbar) {
         collapsing.isTitleEnabled = false
         toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), android.R.color.white))
-        toolbar.setNavigationOnClickListener {
-            onSettingsIconClicked()
-        }
+        toolbar.setNavigationOnClickListener { onSettingsIconClicked() }
+    }
+
+    private fun setupToolbarCollapseListener(name: String, email: String) {
+        appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, offset ->
+            val collapsed = Math.abs(offset) >= appBarLayout.totalScrollRange
+            toolbar.title = if (collapsed) name else ""
+            toolbar.subtitle = if (collapsed) email else ""
+        })
     }
 
     private fun onSettingsIconClicked() {
-        val bottomSheet = ProfileBottomSheet()
-        bottomSheet.show(childFragmentManager, "ProfileBottomSheet")
+        val sheet = ProfileBottomSheet()
+        sheet.show(childFragmentManager, "ProfileBottomSheet")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        usersListener?.let { usersRef.removeEventListener(it) }
     }
 }

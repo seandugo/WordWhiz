@@ -92,11 +92,5 @@ class BarGraphView(context: Context, attrs: AttributeSet) : View(context, attrs)
         paint.color = ContextCompat.getColor(context, R.color.black)
         paint.textAlign = Paint.Align.CENTER
         paint.textSize = 32f
-
-        val labelY = bottom + 40f
-        canvas.drawText("Active", barPositions[0] + barWidth / 2, labelY, paint)
-        canvas.drawText("In Lecture", barPositions[1] + barWidth / 2, labelY, paint)
-        canvas.drawText("Inactive", barPositions[2] + barWidth / 2, labelY, paint)
-        canvas.drawText("Total", barPositions[3] + barWidth / 2, labelY, paint)
     }
 }
