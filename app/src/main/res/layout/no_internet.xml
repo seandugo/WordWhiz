@@ -18,13 +18,5 @@
             android:layout_height="wrap_content"
             app:srcCompat="@drawable/no_internet_img" />
 
-        <Button
-            android:id="@+id/button"
-            android:layout_width="@dimen/intro_teacher_fourth_page_button_width"
-            android:textSize="@dimen/intro_teacher_fourth_page_button_text_size"
-            android:layout_height="wrap_content"
-            android:text="Retry"
-            android:textColor="#000"
-            android:fontFamily="@font/pixel"/>
     </LinearLayout>
 </LinearLayout>

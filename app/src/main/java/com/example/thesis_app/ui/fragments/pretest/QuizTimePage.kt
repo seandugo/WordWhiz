@@ -22,10 +22,12 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
 
         nextButton = view.findViewById(R.id.button)
 
+        // Disable back press on this page
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
+                    // Do nothing (prevent going back)
                 }
             })
 
@@ -57,7 +59,7 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                         return@addOnSuccessListener
                     }
 
-                    // 🔹 Fetch pre-test quiz (835247)
+                    // 🔹 Fetch pre-test quiz (ID: 835247)
                     db.child("quizzes").child("835247").get()
                         .addOnSuccessListener { quizSnapshot ->
                             if (!quizSnapshot.exists()) {
@@ -77,6 +79,9 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
                                 }
                             }
 
+                            // 🔹 Completely randomize question order
+                            questions.shuffle()
+
                             val partItem = QuizPartItem(
                                 quizId = quizSnapshot.key ?: "quiz1",
                                 quizTitle = title,
@@ -88,11 +93,11 @@ class QuizTimePage : Fragment(R.layout.pretest_last_page) {
 
                             // 🔹 Launch QuizActivity with classCode
                             val intent = Intent(requireContext(), QuizActivity::class.java)
-                            QuizActivity.questionModelList = partItem.questions
+                            QuizActivity.questionModelList = partItem.questions.toMutableList()
                             intent.putExtra("QUIZ_ID", partItem.quizId)
                             intent.putExtra("PART_ID", "part1")
                             intent.putExtra("STUDENT_ID", studentId)
-                            intent.putExtra("CLASS_CODE", classCode) // ✅ Add class code
+                            intent.putExtra("CLASS_CODE", classCode) // ✅ Pass class code
 
                             startActivity(intent)
                             requireActivity().finish()

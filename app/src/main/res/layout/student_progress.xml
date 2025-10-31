@@ -110,11 +110,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp">
+
+            <TextView
+                android:id="@+id/studentStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status:"
+                android:layout_margin="10dp"
+                android:padding="10dp"
+                android:background="@drawable/rounded_button"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:layout_gravity="center">
 
@@ -125,23 +135,43 @@
                     android:background="@drawable/rounded_right"
                     android:backgroundTint="#FFC007"
                     android:layout_weight="0.3"
-                    android:padding="12dp"
-                    android:layout_marginEnd="8dp"
+                    android:padding="@dimen/profile_inner_padding"
+                    android:layout_marginEnd="@dimen/profile_inner_padding"
                     android:gravity="center">
 
-                    <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:src="@drawable/book" />
-
-                    <TextView
-                        android:id="@+id/lecturesCount"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="8dp"
-                        android:text="1"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/student_progress_count_text" />
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="@dimen/profile_icon_size"
+                                android:layout_height="@dimen/profile_icon_size"
+                                android:src="@drawable/book" />
+
+                            <TextView
+                                android:id="@+id/lecturesCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/profile_inner_padding"
+                                android:text="1"
+                                android:textStyle="bold"
+                                android:textSize="@dimen/profile_sub_text_size" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lectures Completed"
+                            android:textSize="@dimen/lectures_profile"/>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -152,25 +182,45 @@
                     android:background="@drawable/box_background"
                     android:backgroundTint="#FFC007"
                     android:layout_weight="0.3"
-                    android:padding="12dp"
-                    android:layout_marginEnd="8dp"
+                    android:padding="@dimen/profile_inner_padding"
+                    android:layout_marginEnd="@dimen/profile_inner_padding"
                     android:gravity="center">
 
-                    <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:src="@drawable/fire"
-                        android:scaleType="fitCenter"
-                        android:adjustViewBounds="true"/>
-
-                    <TextView
-                        android:id="@+id/daysStreak"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="8dp"
-                        android:textStyle="bold"
-                        android:text="1"
-                        android:textSize="@dimen/student_progress_count_text" />
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="@dimen/profile_icon_size"
+                                android:layout_height="@dimen/profile_icon_size"
+                                android:src="@drawable/fire"
+                                android:scaleType="fitCenter"
+                                android:adjustViewBounds="true"/>
+
+                            <TextView
+                                android:id="@+id/daysStreak"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/profile_inner_padding"
+                                android:textStyle="bold"
+                                android:text="1"
+                                android:textSize="@dimen/profile_sub_text_size" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Active Streak"
+                            android:textSize="@dimen/streak_profile"/>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -181,22 +231,41 @@
                     android:background="@drawable/rounded_left"
                     android:backgroundTint="#FFC007"
                     android:layout_weight="0.3"
-                    android:padding="12dp"
+                    android:padding="@dimen/profile_inner_padding"
                     android:gravity="center">
 
-                    <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:src="@drawable/dict" />
-
-                    <TextView
-                        android:id="@+id/spellingCount"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="8dp"
-                        android:textStyle="bold"
-                        android:text="1"
-                        android:textSize="@dimen/student_progress_count_text" />
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="@dimen/profile_icon_size"
+                                android:layout_height="@dimen/profile_icon_size"
+                                android:src="@drawable/dict" />
+
+                            <TextView
+                                android:id="@+id/spellingCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/profile_inner_padding"
+                                android:textStyle="bold"
+                                android:text="1"
+                                android:textSize="@dimen/profile_sub_text_size" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Words Spelled"
+                            android:textSize="@dimen/spelled_profile"/>
+                    </LinearLayout>
 
                 </LinearLayout>
             </LinearLayout>

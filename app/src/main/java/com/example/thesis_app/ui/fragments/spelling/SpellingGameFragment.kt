@@ -285,7 +285,9 @@ class SpellingGameFragment : Fragment(), TextToSpeech.OnInitListener {
                         else -> response.trim('"', ' ', '\n')
                     }
 
-                    if (word.length !in 3..8) continue
+                    if (word.length !in 4..8) continue
+                    // 🚫 Skip if contains numbers or special characters
+                    if (!word.matches(Regex("^[a-zA-Z]+$"))) continue
 
                     // 📖 Get meaning from dictionary API
                     try {

@@ -56,7 +56,7 @@
                 <TextView
                     android:id="@+id/question_textview"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/quiz_question_height"
+                    android:layout_height="wrap_content"
                     android:textSize="@dimen/quiz_question_text_size"
                     android:textStyle="bold"
                     android:padding="@dimen/quiz_question_padding"

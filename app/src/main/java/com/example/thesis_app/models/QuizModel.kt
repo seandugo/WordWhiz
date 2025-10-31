@@ -1,19 +1,4 @@
 package com.example.thesis_app.models
-data class QuizModel(
-    val id : String,
-    val title : String,
-    val subtitle : String,
-    val parts: List<PartModel> = emptyList(),
-    val progress: Int,
-    val totalQuestions: Int = 0
-){
-    constructor() : this("","","", emptyList(),0)
-}
-
-data class PartModel(
-    val id: String = "",
-    val questions: List<QuestionModel> = emptyList()
-)
 
 data class QuestionModel(
     val question : String,

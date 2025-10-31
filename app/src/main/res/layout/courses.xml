@@ -60,17 +60,37 @@
                 android:textColor="#000" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/reviewLectures"
+        <FrameLayout
+            android:id="@+id/reviewLecturesText"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
-            android:adjustViewBounds="true"
-            android:scaleType="centerInside"
             android:background="@drawable/rounded_left"
             android:backgroundTint="#FFC007"
-            android:src="@drawable/book"
-            android:padding="@dimen/review_image_padding_with_courses" />
+            android:padding="@dimen/review_image_padding_with_courses">
+
+            <!-- The image -->
+            <ImageView
+                android:id="@+id/reviewLectures"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                android:layout_marginBottom="10dp"
+                android:src="@drawable/book" />
+
+            <!-- Text overlay -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="bottom|center_horizontal"
+                android:text="Review"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:paddingTop="3dp"/>
+        </FrameLayout>
+
     </LinearLayout>
 
     <!-- Recycler & Progress Section -->

@@ -20,13 +20,17 @@ import com.example.thesis_app.ui.fragments.student.LecturesFragment
 import com.example.thesis_app.ui.fragments.student.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
 class StudentActivity : AppCompatActivity() {
     private var currentIndex = 0
     private var pendingFragment: Fragment? = null
     private var pendingIndex: Int = 0
-    private var lastSuccessfulFragmentIndex: Int = 0 // ✅ Tracks last successful fragment
+    private var lastSuccessfulFragmentIndex: Int = 0
+
+    // ✅ Firebase presence reference (now grouped)
+    private var presenceRef: DatabaseReference? = null
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +38,9 @@ class StudentActivity : AppCompatActivity() {
         setContentView(R.layout.student)
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+        // ✅ Initialize user presence tracking
+        setupUserPresence()
 
         // Default fragment
         if (savedInstanceState == null) {
@@ -66,16 +73,36 @@ class StudentActivity : AppCompatActivity() {
         updateStreakAfterActivity()
     }
 
-    // ✅ Checks for internet before showing a fragment
-    private fun checkAndReplaceFragment(fragment: Fragment, index: Int) {
-        pendingFragment = fragment
-        pendingIndex = index
+    // ✅ Setup presence tracking (status + lastSeen)
+    private fun setupUserPresence() {
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null) ?: return
 
-        if (!isInternetAvailable()) {
-            replaceFragment(NoInternetFragment(), 99)
-        } else {
-            replaceFragment(fragment, index)
-        }
+        val database = FirebaseDatabase.getInstance()
+        val presencePath = "users/$studentId/presence"
+        presenceRef = database.getReference(presencePath)
+
+        // Automatically go offline when disconnected
+        presenceRef?.child("status")?.onDisconnect()?.setValue("offline")
+        presenceRef?.child("lastSeen")?.onDisconnect()?.setValue(System.currentTimeMillis())
+
+        // Mark as online when app starts
+        presenceRef?.child("status")?.setValue("online")
+        presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
+    }
+
+    // ✅ Update online status when activity starts
+    override fun onStart() {
+        super.onStart()
+        presenceRef?.child("status")?.setValue("online")
+        presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
+    }
+
+    // ✅ Update offline + last seen when activity stops
+    override fun onStop() {
+        super.onStop()
+        presenceRef?.child("status")?.setValue("offline")
+        presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
     }
 
     fun updateStreakAfterActivity() {
@@ -90,7 +117,6 @@ class StudentActivity : AppCompatActivity() {
             var streakCount = snapshot.child("streakCount").getValue(Int::class.java) ?: 0
             val lastActiveDate = snapshot.child("lastActiveDate").getValue(String::class.java)
 
-            // Only update if the student *just completed an activity*
             if (lastActiveDate != today) {
                 if (lastActiveDate == yesterday) {
                     streakCount += 1
@@ -103,7 +129,17 @@ class StudentActivity : AppCompatActivity() {
         }
     }
 
-    // ✅ Handles dictionary logic with internet check
+    private fun checkAndReplaceFragment(fragment: Fragment, index: Int) {
+        pendingFragment = fragment
+        pendingIndex = index
+
+        if (!isInternetAvailable()) {
+            replaceFragment(NoInternetFragment(), 99)
+        } else {
+            replaceFragment(fragment, index)
+        }
+    }
+
     private fun checkAndHandleDictionary() {
         pendingIndex = 1
 
@@ -140,30 +176,6 @@ class StudentActivity : AppCompatActivity() {
         }
     }
 
-    // ✅ Retry triggered from NoInternetFragment
-    fun retry() {
-        val rootView = findViewById<View>(android.R.id.content)
-        val retrySnackbar = Snackbar.make(rootView, "Retrying...", Snackbar.LENGTH_INDEFINITE)
-        retrySnackbar.show()
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            retrySnackbar.dismiss()
-
-            if (isInternetAvailable()) {
-                when (lastSuccessfulFragmentIndex) {
-                    0 -> replaceFragment(LecturesFragment(), 0)
-                    1 -> checkAndHandleDictionary()
-                    2 -> replaceFragment(ProfileFragment(), 2)
-                    else -> replaceFragment(LecturesFragment(), 0)
-                }
-            } else {
-                replaceFragment(NoInternetFragment(), 99)
-                Snackbar.make(rootView, "No internet. Try again.", Snackbar.LENGTH_SHORT).show()
-            }
-        }, 3000)
-    }
-
-    // ✅ Internet check helper
     private fun isInternetAvailable(): Boolean {
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = cm.activeNetwork ?: return false
@@ -173,7 +185,6 @@ class StudentActivity : AppCompatActivity() {
                 caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
     }
 
-    // ✅ Handles actual fragment replacement + animation + tracking
     private fun replaceFragment(fragment: Fragment, newIndex: Int) {
         pendingFragment = fragment
         pendingIndex = newIndex
@@ -196,7 +207,6 @@ class StudentActivity : AppCompatActivity() {
         transaction.commit()
         currentIndex = newIndex
 
-        // ✅ Save last successful fragment (not NoInternet)
         if (newIndex != 99) {
             lastSuccessfulFragmentIndex = newIndex
         }

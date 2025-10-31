@@ -11,6 +11,7 @@ import com.example.thesis_app.models.BarGraphView
 data class ClassStats(
     val className: String,
     val activeCount: Int,
+    val inLectureCount: Int = 0,
     val inactiveCount: Int,
     val totalStudents: Int
 )

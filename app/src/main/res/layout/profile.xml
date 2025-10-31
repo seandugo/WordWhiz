@@ -129,19 +129,39 @@
                     android:layout_marginEnd="@dimen/profile_inner_padding"
                     android:gravity="center">
 
-                    <ImageView
-                        android:layout_width="@dimen/profile_icon_size"
-                        android:layout_height="@dimen/profile_icon_size"
-                        android:src="@drawable/book" />
-
-                    <TextView
-                        android:id="@+id/lecturesCount"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="@dimen/profile_inner_padding"
-                        android:text="1"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/profile_sub_text_size" />
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="@dimen/profile_icon_size"
+                                android:layout_height="@dimen/profile_icon_size"
+                                android:src="@drawable/book" />
+
+                            <TextView
+                                android:id="@+id/lecturesCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/profile_inner_padding"
+                                android:text="1"
+                                android:textStyle="bold"
+                                android:textSize="@dimen/profile_sub_text_size" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lectures Completed"
+                            android:textSize="@dimen/lectures_profile"/>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -156,21 +176,41 @@
                     android:layout_marginEnd="@dimen/profile_inner_padding"
                     android:gravity="center">
 
-                    <ImageView
-                        android:layout_width="@dimen/profile_icon_size"
-                        android:layout_height="@dimen/profile_icon_size"
-                        android:src="@drawable/fire"
-                        android:scaleType="fitCenter"
-                        android:adjustViewBounds="true"/>
-
-                    <TextView
-                        android:id="@+id/daysStreak"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="@dimen/profile_inner_padding"
-                        android:textStyle="bold"
-                        android:text="1"
-                        android:textSize="@dimen/profile_sub_text_size" />
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="@dimen/profile_icon_size"
+                                android:layout_height="@dimen/profile_icon_size"
+                                android:src="@drawable/fire"
+                                android:scaleType="fitCenter"
+                                android:adjustViewBounds="true"/>
+
+                            <TextView
+                                android:id="@+id/daysStreak"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/profile_inner_padding"
+                                android:textStyle="bold"
+                                android:text="1"
+                                android:textSize="@dimen/profile_sub_text_size" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Active Streak"
+                            android:textSize="@dimen/streak_profile"/>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -184,19 +224,38 @@
                     android:padding="@dimen/profile_inner_padding"
                     android:gravity="center">
 
-                    <ImageView
-                        android:layout_width="@dimen/profile_icon_size"
-                        android:layout_height="@dimen/profile_icon_size"
-                        android:src="@drawable/dict" />
-
-                    <TextView
-                        android:id="@+id/spellingCount"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="@dimen/profile_inner_padding"
-                        android:textStyle="bold"
-                        android:text="1"
-                        android:textSize="@dimen/profile_sub_text_size" />
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="@dimen/profile_icon_size"
+                                android:layout_height="@dimen/profile_icon_size"
+                                android:src="@drawable/dict" />
+
+                            <TextView
+                                android:id="@+id/spellingCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/profile_inner_padding"
+                                android:textStyle="bold"
+                                android:text="1"
+                                android:textSize="@dimen/profile_sub_text_size" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Words Spelled"
+                            android:textSize="@dimen/spelled_profile"/>
+                    </LinearLayout>
 
                 </LinearLayout>
             </LinearLayout>

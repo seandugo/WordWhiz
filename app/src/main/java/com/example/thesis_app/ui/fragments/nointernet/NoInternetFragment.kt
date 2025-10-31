@@ -11,23 +11,16 @@ import com.example.thesis_app.R
 import com.example.thesis_app.StudentActivity
 
 class NoInternetFragment : Fragment(R.layout.no_internet) {
-    private lateinit var nextButton: Button
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        nextButton = view.findViewById(R.id.button)
 
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() { }
             })
-
-        nextButton.setOnClickListener {
-            (requireActivity() as? StudentActivity)?.retry()
-        }
     }
 
     override fun onDestroyView() {

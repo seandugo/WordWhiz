@@ -23,7 +23,7 @@
 
     <dimen name="appbar_height">200dp</dimen>
     <dimen name="header_padding_bottom">40dp</dimen>
-    <dimen name="header_text_large">24sp</dimen>
+    <dimen name="header_text_large">20sp</dimen>
     <dimen name="header_text_medium">16sp</dimen>
     <dimen name="header_text_small">14sp</dimen>
     <dimen name="header_text_margin_small">5dp</dimen>
@@ -265,6 +265,9 @@
     <dimen name="profile_sub_text_size">16sp</dimen>
     <dimen name="profile_small_text_size">14sp</dimen>
     <dimen name="profile_icon_size">36dp</dimen>
+    <dimen name="lectures_profile">12sp</dimen>
+    <dimen name="streak_profile">12sp</dimen>
+    <dimen name="spelled_profile">12sp</dimen>
 
     <dimen name="progress_recycler_card_margin">8dp</dimen>
     <dimen name="progress_recycler_card_corner_radius">24dp</dimen>

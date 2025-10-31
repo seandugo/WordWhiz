@@ -12,4 +12,5 @@
         <color name="red">#EE8B8B</color>   <!-- Red for wrong -->
         <color name="yellow">#FFDA07</color>
         <color name="light_gray">#E0E0E0</color>
+        <color name="blue">#2196F3</color>
 </resources>

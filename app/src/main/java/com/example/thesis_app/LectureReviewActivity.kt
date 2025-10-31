@@ -17,6 +17,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.example.thesis_app.models.QuestionModel
 import com.google.firebase.database.DatabaseError
+import com.google.android.material.appbar.MaterialToolbar
 
 class LectureReviewActivity : AppCompatActivity() {
 
@@ -73,6 +74,15 @@ class LectureReviewActivity : AppCompatActivity() {
         findViewById<RecyclerView>(R.id.lectureRecycler).apply {
             layoutManager = LinearLayoutManager(this@LectureReviewActivity)
             adapter = DefinitionAdapter(definitions)
+        }
+
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.title = ""
+        toolbar.title = ""
+
+        toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
         }
 
         // ✅ Step 3: Setup completion check
@@ -170,7 +180,7 @@ class LectureReviewActivity : AppCompatActivity() {
                     return
                 }
 
-                QuizActivity.questionModelList = questions
+                QuizActivity.questionModelList = questions.toMutableList()
 
                 val intent = Intent(this@LectureReviewActivity, QuizActivity::class.java)
                 intent.putExtra("QUIZ_ID", quizId)
