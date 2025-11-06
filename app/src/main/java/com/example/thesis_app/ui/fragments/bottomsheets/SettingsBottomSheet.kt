@@ -79,7 +79,7 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
             }
             .addOnFailureListener {
                 // Default to student manual if any error occurs
-                openUrl("https://seandugo.github.io/wordwhiz_app/manual.html?section=student-intro")
+                openUrl("https://seandugo.github.io/wordwhiz_app/manual.html")
             }
     }
 
