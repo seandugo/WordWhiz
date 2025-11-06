@@ -1,6 +1,6 @@
 package com.example.thesis_app
 
-import android.animation.ObjectAnimator
+import android.animation.*
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
@@ -17,13 +17,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.thesis_app.models.QuestionModel
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import android.animation.AnimatorListenerAdapter
-import com.google.firebase.database.ValueEventListener
-import android.animation.Animator
-import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.*
 
 class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -100,40 +94,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         presenceRef?.child("status")?.setValue("in_lecture")
         presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
 
-        if (questionModelList.isEmpty()) {
-            Toast.makeText(this, "No questions available!", Toast.LENGTH_LONG).show()
-            finish()
-            return
-        }
-
-        if (questionModelList.isEmpty()) {
-            Toast.makeText(this, "No questions available!", Toast.LENGTH_LONG).show()
-            finish()
-            return
-        }
-
-        val isPostTest = partId.equals("post-test", ignoreCase = true)
-        val questionLimit = if (isPostTest) 15 else 5
-        val allQuestions = questionModelList.toMutableList()
-
-        allQuestions.shuffle()
-
-        questionModelList = if (allQuestions.size > questionLimit)
-            allQuestions.take(questionLimit).toMutableList()
-        else
-            allQuestions
-
-        questionModelList.shuffle()
-
-        originalTotalQuestions = questionModelList.size
-
-        questionModelList.forEachIndexed { index, q ->
-            if (q.options.isNotEmpty()) {
-                shuffledOptionsMap[index] = q.options.shuffled()
-            }
-        }
-
-        // Firebase check
         val db = FirebaseDatabase.getInstance().reference
         db.child("users").child(studentId).child("progress").child(quizId).child(partId)
             .child("isCompleted")
@@ -166,13 +126,88 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn3.setOnClickListener(this)
         nextBtn.setOnClickListener(this)
 
-        loadQuestions()
+        // ✅ Fetch 20 random questions for pre-test or 835247, else use existing list
+        if (quizId == "pre-test" || quizId == "835247") {
+            fetchRandomQuestionsFromFirebase()
+        } else {
+            setupQuestionsFromLocalList()
+        }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 showExitConfirmation()
             }
         })
+    }
+
+    private fun fetchRandomQuestionsFromFirebase() {
+        val db = FirebaseDatabase.getInstance().getReference("questions/$quizId")
+
+        db.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val fetchedQuestions = mutableListOf<QuestionModel>()
+                for (questionSnap in snapshot.children) {
+                    val question = questionSnap.getValue(QuestionModel::class.java)
+                    if (question != null) fetchedQuestions.add(question)
+                }
+
+                if (fetchedQuestions.isEmpty()) {
+                    Toast.makeText(
+                        this@QuizActivity,
+                        "No questions found in database.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    finish()
+                    return
+                }
+
+                fetchedQuestions.shuffle()
+                questionModelList = fetchedQuestions.take(20).toMutableList()
+
+                setupQuestionsFromLocalList()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(
+                    this@QuizActivity,
+                    "Failed to load questions: ${error.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+                finish()
+            }
+        })
+    }
+
+    private fun setupQuestionsFromLocalList() {
+        if (questionModelList.isEmpty()) {
+            Toast.makeText(this, "No questions available!", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
+        val isPostTest = partId.equals("post-test", ignoreCase = true)
+        val questionLimit = if (isPostTest) 15 else 5
+        val allQuestions = questionModelList.toMutableList()
+
+        allQuestions.shuffle()
+
+        if (quizId != "pre-test" && quizId != "835247") {
+            questionModelList = if (allQuestions.size > questionLimit)
+                allQuestions.take(questionLimit).toMutableList()
+            else
+                allQuestions
+        }
+
+        questionModelList.shuffle()
+        originalTotalQuestions = questionModelList.size
+
+        questionModelList.forEachIndexed { index, q ->
+            if (q.options.isNotEmpty()) {
+                shuffledOptionsMap[index] = q.options.shuffled()
+            }
+        }
+
+        loadQuestions()
     }
 
     @SuppressLint("SetTextI18n")
@@ -208,7 +243,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
         questionTextview.text = currentQ.question
 
-        // ✅ Use shuffled options only on first attempt
         val optionsToShow = if (!isRetryPhase)
             shuffledOptionsMap[currentQuestionIndex] ?: currentQ.options
         else
@@ -220,10 +254,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn3.text = optionsToShow.getOrNull(3) ?: ""
     }
 
-    // ✅ Save all quiz answers after finishing (first try only)
-    // ✅ Save all quiz answers after finishing (first try only)
     private fun recordAllAnswersAfterQuiz() {
-        if (retries > 0) return // ❗ Only first attempt
+        if (retries > 0) return
 
         val db = FirebaseDatabase.getInstance().reference
         val quizPath = db.child("users")
@@ -238,7 +270,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         questionModelList.forEachIndexed { index, question ->
             val wasCorrect = correctlyAnswered.contains(index)
             val selectedAnswerText = if (wasCorrect) {
-                // Student got it right; answer was the correct one
                 val correctRaw = question.correct.trim()
                 val correctAnswerText = correctRaw.toIntOrNull()?.let {
                     if (it in question.options.indices) question.options[it]
@@ -246,7 +277,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 } ?: correctRaw
                 correctAnswerText
             } else {
-                // If got it wrong, store the last selected answer
                 selectedAnswer
             }
 
@@ -264,7 +294,6 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             answersData["Q${index + 1}"] = resultData
         }
 
-        // ✅ Store answers under user's progress → quizId → partId → quizAnswers
         quizPath.updateChildren(answersData)
     }
 
@@ -443,16 +472,19 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     private fun finishQuiz() {
         recordAllAnswersAfterQuiz()
 
-        val percentage = ((correctAnswers.toFloat() / originalTotalQuestions.toFloat()) * 100).toInt()
+        val percentage =
+            ((correctAnswers.toFloat() / originalTotalQuestions.toFloat()) * 100).toInt()
 
         progressData["isCompleted"] = true
         progressData["lastUpdated"] = System.currentTimeMillis()
         saveProgressToFirebase(quizId, partId, progressData)
         updateQuizCompletionStatus(studentId, quizId)
-        FirebaseDatabase.getInstance().getReference("users/$studentId/pretestCompleted").setValue(true)
+        FirebaseDatabase.getInstance().getReference("users/$studentId/pretestCompleted")
+            .setValue(true)
 
         val dialogView = layoutInflater.inflate(R.layout.score_dialog, null)
-        val scoreProgressIndicator: ProgressBar = dialogView.findViewById(R.id.score_progress_indicator)
+        val scoreProgressIndicator: ProgressBar =
+            dialogView.findViewById(R.id.score_progress_indicator)
         val scoreProgressText: TextView = dialogView.findViewById(R.id.score_progress_text)
         val scoreTitle: TextView = dialogView.findViewById(R.id.score_title)
         val finishBtn: Button = dialogView.findViewById(R.id.finish_btn)
@@ -486,8 +518,10 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
                 .setMessage("Are you sure you want to exit? Your progress will not be saved for this quiz.")
         } else {
             builder.setTitle("Exit")
-                .setMessage(if (isPartCompleted) "Are you sure you want to exit review?"
-                else "Are you sure you want to exit? Progress might not be saved.")
+                .setMessage(
+                    if (isPartCompleted) "Are you sure you want to exit review?"
+                    else "Are you sure you want to exit? Progress might not be saved."
+                )
         }
 
         builder.setPositiveButton("Yes") { _, _ ->

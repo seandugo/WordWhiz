@@ -104,7 +104,7 @@
     <dimen name="class_overview_recycler_bar_margin_vertical">8dp</dimen>
 
     <dimen name="class_overview_recycler_stats_padding_top">12dp</dimen>
-    <dimen name="class_overview_recycler_label_text_size">16sp</dimen>
+    <dimen name="class_overview_recycler_label_text_size">14sp</dimen>
     <dimen name="teacher_profile_title_padding_bottom">12dp</dimen>
 
     <dimen name="class_overview_recycler_value_row_margin_top">4dp</dimen>

@@ -36,7 +36,43 @@ class StudentProfileBottomSheet : BottomSheetDialogFragment() {
 
     private fun setupListeners() {
         logoutLayout.setOnClickListener { showLogoutConfirmation() }
-        changeClassLayout.setOnClickListener { showChangeClassDialog() }
+        changeClassLayout.setOnClickListener { checkExistingRequestThenShowDialog() }
+    }
+
+    // ✅ Check if there's an existing pending class change request first
+    private fun checkExistingRequestThenShowDialog() {
+        val prefs = requireContext().getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null)
+
+        if (studentId == null) {
+            Toast.makeText(requireContext(), "Error: No student ID found.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val database = FirebaseDatabase.getInstance()
+        val requestRef = database.getReference("classChangeRequests/$studentId")
+
+        requestRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val status = snapshot.child("status").value?.toString() ?: "pending"
+                if (status == "pending") {
+                    // ⚠️ Request still pending
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("Request Pending")
+                        .setMessage("You already have a pending class change request. Please wait for your teacher to review it before sending another one.")
+                        .setPositiveButton("OK", null)
+                        .show()
+                } else {
+                    // ✅ Allow new request if previous one is resolved
+                    showChangeClassDialog()
+                }
+            } else {
+                // ✅ No request exists — allow new request
+                showChangeClassDialog()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(requireContext(), "Error checking request status. Please try again.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // ✅ Show the Change Class dialog
@@ -72,9 +108,6 @@ class StudentProfileBottomSheet : BottomSheetDialogFragment() {
         }
 
         val database = FirebaseDatabase.getInstance()
-        val globalRequestRef = database.getReference("classChangeRequests/$studentId")
-        val classPendingRef = database.getReference("classes/$classCode/pendingRequests/$studentId")
-
         val requestData = mapOf(
             "studentId" to studentId,
             "studentName" to studentName,
@@ -83,7 +116,6 @@ class StudentProfileBottomSheet : BottomSheetDialogFragment() {
             "timestamp" to System.currentTimeMillis()
         )
 
-        // ✅ Save to both locations
         val updates = hashMapOf<String, Any>(
             "/classChangeRequests/$studentId" to requestData,
             "/classes/$classCode/pendingRequests/$studentId" to requestData
