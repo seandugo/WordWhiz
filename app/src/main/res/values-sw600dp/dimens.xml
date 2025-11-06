@@ -140,6 +140,7 @@
 
     <!-- Image -->
     <dimen name="review_image_padding_with_courses">16dp</dimen>
+    <dimen name="text_review">16sp</dimen>
 
     <!-- ProgressBar -->
     <dimen name="progress_size_with_courses">28dp</dimen>

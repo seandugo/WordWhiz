@@ -31,35 +31,56 @@ class LoadingActivity : ComponentActivity() {
 
             when (mode) {
                 "login" -> {
-                    if (role == "teacher") {
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        val uid = currentUser?.uid
+                    when (role) {
+                        "teacher" -> {
+                            val currentUser = FirebaseAuth.getInstance().currentUser
+                            val uid = currentUser?.uid
 
-                        if (uid.isNullOrEmpty()) {
-                            startActivity(Intent(this, LoginActivity::class.java))
-                            finish()
-                        } else {
-                            checkIntroStatus(uid)
+                            if (uid.isNullOrEmpty()) {
+                                startActivity(Intent(this, LoginActivity::class.java))
+                                finish()
+                            } else {
+                                checkIntroStatus(uid)
+                            }
                         }
-                    } else {
-                        val studentId = intent.getStringExtra("studentId")
-                            ?: prefs.getString("studentId", null)
 
-                        if (studentId.isNullOrEmpty()) {
-                            // Fallback if no studentId found
+                        "student" -> {
+                            val studentId = intent.getStringExtra("studentId")
+                                ?: prefs.getString("studentId", null)
+
+                            if (studentId.isNullOrEmpty()) {
+                                startActivity(Intent(this, LoginActivity::class.java))
+                                finish()
+                            } else {
+                                checkPretestStatus(studentId)
+                            }
+                        }
+
+                        // ✅ NEW: Admin role redirect
+                        "admin" -> {
+                            val intent = Intent(this, AdminActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+
+                        else -> {
                             startActivity(Intent(this, LoginActivity::class.java))
                             finish()
-                        } else {
-                            checkPretestStatus(studentId)
                         }
                     }
                 }
 
                 "signup" -> {
                     startActivity(Intent(this, SignupActivity::class.java))
+                    finish()
                 }
 
                 "createAccount" -> {
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
+                }
+
+                else -> {
                     startActivity(Intent(this, LoginActivity::class.java))
                     finish()
                 }

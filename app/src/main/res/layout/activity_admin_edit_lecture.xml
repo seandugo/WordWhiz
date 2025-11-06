@@ -1,0 +1,107 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#f8f8f8"
+    android:padding="16dp"
+    tools:context=".AdminEditLectureActivity">
+
+    <!-- 🧭 Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/editLectureToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="Edit Lecture"
+        app:navigationIcon="@drawable/back"
+        app:titleCentered="true"
+        app:titleTextColor="@color/black"
+        android:backgroundTint="@color/primaryColor" />
+
+    <!-- ✏️ Lecture Title -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Lecture Title"
+        android:layout_marginTop="20dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editLectureTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:inputType="textCapSentences" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 🧾 Lecture Description -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description"
+        android:layout_marginTop="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editLectureDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="3"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:textColor="@color/black" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 🔢 Lecture Order -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Order"
+        android:layout_marginTop="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editLectureOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textColor="@color/black" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- ⚙️ Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="20dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/saveLectureButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@color/primaryColor" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/deleteLectureButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete"
+            android:textAllCaps="false"
+            android:layout_marginStart="12dp"
+            app:backgroundTint="@color/red" />
+    </LinearLayout>
+
+    <!-- 🧠 Manage Questions -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/manageQuestionsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Manage Questions"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:layout_marginTop="20dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+</LinearLayout>

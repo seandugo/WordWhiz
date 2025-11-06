@@ -21,6 +21,7 @@ import com.example.thesis_app.QuizDetailActivity
 import com.example.thesis_app.SpellingAchievementsActivity
 import com.example.thesis_app.models.ProgressItem
 import com.example.thesis_app.ui.fragments.bottomsheets.ProfileBottomSheet
+import com.example.thesis_app.ui.fragments.bottomsheets.StudentProfileBottomSheet
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
@@ -321,8 +322,8 @@ class ProfileFragment : Fragment() {
     }
 
     private fun onSettingsIconClicked() {
-        val bottomSheet = ProfileBottomSheet()
-        bottomSheet.show(childFragmentManager, "ProfileBottomSheet")
+        val bottomSheet = StudentProfileBottomSheet()
+        bottomSheet.show(childFragmentManager, "StudentProfileBottomSheet")
     }
 
 }

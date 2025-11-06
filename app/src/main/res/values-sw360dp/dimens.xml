@@ -132,6 +132,7 @@
 
     <!-- Image -->
     <dimen name="review_image_padding_with_courses">10dp</dimen>
+    <dimen name="text_review">12sp</dimen>
 
     <!-- ProgressBar -->
     <dimen name="progress_size_with_courses">20dp</dimen>
@@ -266,7 +267,7 @@
     <dimen name="profile_sub_text_size">16sp</dimen>
     <dimen name="profile_small_text_size">14sp</dimen>
     <dimen name="profile_icon_size">36dp</dimen>
-    <dimen name="lectures_profile">12sp</dimen>
+    <dimen name="lectures_profile">10sp</dimen>
     <dimen name="streak_profile">12sp</dimen>
     <dimen name="spelled_profile">12sp</dimen>
     <dimen name="text_profile">12sp</dimen>

@@ -87,7 +87,7 @@
                 android:text="Review"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"
-                android:textSize="14sp"
+                android:textSize="@dimen/text_review"
                 android:paddingTop="3dp"/>
         </FrameLayout>
 

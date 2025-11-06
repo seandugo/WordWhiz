@@ -1,0 +1,44 @@
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="10dp"
+    app:strokeColor="#E0E0E0"
+    android:backgroundTint="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/lectureTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lecture Title"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/lectureDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lecture description here..."
+            android:textColor="#666"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/lectureOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Order: 1"
+            android:textColor="#888"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

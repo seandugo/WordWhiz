@@ -106,12 +106,27 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             return
         }
 
-        // ✅ Randomize question order only on first attempt
+        if (questionModelList.isEmpty()) {
+            Toast.makeText(this, "No questions available!", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
+        val isPostTest = partId.equals("post-test", ignoreCase = true)
+        val questionLimit = if (isPostTest) 15 else 5
+        val allQuestions = questionModelList.toMutableList()
+
+        allQuestions.shuffle()
+
+        questionModelList = if (allQuestions.size > questionLimit)
+            allQuestions.take(questionLimit).toMutableList()
+        else
+            allQuestions
+
         questionModelList.shuffle()
 
         originalTotalQuestions = questionModelList.size
 
-        // ✅ Randomize options only for the first attempt
         questionModelList.forEachIndexed { index, q ->
             if (q.options.isNotEmpty()) {
                 shuffledOptionsMap[index] = q.options.shuffled()
@@ -203,6 +218,54 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         btn1.text = optionsToShow.getOrNull(1) ?: ""
         btn2.text = optionsToShow.getOrNull(2) ?: ""
         btn3.text = optionsToShow.getOrNull(3) ?: ""
+    }
+
+    // ✅ Save all quiz answers after finishing (first try only)
+    // ✅ Save all quiz answers after finishing (first try only)
+    private fun recordAllAnswersAfterQuiz() {
+        if (retries > 0) return // ❗ Only first attempt
+
+        val db = FirebaseDatabase.getInstance().reference
+        val quizPath = db.child("users")
+            .child(studentId)
+            .child("progress")
+            .child(quizId)
+            .child(partId)
+            .child("quizAnswers")
+
+        val answersData = mutableMapOf<String, Any>()
+
+        questionModelList.forEachIndexed { index, question ->
+            val wasCorrect = correctlyAnswered.contains(index)
+            val selectedAnswerText = if (wasCorrect) {
+                // Student got it right; answer was the correct one
+                val correctRaw = question.correct.trim()
+                val correctAnswerText = correctRaw.toIntOrNull()?.let {
+                    if (it in question.options.indices) question.options[it]
+                    else correctRaw
+                } ?: correctRaw
+                correctAnswerText
+            } else {
+                // If got it wrong, store the last selected answer
+                selectedAnswer
+            }
+
+            val resultData = mapOf(
+                "order" to (index + 1),
+                "question" to question.question,
+                "answer" to selectedAnswerText,
+                "isCorrect" to wasCorrect,
+                "explanation" to (question.explanation.ifBlank {
+                    if (wasCorrect) "Correct! Good job." else "Review this question carefully."
+                }),
+                "timestamp" to System.currentTimeMillis()
+            )
+
+            answersData["Q${index + 1}"] = resultData
+        }
+
+        // ✅ Store answers under user's progress → quizId → partId → quizAnswers
+        quizPath.updateChildren(answersData)
     }
 
     override fun onClick(view: View?) {
@@ -378,6 +441,8 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun finishQuiz() {
+        recordAllAnswersAfterQuiz()
+
         val percentage = ((correctAnswers.toFloat() / originalTotalQuestions.toFloat()) * 100).toInt()
 
         progressData["isCompleted"] = true

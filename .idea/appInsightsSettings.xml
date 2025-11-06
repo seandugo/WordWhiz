@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.thesis_app" />
-                  <option name="mobileSdkAppId" value="1:1083215421526:android:96f6cc85ec0aa767bd5bf7" />
-                  <option name="projectId" value="maindb-d0f25" />
-                  <option name="projectNumber" value="1083215421526" />
+                  <option name="mobileSdkAppId" value="1:804374721669:android:941a774c82181f705fa5ec" />
+                  <option name="projectId" value="wordwhizdb" />
+                  <option name="projectNumber" value="804374721669" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

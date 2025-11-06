@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <EditText
+        android:id="@+id/inputQuestion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter question"
+        android:inputType="textMultiLine" />
+
+    <EditText
+        android:id="@+id/inputCorrect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Correct answer"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/inputOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Options (comma separated)"
+        android:layout_marginTop="8dp" />
+</LinearLayout>

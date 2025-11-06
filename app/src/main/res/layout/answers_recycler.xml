@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    android:elevation="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/answer_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading..."
+            android:background="@drawable/correct"
+            android:padding="10dp"
+            android:layout_gravity="end"/>
+
+        <!-- Question -->
+        <TextView
+            android:id="@+id/question_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:padding="10dp"
+            android:background="@drawable/rounded_corner"
+            android:backgroundTint="#FFC007"
+            android:textColor="#000"
+            android:gravity="center"
+            android:layout_marginVertical="6dp"
+            tools:text="What is Android OS?" />
+
+        <!-- Answer buttons -->
+        <Button
+            android:id="@+id/btn0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:backgroundTint="#D3D3D3"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            tools:text="Answer A" />
+
+        <Button
+            android:id="@+id/btn1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:backgroundTint="#D3D3D3"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            tools:text="Answer B" />
+
+        <Button
+            android:id="@+id/btn2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:backgroundTint="#D3D3D3"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            tools:text="Answer C" />
+
+        <Button
+            android:id="@+id/btn3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:backgroundTint="#D3D3D3"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            tools:text="Answer D" />
+
+        <!-- Next button -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Answer:"
+            android:paddingVertical="6dp"
+            android:paddingHorizontal="14dp"
+            android:textSize="14sp"
+            android:textColor="#000"
+            android:fontFamily="@font/pixel"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/selected_answer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:background="@drawable/rounded_button"
+            android:padding="20dp"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            tools:text="Answer D" />
+
+        <TextView
+            android:id="@+id/next_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Correct Answer:"
+            android:paddingVertical="6dp"
+            android:paddingHorizontal="14dp"
+            android:textSize="14sp"
+            android:textColor="#000"
+            android:fontFamily="@font/pixel"
+            android:layout_marginTop="8dp" />
+
+        <!-- Explanation -->
+        <LinearLayout
+            android:id="@+id/explanation_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_corner"
+            android:backgroundTint="#FFC007"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/explanation_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:padding="8dp"
+                android:textColor="#000"
+                android:gravity="center"
+                tools:text="Explanation will appear here" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

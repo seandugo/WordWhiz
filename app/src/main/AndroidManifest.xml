@@ -55,6 +55,13 @@
             android:label="Student Progress" />
 
         <!-- Other activities -->
+        <activity android:name=".ForgotPasswordActivity" android:exported="true" android:screenOrientation="portrait"/>
+        <activity android:name=".AdminQuestionEditorActivity" android:exported="true" android:screenOrientation="portrait"/>
+        <activity android:name=".AdminManageQuestionsActivity" android:exported="true" android:screenOrientation="portrait"/>
+        <activity android:name=".AdminEditLectureActivity" android:exported="true" android:screenOrientation="portrait"/>
+        <activity android:name=".AdminManageLecturesActivity" android:exported="true" android:screenOrientation="portrait"/>
+        <activity android:name=".AdminActivity" android:exported="true" android:screenOrientation="portrait"/>
+        <activity android:name=".AnswerDetailsActivity" android:exported="true" android:screenOrientation="portrait"/>
         <activity android:name=".TeacherActivity" android:exported="true" android:screenOrientation="portrait"/>
         <activity android:name=".ArchiveClasses" android:exported="true" android:screenOrientation="portrait"/>
         <activity android:name=".QuizActivity" android:exported="true" android:screenOrientation="portrait" />

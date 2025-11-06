@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f8f8f8"
+    android:orientation="vertical"
+    tools:context=".AdminManageQuestionsActivity">
+
+    <!-- 🧭 Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/manageQuestionsToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:navigationIcon="@drawable/back"
+        app:title="Manage Questions"
+        android:backgroundTint="@color/primaryColor"
+        app:titleTextColor="@color/black" />
+
+    <!-- 📋 Levels List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/levelRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp" />
+</LinearLayout>

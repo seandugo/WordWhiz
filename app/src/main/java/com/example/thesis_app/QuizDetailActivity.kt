@@ -64,7 +64,32 @@ class QuizDetailActivity : AppCompatActivity() {
         val adapter = QuizDetailAdapter(
             progressList,
             onReviewClick = { Log.d(TAG, "Review clicked") },
-            onRetakeClick = { Log.d(TAG, "Retake clicked") }
+            onSeeAnswersClick = { part ->
+                val context = this@QuizDetailActivity
+                val intent = android.content.Intent(context, AnswerDetailsActivity::class.java)
+
+                // Retrieve info from current intent and clicked item
+                val quizTitle = intent.getStringExtra("levelName") ?: "Unknown Quiz"
+                val quizId = intent.getStringExtra("quizId") ?: ""
+                val studentId = intent.getStringExtra("studentId") ?: ""
+
+                // Determine correct Firebase part ID based on level name
+                val partId = when (part.levelName.lowercase()) {
+                    "level 1" -> "part1"
+                    "level 2" -> "part2"
+                    "level 3" -> "part3"
+                    "post-test" -> "post-test"
+                    else -> part.levelName.lowercase()
+                }
+
+                // Pass data to AnswerDetailsActivity
+                intent.putExtra("levelName", quizTitle)
+                intent.putExtra("quizId", quizId)
+                intent.putExtra("studentId", studentId)
+                intent.putExtra("partId", partId)
+
+                startActivity(intent)
+            }
         )
 
         progressRecycler.layoutManager = LinearLayoutManager(this)

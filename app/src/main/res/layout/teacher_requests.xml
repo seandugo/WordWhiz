@@ -111,69 +111,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/seeAllStudentRequests"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Requests: 0"
-                android:padding="20dp"
-                android:background="@drawable/requests"
-                android:layout_margin="10dp"
-                android:layout_gravity="end"
-                android:drawableEnd="@drawable/forward"
-                android:drawablePadding="8dp"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:gravity="center_vertical" />
-
-
-            <!-- Add Student Card -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/addStudentCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="@dimen/card_corner_radius"
-                app:cardElevation="@dimen/card_elevation"
-                android:layout_marginBottom="@dimen/card_margin_bottom"
-                android:clickable="true"
-                android:foreground="?android:attr/selectableItemBackground">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="@dimen/card_padding">
-
-                    <TextView
-                        android:id="@+id/placeholderText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ADD STUDENT"
-                        android:textSize="@dimen/header_text_large"
-                        android:textStyle="bold"
-                        android:textColor="#FFC107"
-                        android:fontFamily="@font/pixel"
-                        android:layout_centerInParent="true"/>
-
-                    <Button
-                        android:id="@+id/addButton"
-                        android:layout_width="@dimen/button_size"
-                        android:layout_height="@dimen/button_size"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:backgroundTint="#FFC107"
-                        android:text="+"
-                        android:textColor="@android:color/white"
-                        android:textSize="@dimen/button_text_size"
-                        android:fontFamily="@font/pixel"
-                        android:padding="0dp"
-                        android:clickable="false"
-                        android:focusable="false"/>
-                </RelativeLayout>
-            </androidx.cardview.widget.CardView>
-
             <!-- Student RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/studentRecyclerView"
+                android:id="@+id/requestsRecycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
