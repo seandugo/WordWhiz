@@ -52,6 +52,26 @@
                 android:fontFamily="@font/pixel"/>
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/helpLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/frosted_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Help"
+                android:textSize="18sp"
+                android:fontFamily="@font/pixel"/>
+        </LinearLayout>
+
         <!-- Version -->
         <LinearLayout
             android:id="@+id/versionLayout"
