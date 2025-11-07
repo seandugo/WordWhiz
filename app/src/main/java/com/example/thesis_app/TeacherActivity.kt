@@ -4,20 +4,23 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.FrameLayout
+import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.view.children
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.thesis_app.ui.fragments.bottomsheets.SettingsBottomSheet
-import com.example.thesis_app.ui.fragments.nointernet.NoInternetFragment
 import com.example.thesis_app.ui.fragments.teacher.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
@@ -30,11 +33,12 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     private lateinit var bottomNavigationView: BottomNavigationView
     private var currentIndex = 0
     private var lastSuccessfulFragmentIndex = 0
-    private var pendingFragment: Fragment? = null
-    private var pendingIndex: Int = 0
 
-    private val handler = Handler(Looper.getMainLooper())
-    private val checkInterval = 3000L // every 3 seconds
+    // ✅ Network monitoring components
+    private var connectivityManager: ConnectivityManager? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var networkSnackbar: Snackbar? = null
+    private var overlayView: View? = null
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,16 +48,18 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         drawerLayout = findViewById(R.id.drawer_layout)
         bottomNavigationView = findViewById(R.id.bottom_navigation)
 
+        // ✅ Default fragment
         if (savedInstanceState == null) {
-            checkAndReplaceFragment(TeacherFragment(), 0)
+            replaceFragment(TeacherFragment(), 0)
             bottomNavigationView.selectedItemId = R.id.nav_overview
         }
 
+        // ✅ Bottom navigation handling
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_overview -> checkAndReplaceFragment(TeacherFragment(), 0)
-                R.id.nav_classes -> checkAndReplaceFragment(TeacherClassesFragment(), 1)
-                R.id.nav_profile -> checkAndReplaceFragment(TeacherProfileFragment(), 2)
+                R.id.nav_overview -> replaceFragment(TeacherFragment(), 0)
+                R.id.nav_classes -> replaceFragment(TeacherClassesFragment(), 1)
+                R.id.nav_profile -> replaceFragment(TeacherProfileFragment(), 2)
                 R.id.nav_settings -> {
                     val bottomSheet = SettingsBottomSheet()
                     bottomSheet.show(supportFragmentManager, "SettingsBottomSheet")
@@ -62,6 +68,7 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             true
         }
 
+        // ✅ Back press confirmation
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -73,118 +80,161 @@ class TeacherActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 }
             })
 
-        startInternetMonitor()
+        // ✅ Network monitoring
+        setupNetworkMonitoring()
     }
 
-    // ✅ Internet check same as StudentActivity
-    private fun isInternetAvailable(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = cm.activeNetwork ?: return false
-        val caps = cm.getNetworkCapabilities(network) ?: return false
-        return caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
-    }
+    // ------------------------------
+    // Network Monitoring (Dynamic)
+    // ------------------------------
+    private fun setupNetworkMonitoring() {
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val rootView = findViewById(android.R.id.content) as View
 
-    // ✅ Handles auto-check and fragment display
-    private fun checkAndReplaceFragment(fragment: Fragment, index: Int) {
-        pendingFragment = fragment
-        pendingIndex = index
+        // Persistent Snackbar setup
+        networkSnackbar = Snackbar.make(rootView, "", Snackbar.LENGTH_INDEFINITE)
+            .setAction("Retry") { checkCurrentFragment() }
+
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                runOnUiThread {
+                    dismissNetworkSnackbar()
+                    hideLoadingOverlay()
+                    enableNavigation(true)
+                }
+            }
+
+            override fun onLost(network: Network) {
+                runOnUiThread {
+                    showNetworkStatusSnackbar("No internet connection — app may not function properly.")
+                    showLoadingOverlay()
+                    enableNavigation(false)
+                }
+            }
+
+            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+                val hasInternet = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                val isValidated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+
+                runOnUiThread {
+                    when {
+                        !hasInternet -> {
+                            showNetworkStatusSnackbar("No internet connection — app may not function properly.")
+                            showLoadingOverlay()
+                            enableNavigation(false)
+                        }
+                        !isValidated -> {
+                            showNetworkStatusSnackbar("Unstable internet — some features may not work properly.")
+                            showLoadingOverlay()
+                            enableNavigation(false)
+                        }
+                        else -> {
+                            dismissNetworkSnackbar()
+                            hideLoadingOverlay()
+                            enableNavigation(true)
+                        }
+                    }
+                }
+            }
+        }
+
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        connectivityManager?.registerNetworkCallback(request, networkCallback!!)
 
         if (!isInternetAvailable()) {
-            replaceFragment(NoInternetFragment(), 99)
-        } else {
-            replaceFragment(fragment, index)
+            showNetworkStatusSnackbar("No internet connection — app may not function properly.")
+            showLoadingOverlay()
+            enableNavigation(false)
         }
     }
 
-    // ✅ Retry triggered from NoInternetFragment (same as StudentActivity)
-    fun retry() {
-        val rootView: View = findViewById(android.R.id.content)
-        val retrySnackbar = Snackbar.make(rootView, "Retrying...", Snackbar.LENGTH_INDEFINITE)
-        retrySnackbar.show()
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            retrySnackbar.dismiss()
-
-            if (isInternetAvailable()) {
-                when (lastSuccessfulFragmentIndex) {
-                    0 -> replaceFragment(TeacherFragment(), 0)
-                    1 -> replaceFragment(TeacherClassesFragment(), 1)
-                    2 -> replaceFragment(TeacherProfileFragment(), 2)
-                    else -> replaceFragment(TeacherFragment(), 0)
-                }
-            } else {
-                replaceFragment(NoInternetFragment(), 99)
-                Snackbar.make(rootView, "No internet. Try again.", Snackbar.LENGTH_SHORT).show()
-            }
-        }, 3000)
+    private fun showNetworkStatusSnackbar(message: String) {
+        networkSnackbar?.setText(message)
+        if (networkSnackbar?.isShown != true) networkSnackbar?.show()
     }
 
-    // ✅ Auto monitor if internet drops (kept from your version)
-    private fun startInternetMonitor() {
-        handler.post(object : Runnable {
-            override fun run() {
-                if (!isInternetAvailable()) {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainerView, NoInternetFragment())
-                        .commitAllowingStateLoss()
-                }
-                handler.postDelayed(this, checkInterval)
-            }
-        })
+    private fun dismissNetworkSnackbar() {
+        networkSnackbar?.dismiss()
     }
 
+    private fun showLoadingOverlay() {
+        if (overlayView == null) {
+            val parent = findViewById<FrameLayout>(android.R.id.content)
+            overlayView = LayoutInflater.from(this)
+                .inflate(R.layout.loading_overlay, parent, false)
+            parent.addView(overlayView)
+        }
+        overlayView?.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadingOverlay() {
+        overlayView?.visibility = View.GONE
+    }
+
+    private fun enableNavigation(enable: Boolean) {
+        bottomNavigationView.menu.children.forEach { it.isEnabled = enable }
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val net = cm.activeNetwork ?: return false
+        val caps = cm.getNetworkCapabilities(net) ?: return false
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    // ------------------------------
+    // Navigation + UI
+    // ------------------------------
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_classes -> checkAndReplaceFragment(TeacherClassesFragment(), 1)
-            R.id.nav_profile -> checkAndReplaceFragment(TeacherProfileFragment(), 2)
-            R.id.nav_settings -> checkAndReplaceFragment(TeacherSettingsFragment(), 3)
+            R.id.nav_classes -> replaceFragment(TeacherClassesFragment(), 1)
+            R.id.nav_profile -> replaceFragment(TeacherProfileFragment(), 2)
+            R.id.nav_settings -> replaceFragment(TeacherSettingsFragment(), 3)
         }
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
-    fun navigateToOverview() {
-        checkAndReplaceFragment(TeacherFragment(), 0)
-        bottomNavigationView.selectedItemId = R.id.nav_overview
-    }
-
     private fun replaceFragment(fragment: Fragment, newIndex: Int) {
         if (newIndex == currentIndex) return
-
         val transaction = supportFragmentManager.beginTransaction()
-        if (newIndex > currentIndex) {
-            transaction.setCustomAnimations(
-                R.anim.slide_in_right,
-                R.anim.slide_out_left
-            )
-        } else {
-            transaction.setCustomAnimations(
-                R.anim.slide_in_left,
-                R.anim.slide_out_right
-            )
-        }
-
+        transaction.setCustomAnimations(
+            if (newIndex > currentIndex) R.anim.slide_in_right else R.anim.slide_in_left,
+            if (newIndex > currentIndex) R.anim.slide_out_left else R.anim.slide_out_right
+        )
         transaction.replace(R.id.fragmentContainerView, fragment)
         transaction.commit()
-
         currentIndex = newIndex
+        lastSuccessfulFragmentIndex = newIndex
+    }
 
-        // ✅ Track last successful fragment
-        if (newIndex != 99) {
-            lastSuccessfulFragmentIndex = newIndex
+    private fun checkCurrentFragment() {
+        when (lastSuccessfulFragmentIndex) {
+            0 -> replaceFragment(TeacherFragment(), 0)
+            1 -> replaceFragment(TeacherClassesFragment(), 1)
+            2 -> replaceFragment(TeacherProfileFragment(), 2)
+            else -> replaceFragment(TeacherFragment(), 0)
         }
+    }
+
+    fun navigateToOverview() {
+        replaceFragment(TeacherFragment(), 0)
+        bottomNavigationView.selectedItemId = R.id.nav_overview
     }
 
     private fun showLogoutConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Exit")
             .setMessage("Are you sure you want to exit?")
-            .setPositiveButton("Yes") { _, _ ->
-                finish()
-            }
+            .setPositiveButton("Yes") { _, _ -> finish() }
             .setNegativeButton("No", null)
             .show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try { networkCallback?.let { connectivityManager?.unregisterNetworkCallback(it) } } catch (_: Exception) {}
     }
 }

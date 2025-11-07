@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.thesis_app.R
-import com.example.thesis_app.ui.fragments.nointernet.NoInternetFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -21,15 +20,6 @@ class DailySpellingFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        // ✅ Step 1: Check internet before inflating main layout
-        if (!isInternetAvailable()) {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainerView, NoInternetFragment()) // Replace with NoInternetFragment
-                .commit()
-            return null
-        }
-
         // ✅ Step 2: Inflate layout and set up tabs
         val view = inflater.inflate(R.layout.daily_spelling, container, false)
 
@@ -47,13 +37,5 @@ class DailySpellingFragment : Fragment() {
         }.attach()
 
         return view
-    }
-
-    // ✅ Step 3: Internet checking helper
-    private fun isInternetAvailable(): Boolean {
-        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 }

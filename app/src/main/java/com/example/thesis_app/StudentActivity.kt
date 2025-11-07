@@ -4,71 +4,70 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import com.example.thesis_app.ui.fragments.bottomsheets.SettingsBottomSheet
-import com.example.thesis_app.ui.fragments.nointernet.NoInternetFragment
 import com.example.thesis_app.ui.fragments.spelling.SpellingFragment
 import com.example.thesis_app.ui.fragments.student.DailySpellingFragment
 import com.example.thesis_app.ui.fragments.student.LecturesFragment
 import com.example.thesis_app.ui.fragments.student.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.*
 
 class StudentActivity : AppCompatActivity() {
     private var currentIndex = 0
-    private var pendingFragment: Fragment? = null
-    private var pendingIndex: Int = 0
-    private var lastSuccessfulFragmentIndex: Int = 0
+    private var lastSuccessfulFragmentIndex = 0
 
-    // ✅ Firebase presence reference
     private var presenceRef: DatabaseReference? = null
-
-    // 🆕 Firebase listener for class changes
     private var classRef: DatabaseReference? = null
     private var classListener: ValueEventListener? = null
-    // 🧠 Used to detect actual class data changes (not first load)
     private var initialClassSnapshot: String? = null
     private var firstSnapshotLoaded = false
+
+    private var connectivityManager: ConnectivityManager? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var networkSnackbar: Snackbar? = null
+    private lateinit var bottomNav: BottomNavigationView
+    private var overlayView: View? = null
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.student)
 
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-
-        // ✅ Initialize user presence tracking
+        bottomNav = findViewById(R.id.bottom_navigation)
         setupUserPresence()
-
-        // 🆕 Start monitoring class data changes
         monitorClassChanges()
+        setupNetworkMonitoring()
 
-        // Default fragment
         if (savedInstanceState == null) {
-            checkAndReplaceFragment(LecturesFragment(), 0)
+            replaceFragment(LecturesFragment(), 0)
             bottomNav.selectedItemId = R.id.action_lectures
         }
 
-        // Bottom navigation handling
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.action_lectures -> checkAndReplaceFragment(LecturesFragment(), 0)
+                R.id.action_lectures -> replaceFragment(LecturesFragment(), 0)
                 R.id.action_dictionary -> checkAndHandleDictionary()
-                R.id.action_profile -> checkAndReplaceFragment(ProfileFragment(), 2)
-                R.id.action_settings -> {
-                    val bottomSheet = SettingsBottomSheet()
-                    bottomSheet.show(supportFragmentManager, "SettingsBottomSheet")
-                }
+                R.id.action_profile -> replaceFragment(ProfileFragment(), 2)
+                R.id.action_settings -> SettingsBottomSheet()
+                    .show(supportFragmentManager, "SettingsBottomSheet")
             }
             true
         }
 
-        // Back press handler
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -79,79 +78,50 @@ class StudentActivity : AppCompatActivity() {
         updateStreakAfterActivity()
     }
 
-    // ✅ Setup presence tracking (status + lastSeen)
+    // ✅ Presence
     private fun setupUserPresence() {
         val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
         val studentId = prefs.getString("studentId", null) ?: return
+        val db = FirebaseDatabase.getInstance()
+        presenceRef = db.getReference("users/$studentId/presence")
 
-        val database = FirebaseDatabase.getInstance()
-        val presencePath = "users/$studentId/presence"
-        presenceRef = database.getReference(presencePath)
-
-        val connectedRef = database.getReference(".info/connected")
-
+        val connectedRef = db.getReference(".info/connected")
         connectedRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val connected = snapshot.getValue(Boolean::class.java) ?: false
-                if (connected) {
+                if (snapshot.getValue(Boolean::class.java) == true) {
                     presenceRef?.child("status")?.setValue("online")
                     presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
                     presenceRef?.child("status")?.onDisconnect()?.setValue("offline")
                     presenceRef?.child("lastSeen")?.onDisconnect()?.setValue(System.currentTimeMillis())
                 }
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }
 
-    // 🆕 Monitor class data changes
-    // 🧠 Only trigger session expired if actual data inside "classes" changes
+    // ✅ Class Change Monitor
     private fun monitorClassChanges() {
         val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-        val studentId = prefs.getString("studentId", null)
-
-        // 🚧 Safety check — stop if prefs missing or invalid
-        if (studentId.isNullOrEmpty()) {
-            android.util.Log.w("StudentActivity", "⚠️ monitorClassChanges skipped — studentId not found in prefs")
-            return
-        }
-
-        val database = FirebaseDatabase.getInstance()
-        classRef = database.getReference("users/$studentId/classes")
+        val studentId = prefs.getString("studentId", null) ?: return
+        val db = FirebaseDatabase.getInstance()
+        classRef = db.getReference("users/$studentId/classes")
 
         classListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val currentState = snapshot.value?.toString() ?: "empty"
-
-                // 🧷 Store the initial state safely
                 if (!firstSnapshotLoaded) {
                     initialClassSnapshot = currentState
                     firstSnapshotLoaded = true
-                    android.util.Log.d("StudentActivity", "✅ Initial class snapshot set for $studentId: $currentState")
                     return
                 }
-
-                // 🧨 Only trigger if the data truly changes
-                if (currentState != initialClassSnapshot) {
-                    android.util.Log.w("StudentActivity", "⚠️ Class data changed for $studentId: $currentState")
-                    showSessionExpiredDialog()
-                }
+                if (currentState != initialClassSnapshot) showSessionExpiredDialog()
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                android.util.Log.e("StudentActivity", "❌ Class monitor cancelled: ${error.message}")
-            }
+            override fun onCancelled(error: DatabaseError) {}
         }
 
-        try {
-            classRef?.addValueEventListener(classListener!!)
-        } catch (e: Exception) {
-            android.util.Log.e("StudentActivity", "❌ Failed to attach listener: ${e.message}")
-        }
+        classRef?.addValueEventListener(classListener!!)
     }
 
-    // 🆕 Show session expired dialog
     private fun showSessionExpiredDialog() {
         runOnUiThread {
             if (!isFinishing) {
@@ -159,166 +129,171 @@ class StudentActivity : AppCompatActivity() {
                     .setTitle("Session Expired")
                     .setMessage("Your class information has changed. Please log in again.")
                     .setCancelable(false)
-                    .setPositiveButton("OK") { _, _ ->
-                        logoutAndRedirect()
-                    }
+                    .setPositiveButton("OK") { _, _ -> logoutAndRedirect() }
                     .show()
             }
         }
     }
 
-    // 🆕 Logout and redirect to LoginActivity
     private fun logoutAndRedirect() {
         val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
         prefs.edit().clear().apply()
-
         presenceRef?.child("status")?.setValue("offline")
         presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
-
-        val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
+        startActivity(Intent(this, LoginActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
         finish()
     }
 
-    // ✅ Update online status when activity starts/resumes
-    override fun onStart() {
-        super.onStart()
-        setUserOnline()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setUserOnline()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        setUserOnline()
-    }
-
+    override fun onStart() { super.onStart(); setUserOnline() }
+    override fun onResume() { super.onResume(); setUserOnline() }
+    override fun onPause() { super.onPause(); setUserOnline() }
     override fun onDestroy() {
         super.onDestroy()
         setUserOffline()
-
-        // 🆕 Remove listener to prevent leaks
         classListener?.let { classRef?.removeEventListener(it) }
+        try { networkCallback?.let { connectivityManager?.unregisterNetworkCallback(it) } } catch (_: Exception) {}
     }
 
     private fun setUserOnline() {
         presenceRef?.child("status")?.setValue("online")
         presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
     }
-
     private fun setUserOffline() {
         presenceRef?.child("status")?.setValue("offline")
         presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
     }
 
-    fun updateStreakAfterActivity() {
-        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-        val studentId = prefs.getString("studentId", null)
-        val userRef = FirebaseDatabase.getInstance()
-            .getReference("users/$studentId/activityStreak")
-        val today = java.time.LocalDate.now().toString()
-        val yesterday = java.time.LocalDate.now().minusDays(1).toString()
+    // ------------------------------
+    // Dynamic Network Monitoring
+    // ------------------------------
+    private fun setupNetworkMonitoring() {
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val rootView = findViewById(android.R.id.content) as View
 
-        userRef.get().addOnSuccessListener { snapshot ->
-            var streakCount = snapshot.child("streakCount").getValue(Int::class.java) ?: 0
-            val lastActiveDate = snapshot.child("lastActiveDate").getValue(String::class.java)
+        networkSnackbar = Snackbar.make(rootView, "", Snackbar.LENGTH_INDEFINITE)
+            .setAction("Retry") { checkAndHandleDictionary() }
 
-            if (lastActiveDate != today) {
-                if (lastActiveDate == yesterday) {
-                    streakCount += 1
-                } else {
-                    streakCount = 1
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                runOnUiThread {
+                    dismissNetworkSnackbar()
+                    hideLoadingOverlay()
+                    enableNavigation(true)
                 }
-                userRef.child("streakCount").setValue(streakCount)
-                userRef.child("lastActiveDate").setValue(today)
+            }
+
+            override fun onLost(network: Network) {
+                runOnUiThread {
+                    showNetworkStatusSnackbar("No internet connection — the app may not function properly.")
+                    showLoadingOverlay()
+                    enableNavigation(false)
+                }
+            }
+
+            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+                val hasInternet = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                val isValidated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+
+                runOnUiThread {
+                    when {
+                        !hasInternet -> {
+                            showNetworkStatusSnackbar("No internet connection — the app may not function properly.")
+                            showLoadingOverlay()
+                            enableNavigation(false)
+                        }
+                        !isValidated -> {
+                            showNetworkStatusSnackbar("Unstable internet — some features may not work properly.")
+                            showLoadingOverlay()
+                            enableNavigation(false)
+                        }
+                        else -> {
+                            dismissNetworkSnackbar()
+                            hideLoadingOverlay()
+                            enableNavigation(true)
+                        }
+                    }
+                }
             }
         }
-    }
 
-    private fun checkAndReplaceFragment(fragment: Fragment, index: Int) {
-        pendingFragment = fragment
-        pendingIndex = index
-
-        if (!isInternetAvailable()) {
-            replaceFragment(NoInternetFragment(), 99)
-        } else {
-            replaceFragment(fragment, index)
-        }
-    }
-
-    private fun checkAndHandleDictionary() {
-        pendingIndex = 1
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        connectivityManager?.registerNetworkCallback(request, networkCallback!!)
 
         if (!isInternetAvailable()) {
-            replaceFragment(NoInternetFragment(), 99)
-            return
+            showNetworkStatusSnackbar("No internet connection — the app may not function properly.")
+            showLoadingOverlay()
+            enableNavigation(false)
         }
+    }
 
-        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-        val studentId = prefs.getString("studentId", null)
+    private fun showNetworkStatusSnackbar(message: String) {
+        networkSnackbar?.setText(message)
+        if (networkSnackbar?.isShown != true) networkSnackbar?.show()
+    }
 
-        if (!studentId.isNullOrEmpty()) {
-            val db = FirebaseDatabase.getInstance().reference
-            db.child("users").child(studentId).child("dailySpelling")
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    val hasDailySpelling = when (val value = snapshot.value) {
-                        is Boolean -> value
-                        is String -> value.equals("true", ignoreCase = true)
-                        else -> false
-                    }
+    private fun dismissNetworkSnackbar() {
+        networkSnackbar?.dismiss()
+    }
 
-                    if (hasDailySpelling) {
-                        replaceFragment(DailySpellingFragment(), 1)
-                    } else {
-                        replaceFragment(SpellingFragment(), 1)
-                    }
-                }
-                .addOnFailureListener {
-                    replaceFragment(NoInternetFragment(), 99)
-                }
-        } else {
-            replaceFragment(SpellingFragment(), 1)
+    private fun showLoadingOverlay() {
+        if (overlayView == null) {
+            val parent = findViewById<FrameLayout>(android.R.id.content)
+            overlayView = LayoutInflater.from(this)
+                .inflate(R.layout.loading_overlay, parent, false)
+            parent.addView(overlayView)
         }
+        overlayView?.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadingOverlay() {
+        overlayView?.visibility = View.GONE
+    }
+
+    private fun enableNavigation(enable: Boolean) {
+        bottomNav.menu.children.forEach { it.isEnabled = enable }
     }
 
     private fun isInternetAvailable(): Boolean {
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = cm.activeNetwork ?: return false
-        val caps = cm.getNetworkCapabilities(network) ?: return false
-        return caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+        val net = cm.activeNetwork ?: return false
+        val caps = cm.getNetworkCapabilities(net) ?: return false
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
-    private fun replaceFragment(fragment: Fragment, newIndex: Int) {
-        pendingFragment = fragment
-        pendingIndex = newIndex
-        if (newIndex == currentIndex) return
+    // ------------------------------
+    // Navigation + UI
+    // ------------------------------
+    private fun replaceFragment(fragment: Fragment, index: Int) {
+        if (index == currentIndex) return
+        val t = supportFragmentManager.beginTransaction()
+        t.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
+        t.replace(R.id.fragmentContainerView, fragment)
+        t.commit()
+        currentIndex = index
+        lastSuccessfulFragmentIndex = index
+    }
 
-        val transaction = supportFragmentManager.beginTransaction()
-        if (newIndex > currentIndex) {
-            transaction.setCustomAnimations(
-                R.anim.slide_in_right,
-                R.anim.slide_out_left
-            )
-        } else {
-            transaction.setCustomAnimations(
-                R.anim.slide_in_left,
-                R.anim.slide_out_right
-            )
-        }
-
-        transaction.replace(R.id.fragmentContainerView, fragment)
-        transaction.commit()
-        currentIndex = newIndex
-
-        if (newIndex != 99) {
-            lastSuccessfulFragmentIndex = newIndex
+    private fun checkAndHandleDictionary() {
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null)
+        if (!studentId.isNullOrEmpty()) {
+            FirebaseDatabase.getInstance().reference
+                .child("users/$studentId/dailySpelling")
+                .get()
+                .addOnSuccessListener {
+                    val hasDailySpelling = it.getValue(Boolean::class.java) ?: false
+                    replaceFragment(
+                        if (hasDailySpelling) DailySpellingFragment() else SpellingFragment(), 1
+                    )
+                }
+                .addOnFailureListener {
+                    showNetworkStatusSnackbar("Unstable internet — please try again later.")
+                    showLoadingOverlay()
+                    enableNavigation(false)
+                }
         }
     }
 
@@ -329,5 +304,24 @@ class StudentActivity : AppCompatActivity() {
             .setPositiveButton("Yes") { _, _ -> finish() }
             .setNegativeButton("No", null)
             .show()
+    }
+
+    // ✅ Update streak system
+    fun updateStreakAfterActivity() {
+        val prefs = getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+        val studentId = prefs.getString("studentId", null)
+        val ref = FirebaseDatabase.getInstance().getReference("users/$studentId/activityStreak")
+        val today = java.time.LocalDate.now().toString()
+        val yesterday = java.time.LocalDate.now().minusDays(1).toString()
+
+        ref.get().addOnSuccessListener {
+            var streak = it.child("streakCount").getValue(Int::class.java) ?: 0
+            val last = it.child("lastActiveDate").getValue(String::class.java)
+            if (last != today) {
+                streak = if (last == yesterday) streak + 1 else 1
+                ref.child("streakCount").setValue(streak)
+                ref.child("lastActiveDate").setValue(today)
+            }
+        }
     }
 }

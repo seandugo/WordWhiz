@@ -78,9 +78,6 @@ class ProgressListActivity : AppCompatActivity() {
             val quizList = snapshot.children.mapNotNull { quizSnapshot ->
                 val quizId = quizSnapshot.key ?: return@mapNotNull null
 
-                // Skip unwanted quizzes
-                if (quizId == "pre-test" || quizId == "835247") return@mapNotNull null
-
                 val order = quizSnapshot.child("order").getValue(Int::class.java) ?: Int.MAX_VALUE
                 quizSnapshot to order
             }.sortedBy { it.second }
