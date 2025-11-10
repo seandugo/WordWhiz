@@ -477,9 +477,27 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun saveProgressToFirebase(quizId: String, partId: String, progress: Map<String, Any>) {
         val db = FirebaseDatabase.getInstance().reference
-        db.child("users").child(studentId).child("progress").child(quizId).child(partId)
-            .updateChildren(progress)
+        val progressRef = db.child("users")
+            .child(studentId)
+            .child("progress")
+            .child(quizId)
+            .child(partId)
+
+        // ✅ Only update the progress fields we want
+        val safeData = mapOf(
+            "answeredCount" to (progress["answeredCount"] ?: 0),
+            "correctAnswers" to (progress["correctAnswers"] ?: 0),
+            "firstTryCorrect" to (progress["firstTryCorrect"] ?: 0),
+            "isCompleted" to (progress["isCompleted"] ?: false),
+            "lastUpdated" to (progress["lastUpdated"] ?: System.currentTimeMillis()),
+            "retries" to (progress["retries"] ?: 0),
+            "totalQuestions" to (progress["totalQuestions"] ?: 0),
+            "wrongAnswers" to (progress["wrongAnswers"] ?: 0)
+        )
+
+        progressRef.updateChildren(safeData)
     }
+
 
     private fun updateQuizCompletionStatus(studentId: String, quizId: String) {
         if (isPartCompleted) return
@@ -500,6 +518,9 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
             finishQuiz()
             return
         }
+
+        // ✅ Save all first-attempt answers before retry starts
+        recordAllAnswersAfterQuiz()
 
         retries++
         progressData["retries"] = retries
@@ -525,6 +546,7 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
 
         progressData["isCompleted"] = true
         progressData["lastUpdated"] = System.currentTimeMillis()
+        progressData.remove("quizAnswers")
         saveProgressToFirebase(quizId, partId, progressData)
         updateQuizCompletionStatus(studentId, quizId)
         FirebaseDatabase.getInstance().getReference("users/$studentId/pretestCompleted").setValue(true)

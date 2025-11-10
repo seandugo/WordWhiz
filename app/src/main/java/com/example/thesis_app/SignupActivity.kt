@@ -2,6 +2,7 @@ package com.example.thesis_app
 
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.animation.DecelerateInterpolator
 import android.widget.ProgressBar
@@ -77,7 +78,8 @@ class SignupActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Cancel Signup")
             .setMessage("Are you sure you want to cancel signup? All unsaved data will be removed.")
-            .setPositiveButton("Yes") { _, _ -> finish() }
+            .setPositiveButton("Yes") { _, _ -> startActivity(Intent(this, LoginActivity::class.java))
+                finish() }
             .setNegativeButton("No", null)
             .show()
     }
