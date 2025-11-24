@@ -36,9 +36,6 @@ class PreAssessmentActivity : AppCompatActivity() {
         if (currentStep < totalSteps) {
             currentStep++
             updateProgress()
-        } else {
-            // ✅ If last step, mark as completed in Firebase
-            markPretestCompleted()
         }
     }
 
@@ -54,15 +51,5 @@ class PreAssessmentActivity : AppCompatActivity() {
             .setPositiveButton("Yes") { _, _ -> finish() }
             .setNegativeButton("No", null)
             .show()
-    }
-
-    private fun markPretestCompleted() {
-        val id = studentId ?: getSharedPreferences("USER_PREFS", MODE_PRIVATE)
-            .getString("studentId", null)
-
-        if (!id.isNullOrEmpty()) {
-            val dbRef = FirebaseDatabase.getInstance().reference
-            dbRef.child("users").child(id).child("pretestCompleted").setValue(true)
-        }
     }
 }

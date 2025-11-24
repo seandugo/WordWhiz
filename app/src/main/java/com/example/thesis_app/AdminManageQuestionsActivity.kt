@@ -43,6 +43,17 @@ class AdminManageQuestionsActivity : AppCompatActivity() {
         toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.primaryColor))
         toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.black))
         toolbar.setNavigationOnClickListener { finish() }
+        toolbar.inflateMenu(R.menu.lectures_menu)
+
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_download -> {
+                    // TODO: handle click
+                    true
+                }
+                else -> false
+            }
+        }
 
         // ♻️ Recycler setup
         levelRecycler = findViewById(R.id.levelRecyclerView)

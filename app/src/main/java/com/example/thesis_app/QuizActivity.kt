@@ -549,8 +549,9 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         progressData.remove("quizAnswers")
         saveProgressToFirebase(quizId, partId, progressData)
         updateQuizCompletionStatus(studentId, quizId)
-        FirebaseDatabase.getInstance().getReference("users/$studentId/pretestCompleted").setValue(true)
-
+        if (quizId == "pre-test" || quizId == "835247") {
+            markPretestCompleted()
+        }
         val dialogView = layoutInflater.inflate(R.layout.score_dialog, null)
         val scoreProgressIndicator: ProgressBar = dialogView.findViewById(R.id.score_progress_indicator)
         val scoreProgressText: TextView = dialogView.findViewById(R.id.score_progress_text)
@@ -578,6 +579,19 @@ class QuizActivity : AppCompatActivity(), View.OnClickListener {
         presenceRef?.child("status")?.setValue("online")
         presenceRef?.child("lastSeen")?.setValue(System.currentTimeMillis())
     }
+
+    private fun markPretestCompleted() {
+        val id = studentId.ifEmpty {
+            getSharedPreferences("USER_PREFS", MODE_PRIVATE)
+                .getString("studentId", null)
+        }
+
+        if (!id.isNullOrEmpty()) {
+            val dbRef = FirebaseDatabase.getInstance().reference
+            dbRef.child("users").child(id).child("pretestCompleted").setValue(true)
+        }
+    }
+
 
     private fun showExitConfirmation() {
         val builder = AlertDialog.Builder(this)

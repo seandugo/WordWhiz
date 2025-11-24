@@ -5,7 +5,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 
 class ForgotPasswordActivity : AppCompatActivity() {
@@ -30,56 +29,28 @@ class ForgotPasswordActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Disable the button to prevent double-clicking
+            // Disable the button while sending
             resetPasswordBtn.isEnabled = false
             resetPasswordBtn.text = "Sending..."
 
-            auth.fetchSignInMethodsForEmail(email)
-                .addOnCompleteListener { fetchTask ->
-                    if (fetchTask.isSuccessful) {
-                        val signInMethods = fetchTask.result?.signInMethods
-                        if (signInMethods.isNullOrEmpty()) {
-                            // ❗ Email not registered
-                            Snackbar.make(
-                                resetPasswordBtn,
-                                "This email is not registered.",
-                                Snackbar.LENGTH_LONG
-                            ).setAction("OK") {}.show()
+            auth.sendPasswordResetEmail(email)
+                .addOnCompleteListener { task ->
+                    resetPasswordBtn.isEnabled = true
+                    resetPasswordBtn.text = "Reset Password"
 
-                            resetPasswordBtn.isEnabled = true
-                            resetPasswordBtn.text = "Reset Password"
-                        } else {
-                            // ✅ Email exists, proceed with password reset
-                            auth.sendPasswordResetEmail(email)
-                                .addOnCompleteListener { task ->
-                                    if (task.isSuccessful) {
-                                        Toast.makeText(
-                                            this,
-                                            "Password reset email sent! Please check your inbox or Spam folder.",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                        finish()
-                                    } else {
-                                        Toast.makeText(
-                                            this,
-                                            "Error: ${task.exception?.message}",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-
-                                        resetPasswordBtn.isEnabled = true
-                                        resetPasswordBtn.text = "Reset Password"
-                                    }
-                                }
-                        }
+                    if (task.isSuccessful) {
+                        Toast.makeText(
+                            this,
+                            "Password reset email sent! Check your inbox or Spam folder.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        finish()
                     } else {
                         Toast.makeText(
                             this,
-                            "Error checking email: ${fetchTask.exception?.message}",
+                            "Error: ${task.exception?.message}",
                             Toast.LENGTH_LONG
                         ).show()
-
-                        resetPasswordBtn.isEnabled = true
-                        resetPasswordBtn.text = "Reset Password"
                     }
                 }
         }
